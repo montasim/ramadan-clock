@@ -20,6 +20,7 @@ import {
 import { Download } from "lucide-react";
 import { Suspense } from "react";
 import CalendarSkeleton from "@/components/public/calendar-skeleton";
+import { DownloadButton } from "@/components/shared/download-button";
 
 async function CalendarContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
@@ -52,9 +53,7 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" asChild>
-            <a href={`/api/pdf?location=${location || ""}&type=full`} target="_blank">
-              <Download className="h-4 w-4" />
-            </a>
+            <DownloadButton location={location} type="full" />
           </Button>
         </div>
       </div>

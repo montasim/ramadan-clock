@@ -10,9 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { DownloadButton } from "@/components/shared/download-button";
 
 interface LocationPageProps {
   params: Promise<{ city: string }>;
@@ -56,9 +57,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
             <Link href="/calendar">Back to Calendar</Link>
           </Button>
           <Button variant="outline" size="icon" asChild>
-            <a href={`/api/pdf?location=${encodeURIComponent(decodedCity)}&type=full`} target="_blank">
-              <Download className="h-4 w-4" />
-            </a>
+            <DownloadButton location={decodedCity} type="full" />
           </Button>
         </div>
       </div>

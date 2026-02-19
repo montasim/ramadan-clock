@@ -26,12 +26,94 @@ import { deleteTimeEntry, updateTimeEntry } from "@/actions/time-entries";
 import { toast } from "sonner";
 import { Pencil, Trash2, CheckSquare, Square } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CalendarViewProps {
   entries: TimeEntry[];
 }
 
 const today = new Date().toISOString().split("T")[0];
+
+const bangladeshDistricts = [
+  // Barisal Division
+  "Barguna",
+  "Barisal",
+  "Bhola",
+  "Jhalokati",
+  "Patuakhali",
+  "Pirojpur",
+  // Chittagong Division
+  "Bandarban",
+  "Brahmanbaria",
+  "Chandpur",
+  "Chittagong",
+  "Comilla",
+  "Cox's Bazar",
+  "Feni",
+  "Khagrachari",
+  "Lakshmipur",
+  "Noakhali",
+  "Rangamati",
+  // Dhaka Division
+  "Dhaka",
+  "Faridpur",
+  "Gazipur",
+  "Gopalganj",
+  "Kishoreganj",
+  "Madaripur",
+  "Manikganj",
+  "Munshiganj",
+  "Narayanganj",
+  "Narsingdi",
+  "Rajbari",
+  "Shariatpur",
+  "Tangail",
+  // Khulna Division
+  "Bagerhat",
+  "Chuadanga",
+  "Jessore",
+  "Jhenaidah",
+  "Khulna",
+  "Kushtia",
+  "Magura",
+  "Meherpur",
+  "Narail",
+  "Satkhira",
+  // Mymensingh Division
+  "Jamalpur",
+  "Mymensingh",
+  "Netrokona",
+  "Sherpur",
+  // Rajshahi Division
+  "Bogra",
+  "Chapainawabganj",
+  "Joypurhat",
+  "Naogaon",
+  "Natore",
+  "Pabna",
+  "Rajshahi",
+  "Sirajganj",
+  // Rangpur Division
+  "Dinajpur",
+  "Gaibandha",
+  "Kurigram",
+  "Lalmonirhat",
+  "Nilphamari",
+  "Panchagarh",
+  "Rangpur",
+  "Thakurgaon",
+  // Sylhet Division
+  "Habiganj",
+  "Moulvibazar",
+  "Sunamganj",
+  "Sylhet",
+];
 
 export function CalendarView({ entries }: CalendarViewProps) {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
@@ -299,14 +381,23 @@ export function CalendarView({ entries }: CalendarViewProps) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
+              <Select
                 value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, location: value })
                 }
-                placeholder="e.g., Dhaka"
-              />
+              >
+                <SelectTrigger id="location" className="h-10 w-full">
+                  <SelectValue placeholder="Select a district" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] w-[--radix-select-trigger-width] min-w-[200px] overflow-y-auto" position="popper">
+                  {bangladeshDistricts.map((district) => (
+                    <SelectItem key={district} value={district}>
+                      {district}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

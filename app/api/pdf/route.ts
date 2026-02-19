@@ -5,7 +5,7 @@ import autoTable from "jspdf-autotable";
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const { searchParams } = new URL(request.url);
     const location = searchParams.get("location") || null;
     const type = searchParams.get("type") || "today"; // 'today' or 'full'
 

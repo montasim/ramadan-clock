@@ -8,10 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, Moon, Sun, Download } from "lucide-react";
+import { Clock, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
+import { DownloadButton } from "@/components/shared/download-button";
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
@@ -47,9 +48,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" asChild>
-            <a href={`/api/pdf?location=${location || ""}`} target="_blank">
-              <Download className="h-4 w-4" />
-            </a>
+            <DownloadButton location={location} type="today" />
           </Button>
         </div>
       </div>
