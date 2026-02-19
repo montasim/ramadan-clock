@@ -2,6 +2,16 @@
 
 import { prisma, type TimeEntry } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { formatTime12Hour } from "@/lib/utils";
+
+// Helper function to format time entries
+function formatTimeEntry(entry: TimeEntry): TimeEntry {
+  return {
+    ...entry,
+    sehri: formatTime12Hour(entry.sehri),
+    iftar: formatTime12Hour(entry.iftar),
+  };
+}
 
 export async function getTodaySchedule(location?: string | null): Promise<TimeEntry | null> {
   try {
@@ -19,9 +29,54 @@ export async function getTodaySchedule(location?: string | null): Promise<TimeEn
       where,
     });
 
-    return entry;
+    return entry ? formatTimeEntry(entry) : null;
   } catch (error) {
     console.error("Error fetching today's schedule:", error);
+    return null;
+  }
+}
+
+/**
+ * Check if iftar time has passed for today
+ */
+function hasIftarPassed(todaySchedule: TimeEntry): boolean {
+  const now = new Date();
+  const [iftarHours, iftarMinutes] = todaySchedule.iftar.split(':').map(Number);
+  const iftarTime = new Date();
+  iftarTime.setHours(iftarHours, iftarMinutes, 0, 0);
+  return now >= iftarTime;
+}
+
+/**
+ * Get today's schedule or next day's schedule if iftar has passed
+ */
+export async function getTodayOrNextDaySchedule(location?: string | null): Promise<TimeEntry | null> {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+    const where: Record<string, unknown> = { date: today };
+    if (location) {
+      where.location = location;
+    }
+
+    const todayEntry = await prisma.timeEntry.findFirst({ where });
+
+    if (todayEntry && hasIftarPassed(todayEntry)) {
+      // Get next day's schedule
+      const tomorrowWhere: Record<string, unknown> = { date: tomorrowStr };
+      if (location) {
+        tomorrowWhere.location = location;
+      }
+      const tomorrowEntry = await prisma.timeEntry.findFirst({ where: tomorrowWhere });
+      return tomorrowEntry ? formatTimeEntry(tomorrowEntry) : null;
+    }
+
+    return todayEntry ? formatTimeEntry(todayEntry) : null;
+  } catch (error) {
+    console.error("Error fetching today/next day schedule:", error);
     return null;
   }
 }
@@ -35,7 +90,7 @@ export async function getFullSchedule(location?: string | null): Promise<TimeEnt
       orderBy: { date: "asc" },
     });
 
-    return entries;
+    return entries.map(formatTimeEntry);
   } catch (error) {
     console.error("Error fetching full schedule:", error);
     return [];

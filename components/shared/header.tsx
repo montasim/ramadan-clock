@@ -4,6 +4,7 @@ import { LogoutButton } from "./logout-button";
 import { MobileNav } from "./mobile-nav";
 import { getCurrentUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { Clock, CalendarDays, Mail } from "lucide-react";
 
 export async function Header() {
   const user = await getCurrentUser();
@@ -27,15 +28,24 @@ export async function Header() {
             <nav className="hidden md:flex items-center gap-1">
               <Link
                 href="/"
-                className="px-3.5 py-1.5 text-sm font-medium text-muted-foreground rounded-lg transition-all hover:text-foreground hover:bg-primary/8"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-sm font-medium text-muted-foreground rounded-lg transition-all hover:text-foreground hover:bg-primary/8"
               >
+                <Clock className="h-4 w-4" />
                 Today
               </Link>
               <Link
                 href="/calendar"
-                className="px-3.5 py-1.5 text-sm font-medium text-muted-foreground rounded-lg transition-all hover:text-foreground hover:bg-primary/8"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-sm font-medium text-muted-foreground rounded-lg transition-all hover:text-foreground hover:bg-primary/8"
               >
+                <CalendarDays className="h-4 w-4" />
                 Calendar
+              </Link>
+              <Link
+                href="/contact"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-sm font-medium text-muted-foreground rounded-lg transition-all hover:text-foreground hover:bg-primary/8"
+              >
+                <Mail className="h-4 w-4" />
+                Contact
               </Link>
             </nav>
           </div>

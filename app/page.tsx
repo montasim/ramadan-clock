@@ -1,4 +1,4 @@
-import { getTodaySchedule, getLocations } from "@/actions/time-entries";
+import { getTodayOrNextDaySchedule, getLocations } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, Moon, Sun, MapPin } from "lucide-react";
+import { Clock, Moon, Sun, MapPin, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
@@ -16,10 +16,10 @@ import { DownloadButton } from "@/components/shared/download-button";
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
-  const todaySchedule = await getTodaySchedule(location || null);
+  const todaySchedule = await getTodayOrNextDaySchedule(location || null);
   const locations = await getLocations();
-
-  const today = new Date().toLocaleDateString("en-US", {
+  const today = new Date().toISOString().split("T")[0];
+  const todayDisplay = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -43,7 +43,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
             Today&apos;s{" "}
             <span className="gradient-text">Schedule</span>
           </h1>
-          <p className="text-muted-foreground text-sm mt-2">{today}</p>
+          <p className="text-muted-foreground text-sm mt-2">{todayDisplay}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0 relative z-10">
           <Select defaultValue={location || "all"}>
@@ -65,6 +65,30 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
           />
         </div>
       </div>
+
+      {/* Add next day info card if iftar has passed */}
+      {todaySchedule && todaySchedule.date !== today && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
+              Next Day's Schedule
+            </CardTitle>
+            <CardDescription>
+              Today's iftar time has passed. Showing tomorrow's schedule.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex gap-4">
+            <div className="flex-1">
+              <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Sehri</p>
+              <p className="text-lg font-semibold">{todaySchedule.sehri}</p>
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-violet-600 dark:text-violet-400 mb-1">Iftar</p>
+              <p className="text-lg font-semibold">{todaySchedule.iftar}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Sehri / Iftar Cards ─────────────── */}
       {todaySchedule ? (
@@ -147,7 +171,10 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <Button asChild className="btn-gradient rounded-full font-semibold">
-            <Link href="/calendar">📅 Full Calendar</Link>
+            <Link href="/calendar">
+              <CalendarDays className="h-4 w-4 mr-1.5" />
+              Full Calendar
+            </Link>
           </Button>
           {locations.map((loc) => (
             <Button

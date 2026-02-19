@@ -1,4 +1,4 @@
-import { getFullSchedule, getLocations } from "@/actions/time-entries";
+import { getFullSchedule, getLocations, getTodayOrNextDaySchedule } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
   const { location } = await searchParams;
   const schedule = await getFullSchedule(location || null);
   const locations = await getLocations();
+  const todaySchedule = await getTodayOrNextDaySchedule(location || null);
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -66,6 +67,30 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
           />
         </div>
       </div>
+
+      {/* Add next day info card if iftar has passed */}
+      {todaySchedule && todaySchedule.date !== today && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
+              Next Day's Schedule
+            </CardTitle>
+            <CardDescription>
+              Today's iftar time has passed. Showing tomorrow's schedule.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex gap-4">
+            <div className="flex-1">
+              <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Sehri</p>
+              <p className="text-lg font-semibold">{todaySchedule.sehri}</p>
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-violet-600 dark:text-violet-400 mb-1">Iftar</p>
+              <p className="text-lg font-semibold">{todaySchedule.iftar}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Table Card */}
       <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">

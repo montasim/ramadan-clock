@@ -1,4 +1,4 @@
-import { getFullSchedule, getLocations } from "@/actions/time-entries";
+import { getFullSchedule, getLocations, getTodayOrNextDaySchedule } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { MapPin } from "lucide-react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DownloadButton } from "@/components/shared/download-button";
+import LocationSkeleton from "@/components/public/location-skeleton";
+import { Suspense } from "react";
 
 interface LocationPageProps {
   params: Promise<{ city: string }>;
@@ -24,13 +26,14 @@ export async function generateStaticParams() {
   return locations.map((location) => ({ city: encodeURIComponent(location) }));
 }
 
-export default async function LocationPage({ params }: LocationPageProps) {
+async function LocationPageContent({ params }: { params: Promise<{ city: string }> }) {
   const { city } = await params;
   const decodedCity = decodeURIComponent(city);
   const locations = await getLocations();
   if (!locations.includes(decodedCity)) notFound();
 
   const schedule = await getFullSchedule(decodedCity);
+  const todaySchedule = await getTodayOrNextDaySchedule(decodedCity);
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -71,6 +74,30 @@ export default async function LocationPage({ params }: LocationPageProps) {
           />
         </div>
       </div>
+
+      {/* Add next day info card if iftar has passed */}
+      {todaySchedule && todaySchedule.date !== today && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
+              Next Day's Schedule
+            </CardTitle>
+            <CardDescription>
+              Today's iftar time has passed. Showing tomorrow's schedule.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex gap-4">
+            <div className="flex-1">
+              <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Sehri</p>
+              <p className="text-lg font-semibold">{todaySchedule.sehri}</p>
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-violet-600 dark:text-violet-400 mb-1">Iftar</p>
+              <p className="text-lg font-semibold">{todaySchedule.iftar}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Table */}
       <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
@@ -144,5 +171,13 @@ export default async function LocationPage({ params }: LocationPageProps) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default async function LocationPage({ params }: LocationPageProps) {
+  return (
+    <Suspense fallback={<LocationSkeleton />}>
+      <LocationPageContent params={params} />
+    </Suspense>
   );
 }

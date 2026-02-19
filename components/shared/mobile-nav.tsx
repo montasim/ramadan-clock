@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Clock, CalendarDays, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MobileNavProps {
@@ -34,17 +34,27 @@ export function MobileNav({ user }: MobileNavProps) {
           <nav className="flex flex-col space-y-1">
             <Link
               href="/"
-              className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
+              className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
               onClick={() => setIsOpen(false)}
             >
+              <Clock className="h-4 w-4" />
               Today
             </Link>
             <Link
               href="/calendar"
-              className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
+              className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
               onClick={() => setIsOpen(false)}
             >
+              <CalendarDays className="h-4 w-4" />
               Calendar
+            </Link>
+            <Link
+              href="/contact"
+              className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
+              onClick={() => setIsOpen(false)}
+            >
+              <Mail className="h-4 w-4" />
+              Contact
             </Link>
             {user ? (
               <>
