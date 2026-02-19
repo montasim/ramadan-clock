@@ -17,7 +17,7 @@ export function Footer() {
           </p>
 
           {/* Developer Social Icons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-5">
             <a
               href={config.developerGithub}
               target="_blank"
