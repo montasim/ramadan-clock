@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { deleteTimeEntry, updateTimeEntry } from "@/actions/time-entries";
 import { toast } from "sonner";
-import { Pencil, Trash2, CheckSquare, Square } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -42,92 +42,44 @@ const today = new Date().toISOString().split("T")[0];
 
 const bangladeshDistricts = [
   // Barisal Division
-  "Barguna",
-  "Barisal",
-  "Bhola",
-  "Jhalokati",
-  "Patuakhali",
-  "Pirojpur",
+  "Barguna", "Barisal", "Bhola", "Jhalokati", "Patuakhali", "Pirojpur",
   // Chittagong Division
-  "Bandarban",
-  "Brahmanbaria",
-  "Chandpur",
-  "Chittagong",
-  "Comilla",
-  "Cox's Bazar",
-  "Feni",
-  "Khagrachari",
-  "Lakshmipur",
-  "Noakhali",
-  "Rangamati",
+  "Bandarban", "Brahmanbaria", "Chandpur", "Chittagong", "Comilla",
+  "Cox's Bazar", "Feni", "Khagrachari", "Lakshmipur", "Noakhali", "Rangamati",
   // Dhaka Division
-  "Dhaka",
-  "Faridpur",
-  "Gazipur",
-  "Gopalganj",
-  "Kishoreganj",
-  "Madaripur",
-  "Manikganj",
-  "Munshiganj",
-  "Narayanganj",
-  "Narsingdi",
-  "Rajbari",
-  "Shariatpur",
-  "Tangail",
+  "Dhaka", "Faridpur", "Gazipur", "Gopalganj", "Kishoreganj", "Madaripur",
+  "Manikganj", "Munshiganj", "Narayanganj", "Narsingdi", "Rajbari",
+  "Shariatpur", "Tangail",
   // Khulna Division
-  "Bagerhat",
-  "Chuadanga",
-  "Jessore",
-  "Jhenaidah",
-  "Khulna",
-  "Kushtia",
-  "Magura",
-  "Meherpur",
-  "Narail",
-  "Satkhira",
+  "Bagerhat", "Chuadanga", "Jessore", "Jhenaidah", "Khulna", "Kushtia",
+  "Magura", "Meherpur", "Narail", "Satkhira",
   // Mymensingh Division
-  "Jamalpur",
-  "Mymensingh",
-  "Netrokona",
-  "Sherpur",
+  "Jamalpur", "Mymensingh", "Netrokona", "Sherpur",
   // Rajshahi Division
-  "Bogra",
-  "Chapainawabganj",
-  "Joypurhat",
-  "Naogaon",
-  "Natore",
-  "Pabna",
-  "Rajshahi",
-  "Sirajganj",
+  "Bogra", "Chapainawabganj", "Joypurhat", "Naogaon", "Natore", "Pabna",
+  "Rajshahi", "Sirajganj",
   // Rangpur Division
-  "Dinajpur",
-  "Gaibandha",
-  "Kurigram",
-  "Lalmonirhat",
-  "Nilphamari",
-  "Panchagarh",
-  "Rangpur",
-  "Thakurgaon",
+  "Dinajpur", "Gaibandha", "Kurigram", "Lalmonirhat", "Nilphamari",
+  "Panchagarh", "Rangpur", "Thakurgaon",
   // Sylhet Division
-  "Habiganj",
-  "Moulvibazar",
-  "Sunamganj",
-  "Sylhet",
+  "Habiganj", "Moulvibazar", "Sunamganj", "Sylhet",
 ];
 
 export function CalendarView({ entries }: CalendarViewProps) {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
-  const [formData, setFormData] = useState({
-    date: "",
-    sehri: "",
-    iftar: "",
-    location: "",
-  });
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [formData, setFormData] = useState({ date: "", sehri: "", iftar: "", location: "" });
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Single delete modal
+  const [deletingEntry, setDeletingEntry] = useState<TimeEntry | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Bulk delete modal
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
+  /* ── Edit ─────────────────────────────────── */
   const handleEdit = (entry: TimeEntry) => {
     setEditingEntry(entry);
     setFormData({
@@ -147,7 +99,6 @@ export function CalendarView({ entries }: CalendarViewProps) {
       location: formData.location || null,
     });
     setIsUpdating(false);
-
     if (result.success) {
       toast.success("Entry updated successfully");
       setEditingEntry(null);
@@ -156,100 +107,77 @@ export function CalendarView({ entries }: CalendarViewProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this entry?")) return;
-
+  /* ── Single Delete ────────────────────────── */
+  const handleDeleteConfirm = async () => {
+    if (!deletingEntry) return;
     setIsDeleting(true);
-    const result = await deleteTimeEntry(id);
+    const result = await deleteTimeEntry(deletingEntry.id);
     setIsDeleting(false);
-
     if (result.success) {
       toast.success("Entry deleted successfully");
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      setSelectedIds((prev) => { const n = new Set(prev); n.delete(deletingEntry.id); return n; });
+      setDeletingEntry(null);
     } else {
       toast.error(result.error || "Failed to delete entry");
     }
   };
 
+  /* ── Bulk Delete ──────────────────────────── */
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(new Set(entries.map((e) => e.id)));
-    } else {
-      setSelectedIds(new Set());
-    }
+    setSelectedIds(checked ? new Set(entries.map((e) => e.id)) : new Set());
   };
 
   const handleSelectOne = (id: string, checked: boolean) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (checked) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
+      checked ? next.add(id) : next.delete(id);
       return next;
     });
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDeleteConfirm = async () => {
     if (selectedIds.size === 0) return;
-
-    if (!confirm(`Are you sure you want to delete ${selectedIds.size} entries?`)) return;
-
     setIsBulkDeleting(true);
-    let successCount = 0;
-    let failCount = 0;
-
+    let successCount = 0, failCount = 0;
     for (const id of selectedIds) {
       const result = await deleteTimeEntry(id);
-      if (result.success) {
-        successCount++;
-      } else {
-        failCount++;
-      }
+      result.success ? successCount++ : failCount++;
     }
-
     setIsBulkDeleting(false);
     setSelectedIds(new Set());
-
-    if (successCount > 0) {
-      toast.success(`Deleted ${successCount} entries`);
-    }
-    if (failCount > 0) {
-      toast.error(`Failed to delete ${failCount} entries`);
-    }
+    setShowBulkDeleteModal(false);
+    if (successCount > 0) toast.success(`Deleted ${successCount} entries`);
+    if (failCount > 0) toast.error(`Failed to delete ${failCount} entries`);
   };
 
   const isAllSelected = entries.length > 0 && selectedIds.size === entries.length;
-  const isSomeSelected = selectedIds.size > 0 && selectedIds.size < entries.length;
 
   return (
     <>
+      {/* ── Bulk Selection Bar ─────────────────── */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between mb-4 p-3 bg-muted rounded-lg">
-          <span className="text-sm font-medium">
-            {selectedIds.size} entry{selectedIds.size > 1 ? "ies" : "y"} selected
+        <div className="flex items-center justify-between mb-4 px-4 py-3 rounded-xl border border-destructive/25 bg-destructive/5">
+          <span className="text-sm font-medium text-destructive">
+            {selectedIds.size} entr{selectedIds.size > 1 ? "ies" : "y"} selected
           </span>
           <Button
             variant="destructive"
             size="sm"
-            onClick={handleBulkDelete}
+            className="rounded-full gap-1.5"
+            onClick={() => setShowBulkDeleteModal(true)}
             disabled={isBulkDeleting}
           >
-            <Trash2 className="mr-2 h-4 w-4" />
-            {isBulkDeleting ? "Deleting..." : `Delete Selected (${selectedIds.size})`}
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete Selected ({selectedIds.size})
           </Button>
         </div>
       )}
 
+      {/* ── Table ─────────────────────────────── */}
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-transparent border-border/50">
               <TableHead className="w-[50px]">
                 <Checkbox
                   checked={isAllSelected}
@@ -257,7 +185,7 @@ export function CalendarView({ entries }: CalendarViewProps) {
                   aria-label="Select all"
                 />
               </TableHead>
-              <TableHead className="w-[150px]">Date</TableHead>
+              <TableHead className="w-[160px]">Date</TableHead>
               <TableHead>Sehri</TableHead>
               <TableHead>Iftar</TableHead>
               <TableHead>Location</TableHead>
@@ -268,65 +196,64 @@ export function CalendarView({ entries }: CalendarViewProps) {
           <TableBody>
             {entries.map((entry) => {
               const isToday = entry.date === today;
-              const entryDate = new Date(entry.date);
-              const isPast = entryDate < new Date(today);
+              const isPast = new Date(entry.date) < new Date(today);
               const isSelected = selectedIds.has(entry.id);
-
               return (
                 <TableRow
                   key={entry.id}
-                  className={isToday ? "bg-primary/5" : ""}
+                  className={isToday ? "bg-primary/5 border-primary/15" : "hover:bg-primary/3 border-border/40"}
                 >
                   <TableCell>
                     <Checkbox
                       checked={isSelected}
-                      onCheckedChange={(checked) =>
-                        handleSelectOne(entry.id, checked as boolean)
-                      }
+                      onCheckedChange={(c) => handleSelectOne(entry.id, c as boolean)}
                       aria-label={`Select entry for ${entry.date}`}
                     />
                   </TableCell>
                   <TableCell className="font-medium">
                     {new Date(entry.date).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
+                      weekday: "short", month: "short", day: "numeric", year: "numeric",
                     })}
                     {isToday && (
-                      <Badge variant="default" className="ml-2">
-                        Today
-                      </Badge>
+                      <span
+                        className="ml-2 text-[10px] px-2 py-0.5 rounded-full text-white font-bold"
+                        style={{ background: "var(--grad-primary)" }}
+                      >
+                        TODAY
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell>{entry.sehri}</TableCell>
-                  <TableCell>{entry.iftar}</TableCell>
-                  <TableCell>{entry.location || "-"}</TableCell>
+                  <TableCell className="font-semibold text-amber-600 dark:text-amber-400">{entry.sehri}</TableCell>
+                  <TableCell className="font-semibold text-violet-600 dark:text-violet-400">{entry.iftar}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">{entry.location || "—"}</TableCell>
                   <TableCell className="text-center">
                     {isPast ? (
-                      <Badge variant="secondary">Past</Badge>
+                      <Badge variant="secondary" className="text-xs">Past</Badge>
                     ) : isToday ? (
-                      <Badge variant="default">Today</Badge>
+                      <span className="text-[10px] px-2.5 py-1 rounded-full text-white font-bold" style={{ background: "var(--grad-primary)" }}>Today</span>
                     ) : (
-                      <Badge variant="outline">Upcoming</Badge>
+                      <Badge variant="outline" className="text-xs border-primary/40 text-primary font-medium">Upcoming</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1.5">
                       <Button
                         variant="outline"
                         size="sm"
+                        className="h-8 w-8 p-0 rounded-lg border-border/60 hover:border-primary/50 hover:text-primary"
                         onClick={() => handleEdit(entry)}
+                        title="Edit entry"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(entry.id)}
-                        disabled={isDeleting}
+                        className="h-8 w-8 p-0 rounded-lg border-border/60 hover:border-destructive/50 hover:text-destructive"
+                        onClick={() => setDeletingEntry(entry)}
+                        title="Delete entry"
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </TableCell>
@@ -337,79 +264,150 @@ export function CalendarView({ entries }: CalendarViewProps) {
         </Table>
       </div>
 
+      {/* ── Edit Dialog ────────────────────────── */}
       <Dialog open={!!editingEntry} onOpenChange={() => setEditingEntry(null)}>
-        <DialogContent>
+        <DialogContent className="border-border/60 bg-card sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Entry</DialogTitle>
+            <DialogTitle className="text-lg font-bold gradient-text">Edit Entry</DialogTitle>
             <DialogDescription>
-              Update the Sehri & Iftar times for this date
+              Update the Sehri &amp; Iftar times for this date
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="date">Date</Label>
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-date" className="text-sm font-semibold">Date</Label>
               <Input
-                id="date"
+                id="edit-date"
                 type="date"
                 value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="h-10 rounded-xl border-border/60"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="sehri">Sehri Time</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-sehri" className="text-sm font-semibold">Sehri Time</Label>
               <Input
-                id="sehri"
+                id="edit-sehri"
                 type="time"
                 value={formData.sehri}
-                onChange={(e) =>
-                  setFormData({ ...formData, sehri: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, sehri: e.target.value })}
+                className="h-10 rounded-xl border-border/60"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="iftar">Iftar Time</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-iftar" className="text-sm font-semibold">Iftar Time</Label>
               <Input
-                id="iftar"
+                id="edit-iftar"
                 type="time"
                 value={formData.iftar}
-                onChange={(e) =>
-                  setFormData({ ...formData, iftar: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, iftar: e.target.value })}
+                className="h-10 rounded-xl border-border/60"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="location">Location</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-location" className="text-sm font-semibold">Location</Label>
               <Select
                 value={formData.location}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, location: value })
-                }
+                onValueChange={(v) => setFormData({ ...formData, location: v })}
               >
-                <SelectTrigger id="location" className="h-10 w-full">
+                <SelectTrigger id="edit-location" className="h-10 w-full rounded-xl border-border/60">
                   <SelectValue placeholder="Select a district" />
                 </SelectTrigger>
-                <SelectContent className="max-h-[300px] w-[--radix-select-trigger-width] min-w-[200px] overflow-y-auto" position="popper">
+                <SelectContent className="max-h-[300px] overflow-y-auto" position="popper">
                   {bangladeshDistricts.map((district) => (
-                    <SelectItem key={district} value={district}>
-                      {district}
-                    </SelectItem>
+                    <SelectItem key={district} value={district}>{district}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
+            <Button variant="outline" className="rounded-full" onClick={() => setEditingEntry(null)} disabled={isUpdating}>
+              Cancel
+            </Button>
+            <Button className="btn-gradient rounded-full" onClick={handleUpdate} disabled={isUpdating}>
+              {isUpdating ? "Saving…" : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Single Delete Confirm Dialog ───────── */}
+      <Dialog open={!!deletingEntry} onOpenChange={() => setDeletingEntry(null)}>
+        <DialogContent className="border-border/60 bg-card sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2.5 rounded-xl bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle className="text-lg font-bold text-destructive">Delete Entry</DialogTitle>
+            </div>
+            <DialogDescription className="pl-[52px]">
+              Are you sure you want to delete the schedule for{" "}
+              <strong>
+                {deletingEntry
+                  ? new Date(deletingEntry.date).toLocaleDateString("en-US", {
+                    weekday: "short", month: "long", day: "numeric", year: "numeric",
+                  })
+                  : ""}
+              </strong>
+              {deletingEntry?.location ? ` (${deletingEntry.location})` : ""}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2">
             <Button
               variant="outline"
-              onClick={() => setEditingEntry(null)}
-              disabled={isUpdating}
+              className="rounded-full"
+              onClick={() => setDeletingEntry(null)}
+              disabled={isDeleting}
             >
               Cancel
             </Button>
-            <Button onClick={handleUpdate} disabled={isUpdating}>
-              {isUpdating ? "Updating..." : "Update"}
+            <Button
+              variant="destructive"
+              className="rounded-full gap-2"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-4 w-4" />
+              {isDeleting ? "Deleting…" : "Delete Entry"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Bulk Delete Confirm Dialog ─────────── */}
+      <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
+        <DialogContent className="border-border/60 bg-card sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2.5 rounded-xl bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle className="text-lg font-bold text-destructive">Delete {selectedIds.size} Entries</DialogTitle>
+            </div>
+            <DialogDescription className="pl-[52px]">
+              You are about to permanently delete{" "}
+              <strong>{selectedIds.size} schedule entries</strong>. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2">
+            <Button
+              variant="outline"
+              className="rounded-full"
+              onClick={() => setShowBulkDeleteModal(false)}
+              disabled={isBulkDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="rounded-full gap-2"
+              onClick={handleBulkDeleteConfirm}
+              disabled={isBulkDeleting}
+            >
+              <Trash2 className="h-4 w-4" />
+              {isBulkDeleting ? "Deleting…" : `Delete All ${selectedIds.size}`}
             </Button>
           </DialogFooter>
         </DialogContent>
