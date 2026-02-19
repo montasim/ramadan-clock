@@ -55,7 +55,7 @@ async function LocationPageContent({ params }: { params: Promise<{ city: string 
             <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-1">
               Location Schedule
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
               <span className="gradient-text">{decodedCity}</span>
             </h1>
             <p className="text-muted-foreground text-sm mt-1">

@@ -42,7 +42,7 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
             <CalendarDays className="inline h-3.5 w-3.5 mr-1" />
             Full Schedule
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
             Ramadan <span className="gradient-text">Calendar</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-2">Complete Sehri &amp; Iftar timetable</p>

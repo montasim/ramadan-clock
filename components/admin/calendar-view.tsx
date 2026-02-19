@@ -197,12 +197,78 @@ export function CalendarView({ entries }: CalendarViewProps) {
           <TableBody>
             {entries.map((entry) => {
               const isToday = entry.date === today;
-              const isPast = new Date(entry.date) < new Date(today);
+              const entryDate = new Date(entry.date);
+              const todayDate = new Date(today);
               const isSelected = selectedIds.has(entry.id);
+              
+              // Parse sehri and iftar times
+              const parseTime = (timeStr: string) => {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return { hours, minutes };
+              };
+              
+              const sehriTime = parseTime(entry.sehri);
+              const iftarTime = parseTime(entry.iftar);
+              
+              // Get current time in Asia/Dhaka timezone
+              const now = new Date();
+              const currentHours = now.getHours();
+              const currentMinutes = now.getMinutes();
+              
+              // Check if current time is past a given time
+              const isTimePast = (hours: number, minutes: number) => {
+                return currentHours > hours || (currentHours === hours && currentMinutes >= minutes);
+              };
+              
+              // Determine status based on time
+              let status: "passed" | "today" | "tomorrow" | "upcoming";
+              let statusText: string;
+              let rowClass: string;
+              
+              if (entryDate < todayDate) {
+                // Past dates are always passed
+                status = "passed";
+                statusText = "Passed";
+                rowClass = "bg-red-500/10 border-red-500/30";
+              } else if (isToday) {
+                // Today: check if iftar time has passed
+                if (isTimePast(iftarTime.hours, iftarTime.minutes)) {
+                  status = "passed";
+                  statusText = "Passed";
+                  rowClass = "bg-red-500/10 border-red-500/30";
+                } else {
+                  status = "today";
+                  statusText = "Today";
+                  rowClass = "bg-blue-500/6 border-blue-500/20";
+                }
+              } else {
+                // Future dates: check if it's tomorrow
+                const tomorrowDate = new Date(todayDate);
+                tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+                const isTomorrow = entryDate.getTime() === tomorrowDate.getTime();
+                
+                if (isTomorrow) {
+                  // Tomorrow: check if sehri time has passed
+                  if (isTimePast(sehriTime.hours, sehriTime.minutes)) {
+                    status = "today";
+                    statusText = "Today";
+                    rowClass = "bg-blue-500/6 border-blue-500/20";
+                  } else {
+                    status = "tomorrow";
+                    statusText = "Tomorrow";
+                    rowClass = "hover:bg-primary/4 border-border/40";
+                  }
+                } else {
+                  status = "upcoming";
+                  statusText = "Upcoming";
+                  rowClass = "hover:bg-primary/4 border-border/40";
+                }
+              }
+              
               return (
                 <TableRow
                   key={entry.id}
-                  className={isToday ? "bg-primary/5 border-primary/15" : "hover:bg-primary/3 border-border/40"}
+                  className={rowClass}
                 >
                   <TableCell className="px-3">
                     <Checkbox
@@ -218,7 +284,7 @@ export function CalendarView({ entries }: CalendarViewProps) {
                           month: "short", day: "numeric", year: "numeric",
                         })}
                       </span>
-                      {isToday && (
+                      {status === "today" && (
                         <span
                           className="w-fit text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full text-white font-bold mt-1"
                           style={{ background: "var(--grad-primary)" }}
@@ -232,10 +298,12 @@ export function CalendarView({ entries }: CalendarViewProps) {
                   <TableCell className="font-semibold text-violet-600 dark:text-violet-400 px-2 sm:px-4">{entry.iftar}</TableCell>
                   <TableCell className="text-muted-foreground text-xs sm:text-sm px-2 sm:px-4">{entry.location || "—"}</TableCell>
                   <TableCell className="text-center px-2 sm:px-4 hidden md:table-cell">
-                    {isPast ? (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Past</Badge>
-                    ) : isToday ? (
+                    {status === "passed" ? (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30">Passed</Badge>
+                    ) : status === "today" ? (
                       <Badge className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary hover:bg-primary/30 border-primary/30">Today</Badge>
+                    ) : status === "tomorrow" ? (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">Tomorrow</Badge>
                     ) : (
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary">Upcoming</Badge>
                     )}

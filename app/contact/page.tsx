@@ -15,7 +15,7 @@ export default function ContactPage() {
             <Mail className="inline h-3.5 w-3.5 mr-1" />
             Contact & About
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
             Get in <span className="gradient-text">Touch</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-2">
