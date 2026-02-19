@@ -9,6 +9,7 @@ import Link from "next/link";
 import { DownloadButton } from "@/components/shared/download-button";
 import LocationSkeleton from "@/components/public/location-skeleton";
 import { Suspense } from "react";
+import { formatDate } from "@/lib/utils/date.utils";
 
 interface LocationPageProps {
   params: Promise<{ city: string }>;
@@ -27,7 +28,7 @@ async function LocationPageContent({ params }: { params: Promise<{ city: string 
 
   const schedule = await getFullSchedule(decodedCity);
   const todaySchedule = await getTodayOrNextDaySchedule(decodedCity);
-  const today = new Date().toISOString().split("T")[0];
+  const today = formatDate(new Date(), 'iso');
 
   return (
     <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-7">

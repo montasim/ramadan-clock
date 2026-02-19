@@ -15,13 +15,14 @@ import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { getRandomHadith } from "@/lib/hadith-api";
 import { CountdownTimer } from "@/components/shared/countdown-timer";
+import { formatDate } from "@/lib/utils/date.utils";
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
   const scheduleData = await getScheduleDisplayData(location || null);
   const locations = await getLocations();
   const hadith = await getRandomHadith();
-  const today = new Date().toISOString().split("T")[0];
+  const today = formatDate(new Date(), 'iso');
   const todayDisplay = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -122,7 +123,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               </div>
               {!scheduleData.sehriPassed && (
                 <CountdownTimer
-                  targetTime={displaySchedule.sehri}
+                  targetTime={(displaySchedule as any).sehri24 || displaySchedule.sehri}
                   className="mt-3 text-amber-700 dark:text-amber-400"
                 />
               )}
@@ -156,7 +157,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               </div>
               {!scheduleData.iftarPassed && (
                 <CountdownTimer
-                  targetTime={displaySchedule.iftar}
+                  targetTime={(displaySchedule as any).iftar24 || displaySchedule.iftar}
                   className="mt-3 text-violet-700 dark:text-violet-400"
                 />
               )}

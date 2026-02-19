@@ -29,7 +29,14 @@ interface CalendarViewProps {
   entries: Array<TimeEntry & { sehri24?: string; iftar24?: string }>;
 }
 
-const today = new Date().toISOString().split("T")[0];
+// Get today's date in local timezone (YYYY-MM-DD format)
+const getTodayLocal = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const bangladeshDistricts = [
   // Barisal Division

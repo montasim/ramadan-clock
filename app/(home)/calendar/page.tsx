@@ -14,13 +14,14 @@ import CalendarSkeleton from "@/components/public/calendar-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { SehriIftarCard } from "@/components/shared/sehri-iftar-card";
 import { ScheduleTable } from "@/components/shared/schedule-table";
+import { formatDate } from "@/lib/utils/date.utils";
 
 async function CalendarContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
   const schedule = await getFullSchedule(location || null);
   const locations = await getLocations();
   const todaySchedule = await getTodayOrNextDaySchedule(location || null);
-  const today = new Date().toISOString().split("T")[0];
+  const today = formatDate(new Date(), 'iso');
 
   return (
     <div className="space-y-7">

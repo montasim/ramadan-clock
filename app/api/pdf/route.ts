@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { jsPDF } from "jspdf";
 // @ts-ignore
 import autoTable from "jspdf-autotable";
+import { formatDate } from "@/lib/utils/date.utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     let titleSuffix = "";
 
     if (type === "today") {
-      const today = new Date().toISOString().split("T")[0];
+      const today = formatDate(new Date(), 'iso');
       const where: any = { date: today };
       if (actualLocation) {
         where.location = actualLocation;

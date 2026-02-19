@@ -3,6 +3,7 @@
 import { prisma, type TimeEntry } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { formatTime12Hour } from "@/lib/utils";
+import { formatDate } from "@/lib/utils/date.utils";
 
 // Extended type for formatted entries with both 12-hour and 24-hour formats
 type FormattedTimeEntry = TimeEntry & {
@@ -25,7 +26,7 @@ function formatTimeEntry(entry: TimeEntry): FormattedTimeEntry {
 
 export async function getTodaySchedule(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatDate(new Date(), 'iso');
 
     const where: Record<string, unknown> = {
       date: today,
@@ -73,10 +74,10 @@ function hasSehriPassed(todaySchedule: TimeEntry): boolean {
  */
 export async function getTodayOrNextDaySchedule(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatDate(new Date(), 'iso');
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+    const tomorrowStr = formatDate(tomorrow, 'iso');
 
     const where: Record<string, unknown> = { date: today };
     if (location) {
@@ -108,10 +109,10 @@ export async function getTodayOrNextDaySchedule(location?: string | null): Promi
  */
 export async function getScheduleDisplayData(location?: string | null) {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatDate(new Date(), 'iso');
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+    const tomorrowStr = formatDate(tomorrow, 'iso');
 
     // Get today's schedule
     const todayWhere: Record<string, unknown> = { date: today };
