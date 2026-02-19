@@ -4,12 +4,22 @@ import { prisma, type TimeEntry } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { formatTime12Hour } from "@/lib/utils";
 
-// Helper function to format time entries
-function formatTimeEntry(entry: TimeEntry): TimeEntry {
+// Extended type for formatted entries with both 12-hour and 24-hour formats
+type FormattedTimeEntry = TimeEntry & {
+  sehri24: string;
+  iftar24: string;
+};
+
+// Helper function to format time entries for display
+// Returns entry with 12-hour format for display, but preserves original 24-hour format
+function formatTimeEntry(entry: TimeEntry): FormattedTimeEntry {
   return {
     ...entry,
     sehri: formatTime12Hour(entry.sehri),
     iftar: formatTime12Hour(entry.iftar),
+    // Preserve original 24-hour format for editing
+    sehri24: entry.sehri,
+    iftar24: entry.iftar,
   };
 }
 
@@ -143,7 +153,7 @@ export async function getScheduleDisplayData(location?: string | null) {
   }
 }
 
-export async function getFullSchedule(location?: string | null): Promise<TimeEntry[]> {
+export async function getFullSchedule(location?: string | null): Promise<FormattedTimeEntry[]> {
   try {
     const where = location ? { location } : {};
 
