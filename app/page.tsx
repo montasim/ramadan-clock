@@ -43,7 +43,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
             ✦ Ramadan 1446 AH
           </p>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
-            {scheduleData.iftarPassed ? "Tomorrow's" : "Today&apos;s"}{" "}
+            {scheduleData.iftarPassed ? "Tomorrow's" : "Today's"}{" "}
             <span className="gradient-text">Schedule</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-2">{todayDisplay}</p>
