@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 
 interface MobileNavProps {
   user: {
-    email: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
   } | null;
 }
 
