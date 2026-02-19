@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock } from "lucide-react";
+import { Lock, Sparkles } from "lucide-react";
 
 interface State {
   success: boolean;
@@ -21,10 +21,10 @@ function SubmitButton() {
   return (
     <Button
       type="submit"
-      className="w-full mt-4 btn-gradient rounded-full h-11 text-base font-semibold"
+      className="w-full btn-gradient rounded-full h-11 text-base font-bold tracking-wide"
       disabled={pending}
     >
-      {pending ? "Signing in…" : "Sign In"}
+      {pending ? "Signing in…" : "Sign In →"}
     </Button>
   );
 }
@@ -35,14 +35,12 @@ export default function LoginPage() {
 
   async function handleSubmit(formData: FormData) {
     const result = await loginAction(formData);
-
     if (result && result.success && "email" in result) {
       const signInResult = await signIn("credentials", {
         email: result.email,
         password: result.password,
         redirect: false,
       });
-
       if (signInResult?.error) {
         setState({ success: false, error: "Invalid email or password" });
       } else {
@@ -55,86 +53,76 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4 overflow-hidden">
-      {/* Full-page gradient backdrop */}
+    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12 overflow-hidden">
+      {/* Large blobs unique to this page (in addition to layout blobs) */}
       <div
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.52 0.22 290 / 0.18) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 100%, oklch(0.45 0.18 200 / 0.15) 0%, transparent 70%)",
-        }}
-      />
-      {/* Decorative blobs */}
-      <div
-        className="absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl opacity-30 pointer-events-none"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full blur-3xl pointer-events-none opacity-10"
         style={{ background: "var(--grad-primary)" }}
       />
-      <div
-        className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
-        style={{ background: "var(--grad-iftar)" }}
-      />
 
-      {/* Login card */}
-      <div className="w-full max-w-md">
-        <div className="gradient-border rounded-2xl bg-card shadow-2xl overflow-hidden">
-          {/* Top gradient bar */}
+      <div className="w-full max-w-md relative z-10">
+        {/* Card */}
+        <div className="gradient-border rounded-2xl bg-card/90 backdrop-blur-xl shadow-2xl overflow-hidden">
+          {/* Gradient bar */}
           <div className="h-1.5 w-full" style={{ background: "var(--grad-primary)" }} />
 
-          <div className="px-8 py-8">
-            {/* Logo */}
+          <div className="px-8 py-9">
+            {/* Header */}
             <div className="text-center mb-8">
               <div
                 className="mx-auto mb-4 inline-flex p-4 rounded-2xl"
-                style={{ background: "var(--grad-hero)" }}
+                style={{ background: "linear-gradient(135deg,rgba(59,130,246,.12),rgba(168,85,247,.12))" }}
               >
                 <Lock className="h-8 w-8 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold gradient-text">Admin Login</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Enter your credentials to access the dashboard
+              <h1 className="text-2xl font-bold gradient-text tracking-tight">Admin Login</h1>
+              <p className="text-sm text-muted-foreground mt-1.5">
+                Access the Ramadan Clock dashboard
               </p>
             </div>
 
+            {/* Form */}
             <form action={handleSubmit} className="space-y-5">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </Label>
+                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   placeholder="admin@example.com"
                   required
-                  className="h-11 rounded-xl border-border/60 bg-background/70 focus:border-primary/60"
+                  className="h-11 rounded-xl border-border/60 bg-background/70 transition-all focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </Label>
+                <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
                 <Input
                   id="password"
                   name="password"
                   type="password"
                   placeholder="••••••••"
                   required
-                  className="h-11 rounded-xl border-border/60 bg-background/70 focus:border-primary/60"
+                  className="h-11 rounded-xl border-border/60 bg-background/70 transition-all focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                 />
               </div>
+
               {state.error && (
-                <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg">
+                <div className="text-sm text-destructive bg-destructive/8 border border-destructive/20 px-3.5 py-2.5 rounded-xl">
                   {state.error}
                 </div>
               )}
+
               <SubmitButton />
             </form>
 
-            <p className="text-xs text-muted-foreground text-center mt-6">
-              <Link href="/" className="hover:text-foreground transition-colors hover:underline">
-                ← Back to Ramadan Clock
-              </Link>
-            </p>
+            <div className="mt-6 pt-5 border-t border-border/40 flex items-center justify-center">
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-primary/60" />
+                <Link href="/" className="hover:text-primary transition-colors font-medium">
+                  Back to Ramadan Clock
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

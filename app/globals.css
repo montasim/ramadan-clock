@@ -47,123 +47,123 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* ─── Light Mode ─────────────────────────────────────────────── */
+/* ─── Light Mode ──────────────────────────────────────────────── */
 :root {
   --radius: 0.75rem;
 
-  /* Core surfaces */
-  --background: oklch(0.96 0.012 260);        /* icy blue-white */
-  --foreground: oklch(0.18 0.02 265);          /* deep navy text */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 265);
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
 
-  /* Brand purple-cyan */
-  --primary: oklch(0.52 0.22 290);             /* violet-purple */
-  --primary-foreground: oklch(0.99 0 0);
+  /* Electric Blue primary */
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.92 0.04 260);
-  --secondary-foreground: oklch(0.25 0.05 270);
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
 
-  --muted: oklch(0.93 0.02 260);
-  --muted-foreground: oklch(0.50 0.03 265);
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
 
-  --accent: oklch(0.88 0.08 200);              /* teal accent */
-  --accent-foreground: oklch(0.18 0.04 220);
+  --accent: #ede9fe;
+  --accent-foreground: #4c1d95;
 
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.86 0.03 260);
-  --input: oklch(0.88 0.03 260);
-  --ring: oklch(0.52 0.22 290);
+  --destructive: #ef4444;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
 
-  /* Charts */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: #3b82f6;
+  --chart-2: #a855f7;
+  --chart-3: #f59e0b;
+  --chart-4: #10b981;
+  --chart-5: #ef4444;
 
-  /* Sidebar */
-  --sidebar: oklch(0.97 0.01 260);
-  --sidebar-foreground: oklch(0.18 0.02 265);
-  --sidebar-primary: oklch(0.52 0.22 290);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.92 0.04 260);
-  --sidebar-accent-foreground: oklch(0.25 0.05 270);
-  --sidebar-border: oklch(0.86 0.03 260);
-  --sidebar-ring: oklch(0.52 0.22 290);
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ede9fe;
+  --sidebar-accent-foreground: #4c1d95;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #3b82f6;
 
-  /* Brand gradients */
-  --grad-primary: linear-gradient(135deg, #7c3aed 0%, #0ea5e9 100%);
-  --grad-sehri: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-  --grad-iftar: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-  --grad-hero: linear-gradient(135deg, #7c3aed15 0%, #0ea5e915 100%);
-  --grad-card-gold: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  --grad-card-indigo: linear-gradient(135deg, #ede9fe 0%, #dbeafe 100%);
+  /* Brand tokens */
+  --grad-primary: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
+  --grad-sehri: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --grad-iftar: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  --grad-cta: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --blob-blue: #3b82f6;
+  --blob-purple: #a855f7;
 }
 
-/* ─── Dark Mode ─────────────────────────────────────────────── */
+/* ─── Dark Mode ───────────────────────────────────────────────── */
 .dark {
-  --background: oklch(0.11 0.03 265);          /* deep midnight navy */
-  --foreground: oklch(0.93 0.01 260);
-  --card: oklch(0.16 0.04 265);                /* dark navy card */
-  --card-foreground: oklch(0.93 0.01 260);
-  --popover: oklch(0.16 0.04 265);
-  --popover-foreground: oklch(0.93 0.01 260);
+  --background: #0a0f1e;
+  --foreground: #f1f5f9;
+  --card: #111827;
+  --card-foreground: #f1f5f9;
+  --popover: #111827;
+  --popover-foreground: #f1f5f9;
 
-  --primary: oklch(0.65 0.22 290);             /* bright violet */
-  --primary-foreground: oklch(0.10 0.03 265);
+  --primary: #60a5fa;
+  --primary-foreground: #0f172a;
 
-  --secondary: oklch(0.22 0.05 265);
-  --secondary-foreground: oklch(0.88 0.02 260);
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
 
-  --muted: oklch(0.22 0.04 265);
-  --muted-foreground: oklch(0.62 0.04 265);
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
 
-  --accent: oklch(0.30 0.09 195);              /* dark teal */
-  --accent-foreground: oklch(0.90 0.03 200);
+  --accent: #1e1b4b;
+  --accent-foreground: #c4b5fd;
 
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.65 0.22 290);
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.10);
+  --ring: #60a5fa;
 
-  --chart-1: oklch(0.60 0.22 290);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: #60a5fa;
+  --chart-2: #c084fc;
+  --chart-3: #fbbf24;
+  --chart-4: #34d399;
+  --chart-5: #f87171;
 
-  --sidebar: oklch(0.14 0.04 265);
-  --sidebar-foreground: oklch(0.93 0.01 260);
-  --sidebar-primary: oklch(0.60 0.22 290);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.22 0.05 265);
-  --sidebar-accent-foreground: oklch(0.88 0.02 260);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.60 0.22 290);
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #1e1b4b;
+  --sidebar-accent-foreground: #c4b5fd;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #60a5fa;
 
-  /* Brand gradients — dark mode */
-  --grad-primary: linear-gradient(135deg, #7c3aed 0%, #0284c7 100%);
-  --grad-sehri: linear-gradient(135deg, #d97706 0%, #dc2626 100%);
-  --grad-iftar: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
-  --grad-hero: linear-gradient(135deg, #7c3aed20 0%, #0284c720 100%);
-  --grad-card-gold: linear-gradient(135deg, #451a0360 0%, #78350f60 100%);
-  --grad-card-indigo: linear-gradient(135deg, #1e1b4b60 0%, #0c4a6e60 100%);
+  --grad-primary: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
+  --grad-sehri: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --grad-iftar: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);
+  --grad-cta: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --blob-blue: #3b82f6;
+  --blob-purple: #a855f7;
 }
 
+/* ─── Base ────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
-/* ─── Utility classes ─────────────────────────────────────── */
+/* ─── Utilities ───────────────────────────────────────────────── */
 @layer utilities {
+
+  /* Gradient text */
   .gradient-text {
     background: var(--grad-primary);
     -webkit-background-clip: text;
@@ -171,9 +171,11 @@
     background-clip: text;
   }
 
+  /* Gradient border via pseudo-element */
   .gradient-border {
     position: relative;
   }
+
   .gradient-border::before {
     content: "";
     position: absolute;
@@ -181,44 +183,89 @@
     border-radius: inherit;
     padding: 1.5px;
     background: var(--grad-primary);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box,
-                  linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
   }
 
+  /* Primary gradient button */
   .btn-gradient {
-    background: var(--grad-primary);
-    color: white;
-    border: none;
-    transition: opacity 0.2s, transform 0.1s;
+    background: var(--grad-primary) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 24px rgba(59, 130, 246, 0.35);
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
   }
+
   .btn-gradient:hover {
-    opacity: 0.9;
+    opacity: 0.92;
     transform: translateY(-1px);
+    box-shadow: 0 6px 32px rgba(59, 130, 246, 0.45);
   }
 
-  .card-sehri {
-    background: var(--grad-card-gold);
-    border: 1px solid oklch(0.87 0.1 70 / 0.5);
-  }
-  .dark .card-sehri {
-    background: var(--grad-card-gold);
-    border-color: oklch(0.7 0.14 70 / 0.3);
+  /* ─── "SaaS Background" = grid + blobs ─────── */
+  .bg-saas {
+    position: relative;
+    isolation: isolate;
   }
 
-  .card-iftar {
-    background: var(--grad-card-indigo);
-    border: 1px solid oklch(0.70 0.15 280 / 0.4);
-  }
-  .dark .card-iftar {
-    background: var(--grad-card-indigo);
-    border-color: oklch(0.55 0.18 260 / 0.3);
+  /* dot-grid via background-image on the body wrapper */
+  .bg-saas::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-color: var(--background);
+    background-image:
+      linear-gradient(to right, rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
   }
 
+  /* ─── Hero section card ─────────────────────── */
   .hero-section {
-    background: var(--grad-hero);
-    border: 1px solid oklch(0.72 0.15 280 / 0.2);
+    position: relative;
+    overflow: hidden;
+    background: rgba(59, 130, 246, 0.04);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: 1.25rem;
+  }
+
+  .dark .hero-section {
+    background: rgba(59, 130, 246, 0.07);
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+
+  /* ─── Sehri card ────────────────────────────── */
+  .card-sehri {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  .dark .card-sehri {
+    background: linear-gradient(135deg, rgba(120, 53, 15, 0.25) 0%, rgba(78, 40, 5, 0.3) 100%);
+    border-color: rgba(245, 158, 11, 0.25);
+  }
+
+  /* ─── Iftar card ────────────────────────────── */
+  .card-iftar {
+    background: linear-gradient(135deg, #ede9fe 0%, #dbeafe 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+  }
+
+  .dark .card-iftar {
+    background: linear-gradient(135deg, rgba(49, 46, 129, 0.3) 0%, rgba(12, 74, 110, 0.3) 100%);
+    border-color: rgba(139, 92, 246, 0.25);
+  }
+
+  /* Blob (placed absolutely inside containers) */
+  .blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: -1;
   }
 }

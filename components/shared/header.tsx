@@ -9,30 +9,38 @@ export async function Header() {
   const user = await getCurrentUser();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-center px-4">
         <div className="flex w-full max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center space-x-2 font-bold text-lg">
-              <span className="text-xl">🌙</span>
-              <span className="gradient-text">Ramadan Clock</span>
+
+          {/* Brand + Nav */}
+          <div className="flex items-center gap-8">
+            <Link href="/" className="flex items-center gap-2.5 font-bold text-lg">
+              <span
+                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white text-base"
+                style={{ background: "var(--grad-primary)" }}
+              >
+                🌙
+              </span>
+              <span className="gradient-text tracking-tight">Ramadan Clock</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               <Link
                 href="/"
-                className="relative px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-accent/50"
+                className="px-3.5 py-1.5 text-sm font-medium text-muted-foreground rounded-lg transition-all hover:text-foreground hover:bg-primary/8"
               >
                 Today
               </Link>
               <Link
                 href="/calendar"
-                className="relative px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-accent/50"
+                className="px-3.5 py-1.5 text-sm font-medium text-muted-foreground rounded-lg transition-all hover:text-foreground hover:bg-primary/8"
               >
                 Calendar
               </Link>
             </nav>
           </div>
 
+          {/* Right side */}
           <div className="flex items-center gap-3">
             <MobileNav user={user} />
             <div className="hidden md:flex items-center gap-3">
@@ -41,7 +49,7 @@ export async function Header() {
                 <div className="flex items-center gap-2">
                   <Link
                     href="/admin/dashboard"
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Dashboard
                   </Link>
@@ -49,16 +57,14 @@ export async function Header() {
                 </div>
               ) : (
                 <Link href="/auth/login">
-                  <Button
-                    size="sm"
-                    className="btn-gradient rounded-full px-4"
-                  >
+                  <Button size="sm" className="btn-gradient rounded-full px-5 text-sm font-semibold h-9">
                     Admin
                   </Button>
                 </Link>
               )}
             </div>
           </div>
+
         </div>
       </div>
     </header>

@@ -29,10 +29,47 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen flex-col bg-saas`}
       >
+        {/* Decorative background blobs — fixed so they don't scroll */}
+        <div
+          aria-hidden="true"
+          className="blob"
+          style={{
+            width: "700px",
+            height: "700px",
+            top: "-200px",
+            left: "-200px",
+            background: "var(--blob-blue)",
+            opacity: 0.07,
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="blob"
+          style={{
+            width: "600px",
+            height: "600px",
+            bottom: "-150px",
+            right: "-150px",
+            background: "var(--blob-purple)",
+            opacity: 0.07,
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="blob"
+          style={{
+            width: "400px",
+            height: "400px",
+            top: "40%",
+            right: "10%",
+            background: "var(--blob-blue)",
+            opacity: 0.04,
+          }}
+        />
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 relative z-10">{children}</main>
         <Footer />
         <Toaster />
       </body>

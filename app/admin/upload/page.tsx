@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2, CloudUpload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ParsedEntry {
@@ -48,13 +48,11 @@ export default function UploadPage() {
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
-
     const selectedFile = acceptedFiles[0];
     setFile(selectedFile);
     setUploadResult(null);
     setValidationResult(null);
 
-    // Parse file based on type
     if (selectedFile.name.endsWith(".json")) {
       const text = await selectedFile.text();
       try {
@@ -89,162 +87,197 @@ export default function UploadPage() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      "application/json": [".json"],
-      "text/csv": [".csv"],
-    },
+    accept: { "application/json": [".json"], "text/csv": [".csv"] },
     maxFiles: 1,
-    maxSize: 1024 * 1024, // 1MB
+    maxSize: 1024 * 1024,
   });
 
   const handleUpload = async () => {
     if (parsedData.length === 0) return;
-
     setIsUploading(true);
     const result = await uploadSchedule(parsedData, file?.name || "unknown");
     setUploadResult(result);
     setIsUploading(false);
     setShowConfirmDialog(false);
-
-    if (result.success) {
-      toast.success(result.message);
-    } else {
-      toast.error(result.message);
-    }
+    if (result.success) toast.success(result.message);
+    else toast.error(result.message);
   };
 
   const downloadSampleJSON = () => {
-    const sample = [
-      {
-        date: "2026-03-01",
-        sehri: "04:45",
-        iftar: "18:12",
-        location: "Dhaka",
-      },
-    ];
+    const sample = [{ date: "2026-03-01", sehri: "04:45", iftar: "18:12", location: "Dhaka" }];
     const blob = new Blob([JSON.stringify(sample, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "sample-schedule.json";
-    a.click();
+    a.href = url; a.download = "sample-schedule.json"; a.click();
     URL.revokeObjectURL(url);
   };
 
   const downloadSampleCSV = () => {
-    const sample = [
-      { date: "2026-03-01", sehri: "04:45", iftar: "18:12", location: "Dhaka" },
-    ];
+    const sample = [{ date: "2026-03-01", sehri: "04:45", iftar: "18:12", location: "Dhaka" }];
     const csv = Papa.unparse(sample);
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "sample-schedule.csv";
-    a.click();
+    a.href = url; a.download = "sample-schedule.csv"; a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-12 px-4 space-y-8">
-        <div>
-          <h1 className="text-3xl font-semibold">Upload Schedule</h1>
-          <p className="text-muted-foreground">
-            Upload Sehri & Iftar schedules via JSON or CSV
+    <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
+      {/* ── Hero Banner ──────────────────────────────── */}
+      <div className="hero-section px-6 py-8 overflow-hidden">
+        <div
+          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
+          style={{ background: "var(--grad-primary)" }}
+        />
+        <div className="relative z-10">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-2">
+            ✦ Admin Panel
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+            Upload <span className="gradient-text">Schedule</span>
+          </h1>
+          <p className="text-muted-foreground text-sm mt-2">
+            Upload Sehri &amp; Iftar schedules via JSON or CSV
           </p>
         </div>
+      </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+      {/* ── Upload + Validation ─────────────────────── */}
+      <div className="grid gap-6 md:grid-cols-2">
+
+        {/* Upload Card */}
+        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
+          <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
           <CardHeader>
-            <CardTitle>Upload File</CardTitle>
-            <CardDescription>
-              Drag and drop or browse to select a file
-            </CardDescription>
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <CloudUpload className="h-4 w-4 text-primary" />
+              Upload File
+            </CardTitle>
+            <CardDescription>Drag and drop or browse to select a file</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Drop Zone */}
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                isDragActive
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-primary"
-              }`}
+              className={`relative rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200 ${isDragActive
+                  ? "border-primary bg-primary/8 scale-[1.02]"
+                  : "border-border/60 hover:border-primary/60 hover:bg-primary/4"
+                }`}
             >
               <input {...getInputProps()} />
-              <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-              <p className="mt-4 text-sm text-muted-foreground">
-                {isDragActive ? "Drop the file here" : "Drag & drop a file here, or click to select"}
+              <div
+                className="mx-auto mb-4 inline-flex p-4 rounded-2xl"
+                style={{
+                  background: isDragActive
+                    ? "var(--grad-primary)"
+                    : "linear-gradient(135deg,rgba(59,130,246,.10),rgba(168,85,247,.10))",
+                }}
+              >
+                <Upload className={`h-8 w-8 ${isDragActive ? "text-white" : "text-primary"}`} />
+              </div>
+              <p className="text-sm font-medium text-foreground">
+                {isDragActive ? "Drop the file here" : "Drag & drop a file here"}
               </p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                JSON or CSV (max 1MB)
+              <p className="mt-1 text-xs text-muted-foreground">
+                or <span className="text-primary font-semibold">click to browse</span>
               </p>
+              <p className="mt-2 text-xs text-muted-foreground/70">JSON or CSV • max 1 MB</p>
             </div>
 
+            {/* Selected File */}
             {file && (
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <div className="flex items-center gap-2">
-                  {file.name.endsWith(".json") ? (
-                    <FileJson className="h-5 w-5" />
-                  ) : (
-                    <FileSpreadsheet className="h-5 w-5" />
-                  )}
-                  <span className="text-sm font-medium">{file.name}</span>
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-primary/20 bg-primary/5">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-primary/15">
+                    {file.name.endsWith(".json") ? (
+                      <FileJson className="h-4 w-4 text-primary" />
+                    ) : (
+                      <FileSpreadsheet className="h-4 w-4 text-primary" />
+                    )}
+                  </div>
+                  <span className="text-sm font-medium truncate max-w-[160px]">{file.name}</span>
                 </div>
-                <Badge>{(file.size / 1024).toFixed(1)} KB</Badge>
+                <Badge
+                  className="text-xs"
+                  style={{ background: "var(--grad-primary)", color: "white", border: "none" }}
+                >
+                  {(file.size / 1024).toFixed(1)} KB
+                </Badge>
               </div>
             )}
 
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={downloadSampleJSON}>
-                <Download className="mr-2 h-4 w-4" />
+            {/* Sample Downloads */}
+            <div className="flex gap-2 pt-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={downloadSampleJSON}
+                className="rounded-full text-xs border-border/60 hover:border-primary/50 hover:text-primary"
+              >
+                <Download className="mr-1.5 h-3.5 w-3.5" />
                 Sample JSON
               </Button>
-              <Button variant="outline" size="sm" onClick={downloadSampleCSV}>
-                <Download className="mr-2 h-4 w-4" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={downloadSampleCSV}
+                className="rounded-full text-xs border-border/60 hover:border-primary/50 hover:text-primary"
+              >
+                <Download className="mr-1.5 h-3.5 w-3.5" />
                 Sample CSV
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Validation Card */}
+        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
+          <div className="h-[2px] w-full" style={{ background: validationResult?.valid ? "linear-gradient(135deg,#10b981,#059669)" : "var(--grad-primary)" }} />
           <CardHeader>
-            <CardTitle>Validation Status</CardTitle>
-            <CardDescription>
-              File validation results
-            </CardDescription>
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              Validation Status
+            </CardTitle>
+            <CardDescription>File validation results</CardDescription>
           </CardHeader>
           <CardContent>
             {!validationResult && !file && (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                Upload a file to see validation results
-              </p>
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div
+                  className="p-4 rounded-2xl mb-3"
+                  style={{ background: "linear-gradient(135deg,rgba(59,130,246,.08),rgba(168,85,247,.08))" }}
+                >
+                  <AlertCircle className="h-8 w-8 text-muted-foreground/50" />
+                </div>
+                <p className="text-sm text-muted-foreground">Upload a file to see validation results</p>
+              </div>
             )}
 
             {validationResult && (
               <div className="space-y-4">
                 {validationResult.valid ? (
-                  <Alert className="bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                  <Alert className="border-emerald-500/30 bg-emerald-500/8 text-emerald-700 dark:text-emerald-400">
                     <CheckCircle2 className="h-4 w-4" />
-                    <AlertDescription>
-                      All {parsedData.length} entries are valid and ready to upload
+                    <AlertDescription className="font-medium">
+                      ✓ All {parsedData.length} entries are valid and ready to upload
                     </AlertDescription>
                   </Alert>
                 ) : (
-                  <Alert variant="destructive">
+                  <Alert variant="destructive" className="border-red-500/30 bg-red-500/8">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      Found {validationResult.errors.length} errors
+                      Found {validationResult.errors.length} validation errors
                     </AlertDescription>
                   </Alert>
                 )}
 
                 {validationResult.errors.length > 0 && (
-                  <div className="max-h-48 overflow-y-auto space-y-2">
-                    {validationResult.errors.slice(0, 5).map((error, index) => (
-                      <div key={index} className="text-sm text-destructive">
-                        Row {error.row}: {error.error}
+                  <div className="max-h-40 overflow-y-auto space-y-1.5 rounded-xl bg-destructive/5 p-3">
+                    {validationResult.errors.slice(0, 5).map((error, i) => (
+                      <div key={i} className="text-xs text-destructive flex gap-1.5">
+                        <span className="font-bold shrink-0">Row {error.row}:</span>
+                        <span>{error.error}</span>
                       </div>
                     ))}
                     {validationResult.errors.length > 5 && (
@@ -256,100 +289,109 @@ export default function UploadPage() {
                 )}
 
                 <Button
-                  className="w-full"
+                  className={`w-full rounded-full h-11 font-semibold ${validationResult.valid ? "btn-gradient" : ""}`}
                   disabled={!validationResult.valid || isUploading}
                   onClick={() => setShowConfirmDialog(true)}
                 >
-                  {isUploading ? "Uploading..." : "Upload Schedule"}
+                  {isUploading ? "Uploading…" : `Upload ${parsedData.length} Entries`}
                 </Button>
               </div>
             )}
           </CardContent>
         </Card>
-        </div>
+      </div>
 
-        {validationResult && validationResult.preview.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-              <CardDescription>
-                First 10 entries from your file
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Sehri</TableHead>
-                    <TableHead>Iftar</TableHead>
-                    <TableHead>Location</TableHead>
+      {/* ── Preview Table ───────────────────────────── */}
+      {validationResult && validationResult.preview.length > 0 && (
+        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
+          <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
+          <CardHeader>
+            <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+              Preview
+            </CardTitle>
+            <CardDescription>First {validationResult.preview.length} entries from your file</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-border/50">
+                  <TableHead className="pl-6">Date</TableHead>
+                  <TableHead>Sehri</TableHead>
+                  <TableHead>Iftar</TableHead>
+                  <TableHead className="pr-6">Location</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {validationResult.preview.map((entry, index) => (
+                  <TableRow key={index} className="hover:bg-primary/4 border-border/40">
+                    <TableCell className="pl-6 font-medium">{entry.date}</TableCell>
+                    <TableCell className="font-semibold text-amber-600 dark:text-amber-400">{entry.sehri}</TableCell>
+                    <TableCell className="font-semibold text-violet-600 dark:text-violet-400">{entry.iftar}</TableCell>
+                    <TableCell className="pr-6 text-muted-foreground">{entry.location || "—"}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {validationResult.preview.map((entry, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{entry.date}</TableCell>
-                      <TableCell>{entry.sehri}</TableCell>
-                      <TableCell>{entry.iftar}</TableCell>
-                      <TableCell>{entry.location || "-"}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
-        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
+      {/* ── Confirm Dialog ──────────────────────────── */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="border-border/60 bg-card">
+          <div className="h-[2px] w-full rounded-t-lg" style={{ background: "var(--grad-primary)" }} />
           <DialogHeader>
-            <DialogTitle>Confirm Upload</DialogTitle>
+            <DialogTitle className="text-lg font-bold">Confirm Upload</DialogTitle>
             <DialogDescription>
-              This will upload {parsedData.length} entries to the database. Existing entries with the same date and location will be updated.
+              This will upload <strong>{parsedData.length}</strong> entries to the database. Existing entries with the same date and location will be updated.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+            <Button variant="outline" className="rounded-full" onClick={() => setShowConfirmDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleUpload} disabled={isUploading}>
-              {isUploading ? "Uploading..." : "Confirm Upload"}
+            <Button className="btn-gradient rounded-full" onClick={handleUpload} disabled={isUploading}>
+              {isUploading ? "Uploading…" : "Confirm Upload"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* ── Result Dialog ───────────────────────────── */}
       {uploadResult && (
         <Dialog open={!!uploadResult} onOpenChange={() => setUploadResult(null)}>
-          <DialogContent>
+          <DialogContent className="border-border/60 bg-card">
+            <div
+              className="h-[2px] w-full rounded-t-lg"
+              style={{ background: uploadResult.success ? "linear-gradient(135deg,#10b981,#059669)" : "linear-gradient(135deg,#ef4444,#dc2626)" }}
+            />
             <DialogHeader>
-              <DialogTitle>
-                {uploadResult.success ? "Upload Successful" : "Upload Failed"}
+              <DialogTitle className={`text-lg font-bold ${uploadResult.success ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
+                {uploadResult.success ? "✓ Upload Successful" : "✗ Upload Failed"}
               </DialogTitle>
-              <DialogDescription>
-                {uploadResult.message}
-              </DialogDescription>
+              <DialogDescription>{uploadResult.message}</DialogDescription>
             </DialogHeader>
             {uploadResult.rowCount && (
-              <div className="py-4">
-                <p className="text-sm">
-                  <strong>Entries uploaded:</strong> {uploadResult.rowCount}
+              <div className="py-2 px-4 rounded-xl border border-border/60 bg-muted/30">
+                <p className="text-sm font-medium">
+                  Entries uploaded: <span className="gradient-text font-bold">{uploadResult.rowCount}</span>
                 </p>
               </div>
             )}
             {uploadResult.errors && uploadResult.errors.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-1">
-                <p className="text-sm font-medium">Errors:</p>
-                {uploadResult.errors.map((error, index) => (
-                  <p key={index} className="text-sm text-destructive">
+              <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl bg-destructive/5 p-3">
+                <p className="text-xs font-bold text-destructive mb-2">Errors:</p>
+                {uploadResult.errors.map((error, i) => (
+                  <p key={i} className="text-xs text-destructive">
                     Row {error.row}: {error.error}
                   </p>
                 ))}
               </div>
             )}
             <DialogFooter>
-              <Button onClick={() => setUploadResult(null)}>Close</Button>
+              <Button className="btn-gradient rounded-full" onClick={() => setUploadResult(null)}>
+                Close
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

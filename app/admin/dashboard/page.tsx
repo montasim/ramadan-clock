@@ -9,10 +9,7 @@ import { CalendarView } from "@/components/admin/calendar-view";
 
 export default async function AdminDashboard() {
   const session = await getSession();
-
-  if (!session) {
-    redirect("/auth/login");
-  }
+  if (!session) redirect("/auth/login");
 
   const stats = await getStats();
   const schedule = await getFullSchedule(null);
@@ -23,58 +20,68 @@ export default async function AdminDashboard() {
       value: stats.totalEntries,
       description: "Schedule entries in database",
       icon: Calendar,
-      gradient: "var(--grad-primary)",
-      iconBg: "oklch(0.52 0.22 290 / 0.12)",
-      iconColor: "text-primary",
+      gradient: "linear-gradient(135deg,#3b82f6,#a855f7)",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      iconBg: "rgba(59,130,246,0.12)",
     },
     {
       title: "Locations",
       value: stats.totalLocations,
       description: "Cities covered",
       icon: MapPin,
-      gradient: "var(--grad-sehri)",
-      iconBg: "oklch(0.75 0.18 60 / 0.12)",
+      gradient: "linear-gradient(135deg,#f59e0b,#f97316)",
       iconColor: "text-amber-600 dark:text-amber-400",
+      iconBg: "rgba(245,158,11,0.12)",
     },
     {
       title: "Recent Uploads",
       value: stats.recentUploads.length,
       description: "Last 5 uploads",
       icon: Clock,
-      gradient: "var(--grad-iftar)",
-      iconBg: "oklch(0.55 0.18 260 / 0.12)",
-      iconColor: "text-indigo-600 dark:text-indigo-400",
+      gradient: "linear-gradient(135deg,#8b5cf6,#06b6d4)",
+      iconColor: "text-violet-600 dark:text-violet-400",
+      iconBg: "rgba(139,92,246,0.12)",
     },
   ];
 
   return (
     <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
-      {/* ── Header ──────────────────────────────── */}
-      <div className="hero-section rounded-2xl px-6 py-7 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl" style={{ background: "var(--grad-primary)" }}>
+      {/* ── Hero ─────────────────────────────── */}
+      <div className="hero-section px-6 py-7 flex items-center justify-between gap-4 overflow-hidden">
+        <div
+          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
+          style={{ background: "var(--grad-primary)" }}
+        />
+        <div className="flex items-center gap-4 relative z-10">
+          <div
+            className="p-3 rounded-xl shadow-lg"
+            style={{ background: "var(--grad-primary)" }}
+          >
             <LayoutDashboard className="h-5 w-5 text-white" />
           </div>
           <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-0.5">Admin Panel</p>
             <h1 className="text-3xl font-bold gradient-text">Dashboard</h1>
             <p className="text-muted-foreground text-sm">Manage Sehri &amp; Iftar schedules</p>
           </div>
         </div>
-        <Link href="/admin/upload">
-          <Button className="btn-gradient rounded-full gap-2">
+        <Link href="/admin/upload" className="relative z-10">
+          <Button className="btn-gradient rounded-full gap-2 font-semibold">
             <Upload className="h-4 w-4" />
             Upload Schedule
           </Button>
         </Link>
       </div>
 
-      {/* ── Stat Cards ─────────────────────────── */}
+      {/* ── Stat Cards ──────────────────────── */}
       <div className="grid gap-4 md:grid-cols-3">
-        {statCards.map(({ title, value, description, icon: Icon, gradient, iconBg, iconColor }) => (
-          <Card key={title} className="border-border/60 overflow-hidden shadow-sm">
-            <div className="h-1 w-full" style={{ background: gradient }} />
+        {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
+          <Card key={title} className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
+            <div className="h-[2px] w-full" style={{ background: gradient }} />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+              <CardTitle className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                {title}
+              </CardTitle>
               <div className="p-2 rounded-lg" style={{ background: iconBg }}>
                 <Icon className={`h-4 w-4 ${iconColor}`} />
               </div>
@@ -87,11 +94,13 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      {/* ── Calendar Card ──────────────────────── */}
-      <Card className="border-border/60 overflow-hidden shadow-sm">
-        <div className="h-1 w-full" style={{ background: "var(--grad-primary)" }} />
+      {/* ── Calendar Card ───────────────────── */}
+      <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
+        <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
         <CardHeader>
-          <CardTitle className="text-base">Schedule Calendar</CardTitle>
+          <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Schedule Calendar
+          </CardTitle>
           <CardDescription>
             Manage all Sehri &amp; Iftar entries ({schedule.length} total)
           </CardDescription>
@@ -103,7 +112,7 @@ export default async function AdminDashboard() {
             <div className="text-center py-14 text-muted-foreground">
               <p className="mb-4">No schedule entries yet.</p>
               <Link href="/admin/upload">
-                <Button className="btn-gradient rounded-full gap-2">
+                <Button className="btn-gradient rounded-full gap-2 font-semibold">
                   <Upload className="h-4 w-4" />
                   Upload Schedule
                 </Button>

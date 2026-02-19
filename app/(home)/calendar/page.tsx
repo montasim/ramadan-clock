@@ -26,49 +26,52 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
   const { location } = await searchParams;
   const schedule = await getFullSchedule(location || null);
   const locations = await getLocations();
-
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="space-y-8">
-      {/* ── Hero Banner ───────────────────────── */}
-      <div className="hero-section rounded-2xl px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <CalendarDays className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold uppercase tracking-widest gradient-text">
-              Full Schedule
-            </span>
-          </div>
-          <h1 className="text-4xl font-bold gradient-text mb-1">Ramadan Calendar</h1>
-          <p className="text-muted-foreground text-sm">Complete Sehri &amp; Iftar timetable</p>
+    <div className="space-y-7">
+      {/* Hero */}
+      <div className="hero-section px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 overflow-hidden">
+        <div
+          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
+          style={{ background: "var(--grad-primary)" }}
+        />
+        <div className="relative z-10">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-2">
+            <CalendarDays className="inline h-3.5 w-3.5 mr-1" />
+            Full Schedule
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+            Ramadan <span className="gradient-text">Calendar</span>
+          </h1>
+          <p className="text-muted-foreground text-sm mt-2">Complete Sehri &amp; Iftar timetable</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 relative z-10">
           <Select defaultValue={location || "all"}>
-            <SelectTrigger className="w-[200px] bg-background/70 backdrop-blur border-border/60">
-              <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
+            <SelectTrigger className="w-[200px] bg-card/80 backdrop-blur border-border/60 shadow-sm">
+              <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
               <SelectValue placeholder="Select location" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Locations</SelectItem>
               {locations.map((loc) => (
-                <SelectItem key={loc} value={loc}>
-                  {loc}
-                </SelectItem>
+                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" asChild className="border-border/60 bg-background/70 backdrop-blur">
+          <Button variant="outline" size="icon" asChild className="border-border/60 shadow-sm bg-card/80">
             <DownloadButton location={location} type="full" />
           </Button>
         </div>
       </div>
 
-      {/* ── Schedule Table ────────────────────── */}
-      <Card className="border-border/60 overflow-hidden shadow-sm">
-        <div className="h-1 w-full" style={{ background: "var(--grad-primary)" }} />
+      {/* Table Card */}
+      <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
+        <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
         <CardHeader>
-          <CardTitle className="text-base">Schedule Table</CardTitle>
+          <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Schedule Table
+          </CardTitle>
           <CardDescription>
             {schedule.length} entries {location ? `for ${location}` : "across all locations"}
           </CardDescription>
@@ -78,8 +81,8 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-border/60">
-                    <TableHead className="w-[180px] pl-6">Date</TableHead>
+                  <TableRow className="hover:bg-transparent border-border/50">
+                    <TableHead className="pl-6 w-[180px]">Date</TableHead>
                     <TableHead>Sehri</TableHead>
                     <TableHead>Iftar</TableHead>
                     <TableHead>Location</TableHead>
@@ -89,53 +92,50 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
                 <TableBody>
                   {schedule.map((entry) => {
                     const isToday = entry.date === today;
-                    const entryDate = new Date(entry.date);
-                    const isPast = entryDate < new Date(today);
-
+                    const isPast = new Date(entry.date) < new Date(today);
                     return (
                       <TableRow
                         key={entry.id}
                         className={
                           isToday
-                            ? "bg-primary/8 border-primary/20 hover:bg-primary/10"
-                            : "hover:bg-accent/30 border-border/40"
+                            ? "bg-blue-500/6 border-blue-500/20"
+                            : "hover:bg-primary/4 border-border/40"
                         }
                       >
                         <TableCell className="font-medium pl-6">
                           {new Date(entry.date).toLocaleDateString("en-US", {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
+                            weekday: "short", month: "short", day: "numeric", year: "numeric",
                           })}
                           {isToday && (
                             <span
-                              className="ml-2 text-xs px-2 py-0.5 rounded-full text-white font-semibold"
+                              className="ml-2 text-[10px] px-2 py-0.5 rounded-full text-white font-bold"
                               style={{ background: "var(--grad-primary)" }}
                             >
-                              Today
+                              TODAY
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-amber-700 dark:text-amber-400 font-medium">
+                        <TableCell className="font-semibold text-amber-600 dark:text-amber-400">
                           {entry.sehri}
                         </TableCell>
-                        <TableCell className="text-indigo-700 dark:text-indigo-400 font-medium">
+                        <TableCell className="font-semibold text-violet-600 dark:text-violet-400">
                           {entry.iftar}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{entry.location || "—"}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{entry.location || "—"}</TableCell>
                         <TableCell className="text-center pr-6">
                           {isPast ? (
                             <Badge variant="secondary" className="text-xs">Past</Badge>
                           ) : isToday ? (
                             <span
-                              className="text-xs px-2.5 py-0.5 rounded-full text-white font-semibold"
+                              className="text-[10px] px-2.5 py-1 rounded-full text-white font-bold"
                               style={{ background: "var(--grad-primary)" }}
                             >
                               Today
                             </span>
                           ) : (
-                            <Badge variant="outline" className="text-xs border-primary/30 text-primary">Upcoming</Badge>
+                            <Badge variant="outline" className="text-xs border-primary/40 text-primary font-medium">
+                              Upcoming
+                            </Badge>
                           )}
                         </TableCell>
                       </TableRow>
@@ -145,9 +145,7 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
               </Table>
             </div>
           ) : (
-            <div className="text-center py-16 text-muted-foreground px-6">
-              No schedule entries found.
-            </div>
+            <div className="text-center py-16 text-muted-foreground">No schedule entries found.</div>
           )}
         </CardContent>
       </Card>
