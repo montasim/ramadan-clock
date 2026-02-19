@@ -1,13 +1,14 @@
 generator client {
   provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
 }
 
 model TimeEntry {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   date      String // YYYY-MM-DD
   sehri     String // HH:mm
   iftar     String // HH:mm
@@ -20,14 +21,14 @@ model TimeEntry {
 }
 
 model AdminUser {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   email     String   @unique
   password  String // hashed
   createdAt DateTime @default(now())
 }
 
 model UploadLog {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(uuid())
   fileName   String
   rowCount   Int
   status     String // success, partial, failed
