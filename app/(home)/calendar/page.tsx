@@ -59,9 +59,11 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" asChild className="border-border/60 shadow-sm bg-card/80">
-            <DownloadButton location={location} type="full" />
-          </Button>
+          <DownloadButton
+            location={location}
+            type="full"
+            className="border-border/60 shadow-sm bg-card/80"
+          />
         </div>
       </div>
 

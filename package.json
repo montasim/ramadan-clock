@@ -29,8 +29,8 @@
     "react-dropzone": "^15.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6",
-    "@prisma/client": "^6.19.2"
+    "zod": "^3.24.1",
+    "@prisma/client": "^7.4.0"
   },
   "devDependencies": {
     "@prisma/adapter-libsql": "^6.19.2",
@@ -41,8 +41,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "prisma": "^6.19.2",
+    "eslint-config-next": "15.1.7",
+    "prisma": "^7.4.0",
     "shadcn": "^3.8.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",

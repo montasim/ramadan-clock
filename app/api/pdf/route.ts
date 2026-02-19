@@ -1,12 +1,15 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import jsPDF from "jspdf";
+// @ts-ignore
+import { jsPDF } from "jspdf";
+// @ts-ignore
 import autoTable from "jspdf-autotable";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const location = searchParams.get("location") || null;
+    const location = searchParams.get("location");
+    const actualLocation = location === "all" ? null : location;
     const type = searchParams.get("type") || "today"; // 'today' or 'full'
 
     // Fetch data
@@ -15,19 +18,22 @@ export async function GET(request: NextRequest) {
 
     if (type === "today") {
       const today = new Date().toISOString().split("T")[0];
+      const where: any = { date: today };
+      if (actualLocation) {
+        where.location = actualLocation;
+      }
       schedule = await prisma.timeEntry.findMany({
-        where: {
-          date: today,
-          location: location || null,
-        },
+        where,
         orderBy: { date: "asc" },
       });
       titleSuffix = `- ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
     } else {
+      const where: any = {};
+      if (actualLocation) {
+        where.location = actualLocation;
+      }
       schedule = await prisma.timeEntry.findMany({
-        where: {
-          location: location || null,
-        },
+        where,
         orderBy: { date: "asc" },
       });
       titleSuffix = `- Full Schedule`;
@@ -51,13 +57,13 @@ export async function GET(request: NextRequest) {
     doc.text(`Sehri & Iftar Schedule ${titleSuffix}`, pageWidth / 2, 25, { align: "center" });
 
     // Location
-    if (location) {
+    if (actualLocation) {
       doc.setFontSize(12);
-      doc.text(`Location: ${location}`, pageWidth / 2, 35, { align: "center" });
+      doc.text(`Location: ${actualLocation}`, pageWidth / 2, 35, { align: "center" });
     }
 
     // Prepare table data
-    const tableData = schedule.map((entry) => [
+    const tableData = schedule.map((entry: any) => [
       new Date(entry.date).toLocaleDateString("en-US", {
         weekday: "short",
         month: "short",
@@ -73,12 +79,12 @@ export async function GET(request: NextRequest) {
     autoTable(doc, {
       head: [["Date", "Sehri", "Iftar", "Location"]],
       body: tableData,
-      startY: location ? 42 : 35,
+      startY: actualLocation ? 42 : 35,
       theme: "striped",
       headStyles: { fillColor: [59, 130, 246] },
       alternateRowStyles: { fillColor: [245, 245, 245] },
-      margin: { top: location ? 42 : 35 },
-      didDrawPage: (data) => {
+      margin: { top: actualLocation ? 42 : 35 },
+      didDrawPage: (data: any) => {
         // Footer
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
@@ -98,7 +104,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Generate filename
-    const locationPart = location ? `-${location.toLowerCase().replace(/\s+/g, "-")}` : "";
+    const locationPart = actualLocation ? `-${actualLocation.toLowerCase().replace(/\s+/g, "-")}` : "";
     const year = new Date().getFullYear();
     const filename = `sehri-iftar${locationPart}-${year}.pdf`;
 

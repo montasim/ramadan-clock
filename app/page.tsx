@@ -58,9 +58,11 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" asChild className="border-border/60 shadow-sm bg-card/80">
-            <DownloadButton location={location} type="today" />
-          </Button>
+          <DownloadButton
+            location={location}
+            type="today"
+            className="border-border/60 shadow-sm bg-card/80"
+          />
         </div>
       </div>
 

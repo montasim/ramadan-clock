@@ -64,9 +64,11 @@ export default async function LocationPage({ params }: LocationPageProps) {
           <Button variant="outline" asChild className="rounded-full border-border/60 bg-card/80 text-sm">
             <Link href="/calendar">← Calendar</Link>
           </Button>
-          <Button variant="outline" size="icon" asChild className="border-border/60 shadow-sm bg-card/80">
-            <DownloadButton location={decodedCity} type="full" />
-          </Button>
+          <DownloadButton
+            location={decodedCity}
+            type="full"
+            className="border-border/60 shadow-sm bg-card/80"
+          />
         </div>
       </div>
 
