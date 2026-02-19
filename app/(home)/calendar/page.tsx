@@ -84,11 +84,11 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-border/50">
-                    <TableHead className="pl-6 w-[180px]">Date</TableHead>
-                    <TableHead>Sehri</TableHead>
-                    <TableHead>Iftar</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead className="text-center pr-6">Status</TableHead>
+                    <TableHead className="pl-4 sm:pl-6 w-[140px] sm:w-[180px]">Date</TableHead>
+                    <TableHead className="px-2 sm:px-4">Sehri</TableHead>
+                    <TableHead className="px-2 sm:px-4">Iftar</TableHead>
+                    <TableHead className="px-2 sm:px-4">Location</TableHead>
+                    <TableHead className="text-center pr-4 sm:pr-6 hidden md:table-cell">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -104,40 +104,37 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
                             : "hover:bg-primary/4 border-border/40"
                         }
                       >
-                        <TableCell className="font-medium pl-6">
-                          {new Date(entry.date).toLocaleDateString("en-US", {
-                            weekday: "short", month: "short", day: "numeric", year: "numeric",
-                          })}
-                          {isToday && (
-                            <span
-                              className="ml-2 text-[10px] px-2 py-0.5 rounded-full text-white font-bold"
-                              style={{ background: "var(--grad-primary)" }}
-                            >
-                              TODAY
+                        <TableCell className="font-medium pl-4 sm:pl-6 py-3 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="text-xs sm:text-sm">
+                              {new Date(entry.date).toLocaleDateString("en-US", {
+                                month: "short", day: "numeric", year: "numeric",
+                              })}
                             </span>
-                          )}
+                            {isToday && (
+                              <span
+                                className="w-fit text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full text-white font-bold mt-1"
+                                style={{ background: "var(--grad-primary)" }}
+                              >
+                                TODAY
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
-                        <TableCell className="font-semibold text-amber-600 dark:text-amber-400">
+                        <TableCell className="font-semibold text-amber-600 dark:text-amber-400 px-2 sm:px-4">
                           {entry.sehri}
                         </TableCell>
-                        <TableCell className="font-semibold text-violet-600 dark:text-violet-400">
+                        <TableCell className="font-semibold text-violet-600 dark:text-violet-400 px-2 sm:px-4">
                           {entry.iftar}
                         </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">{entry.location || "—"}</TableCell>
-                        <TableCell className="text-center pr-6">
+                        <TableCell className="text-muted-foreground text-xs sm:text-sm px-2 sm:px-4">{entry.location || "—"}</TableCell>
+                        <TableCell className="text-center pr-4 sm:pr-6 hidden md:table-cell">
                           {isPast ? (
-                            <Badge variant="secondary" className="text-xs">Past</Badge>
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Past</Badge>
                           ) : isToday ? (
-                            <span
-                              className="text-[10px] px-2.5 py-1 rounded-full text-white font-bold"
-                              style={{ background: "var(--grad-primary)" }}
-                            >
-                              Today
-                            </span>
+                            <Badge className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary hover:bg-primary/30 border-primary/30">Today</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs border-primary/40 text-primary font-medium">
-                              Upcoming
-                            </Badge>
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary">Upcoming</Badge>
                           )}
                         </TableCell>
                       </TableRow>

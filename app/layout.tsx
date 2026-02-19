@@ -27,47 +27,46 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen flex-col bg-saas overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen flex-col bg-saas`}
       >
-        {/* Decorative background blobs — fixed so they don't scroll */}
-        <div
-          aria-hidden="true"
-          className="blob"
-          style={{
-            width: "700px",
-            height: "700px",
-            top: "-200px",
-            left: "-200px",
-            background: "var(--blob-blue)",
-            opacity: 0.07,
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="blob"
-          style={{
-            width: "600px",
-            height: "600px",
-            bottom: "-150px",
-            right: "-150px",
-            background: "var(--blob-purple)",
-            opacity: 0.07,
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="blob"
-          style={{
-            width: "400px",
-            height: "400px",
-            top: "40%",
-            right: "10%",
-            background: "var(--blob-blue)",
-            opacity: 0.04,
-          }}
-        />
+        {/* Decorative background blobs — encapsulated to prevent overflow */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
+          <div
+            className="blob"
+            style={{
+              width: "700px",
+              height: "700px",
+              top: "-200px",
+              left: "-200px",
+              background: "var(--blob-blue)",
+              opacity: 0.07,
+            }}
+          />
+          <div
+            className="blob"
+            style={{
+              width: "600px",
+              height: "600px",
+              bottom: "-150px",
+              right: "-150px",
+              background: "var(--blob-purple)",
+              opacity: 0.07,
+            }}
+          />
+          <div
+            className="blob"
+            style={{
+              width: "400px",
+              height: "400px",
+              top: "40%",
+              right: "0",
+              background: "var(--blob-blue)",
+              opacity: 0.04,
+            }}
+          />
+        </div>
         <Header />
         <main className="flex-1 relative z-10">{children}</main>
         <Footer />

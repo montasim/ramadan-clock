@@ -174,23 +174,24 @@ export function CalendarView({ entries }: CalendarViewProps) {
       )}
 
       {/* ── Table ─────────────────────────────── */}
-      <div className="overflow-x-auto">
-        <Table>
+      <div className="relative overflow-x-auto rounded-xl border border-border/40 bg-card/30">
+        <Table className="min-w-[600px] sm:min-w-full">
           <TableHeader>
             <TableRow className="hover:bg-transparent border-border/50">
-              <TableHead className="w-[50px]">
+              <TableHead className="w-[40px] px-3">
                 <Checkbox
                   checked={isAllSelected}
                   onCheckedChange={handleSelectAll}
                   aria-label="Select all"
+                  className="hidden sm:inline-flex"
                 />
               </TableHead>
-              <TableHead className="w-[160px]">Date</TableHead>
-              <TableHead>Sehri</TableHead>
-              <TableHead>Iftar</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead className="text-center">Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[140px] px-2 sm:px-4">Date</TableHead>
+              <TableHead className="px-2 sm:px-4">Sehri</TableHead>
+              <TableHead className="px-2 sm:px-4">Iftar</TableHead>
+              <TableHead className="px-2 sm:px-4">Location</TableHead>
+              <TableHead className="text-center px-2 sm:px-4 hidden md:table-cell">Status</TableHead>
+              <TableHead className="text-right px-3 sm:px-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -203,57 +204,61 @@ export function CalendarView({ entries }: CalendarViewProps) {
                   key={entry.id}
                   className={isToday ? "bg-primary/5 border-primary/15" : "hover:bg-primary/3 border-border/40"}
                 >
-                  <TableCell>
+                  <TableCell className="px-3">
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={(c) => handleSelectOne(entry.id, c as boolean)}
                       aria-label={`Select entry for ${entry.date}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">
-                    {new Date(entry.date).toLocaleDateString("en-US", {
-                      weekday: "short", month: "short", day: "numeric", year: "numeric",
-                    })}
-                    {isToday && (
-                      <span
-                        className="ml-2 text-[10px] px-2 py-0.5 rounded-full text-white font-bold"
-                        style={{ background: "var(--grad-primary)" }}
-                      >
-                        TODAY
+                  <TableCell className="font-medium px-2 sm:px-4 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="text-xs sm:text-sm">
+                        {new Date(entry.date).toLocaleDateString("en-US", {
+                          month: "short", day: "numeric", year: "numeric",
+                        })}
                       </span>
-                    )}
+                      {isToday && (
+                        <span
+                          className="w-fit text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full text-white font-bold mt-1"
+                          style={{ background: "var(--grad-primary)" }}
+                        >
+                          TODAY
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
-                  <TableCell className="font-semibold text-amber-600 dark:text-amber-400">{entry.sehri}</TableCell>
-                  <TableCell className="font-semibold text-violet-600 dark:text-violet-400">{entry.iftar}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{entry.location || "—"}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="font-semibold text-amber-600 dark:text-amber-400 px-2 sm:px-4">{entry.sehri}</TableCell>
+                  <TableCell className="font-semibold text-violet-600 dark:text-violet-400 px-2 sm:px-4">{entry.iftar}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs sm:text-sm px-2 sm:px-4">{entry.location || "—"}</TableCell>
+                  <TableCell className="text-center px-2 sm:px-4 hidden md:table-cell">
                     {isPast ? (
-                      <Badge variant="secondary" className="text-xs">Past</Badge>
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Past</Badge>
                     ) : isToday ? (
-                      <span className="text-[10px] px-2.5 py-1 rounded-full text-white font-bold" style={{ background: "var(--grad-primary)" }}>Today</span>
+                      <Badge className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary hover:bg-primary/30 border-primary/30">Today</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-xs border-primary/40 text-primary font-medium">Upcoming</Badge>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary">Upcoming</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1.5">
+                  <TableCell className="text-right px-3 sm:px-4">
+                    <div className="flex justify-end gap-1 sm:gap-1.5">
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0 rounded-lg border-border/60 hover:border-primary/50 hover:text-primary"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
                         onClick={() => handleEdit(entry)}
                         title="Edit entry"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </Button>
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0 rounded-lg border-border/60 hover:border-destructive/50 hover:text-destructive"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors"
                         onClick={() => setDeletingEntry(entry)}
                         title="Delete entry"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </Button>
                     </div>
                   </TableCell>

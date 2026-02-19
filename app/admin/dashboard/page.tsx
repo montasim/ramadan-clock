@@ -45,28 +45,28 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
+    <div className="w-full max-w-5xl mx-auto py-6 sm:py-10 px-4 space-y-6 sm:space-y-8">
       {/* ── Hero ─────────────────────────────── */}
-      <div className="hero-section px-6 py-7 flex items-center justify-between gap-4 overflow-hidden">
+      <div className="hero-section px-5 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center justify-between gap-6 overflow-hidden relative">
         <div
           className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
           style={{ background: "var(--grad-primary)" }}
         />
-        <div className="flex items-center gap-4 relative z-10">
+        <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 relative z-10 text-center sm:text-left">
           <div
-            className="p-3 rounded-xl shadow-lg"
+            className="p-3 rounded-xl shadow-lg hidden sm:block"
             style={{ background: "var(--grad-primary)" }}
           >
             <LayoutDashboard className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-0.5">Admin Panel</p>
-            <h1 className="text-3xl font-bold gradient-text">Dashboard</h1>
-            <p className="text-muted-foreground text-sm">Manage Sehri &amp; Iftar schedules</p>
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-1 sm:mb-0.5">Admin Panel</p>
+            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Dashboard</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">Manage Sehri &amp; Iftar schedules</p>
           </div>
         </div>
-        <Link href="/admin/upload" className="relative z-10">
-          <Button className="btn-gradient rounded-full gap-2 font-semibold">
+        <Link href="/admin/upload" className="relative z-10 w-full sm:w-auto">
+          <Button className="btn-gradient rounded-full gap-2 font-semibold w-full sm:w-auto px-6">
             <Upload className="h-4 w-4" />
             Upload Schedule
           </Button>
@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── Stat Cards ──────────────────────── */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
           <Card key={title} className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
             <div className="h-[2px] w-full" style={{ background: gradient }} />
