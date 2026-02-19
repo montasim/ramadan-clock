@@ -8,16 +8,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, Moon, Sun, MapPin, CalendarDays } from "lucide-react";
+import { Clock, Moon, Sun, MapPin, CalendarDays, Quote } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
+import { getRandomHadith } from "@/lib/hadith-api";
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
   const scheduleData = await getScheduleDisplayData(location || null);
   const locations = await getLocations();
+  const hadith = await getRandomHadith();
   const today = new Date().toISOString().split("T")[0];
   const todayDisplay = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -179,11 +181,34 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
         </Card>
       )}
 
+      {/* ── Hadith of the Day ─────────────────────── */}
+      {hadith && (
+        <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Quote className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
+                Hadith of the Day
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-base leading-relaxed text-foreground/90 italic">
+              "{hadith.text}"
+            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="h-px flex-1 bg-border/40" />
+              <span className="font-medium text-primary/80">— {hadith.source}</span>
+              <div className="h-px flex-1 bg-border/40" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* ── Quick Links ─────────────────────── */}
-      <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-        <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
+      <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+          <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
             Quick Links
           </CardTitle>
           <CardDescription>Navigate to other sections</CardDescription>

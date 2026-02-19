@@ -26,7 +26,7 @@ export default function ContactPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Project Info Card */}
-        <Card className="card-hover-lift border-none">
+        <Card className="card-hover-lift border-primary/30 bg-primary/5 backdrop-blur-sm">
           <div className="p-6 space-y-6">
             {/* Icon Section */}
             <div className="flex items-start justify-between">
@@ -64,7 +64,7 @@ export default function ContactPage() {
         </Card>
 
         {/* Developer Info Card */}
-        <Card className="card-hover-lift border-none">
+        <Card className="card-hover-lift border-primary/30 bg-primary/5 backdrop-blur-sm">
           <div className="p-6 space-y-6">
             {/* Profile Section */}
             <div className="flex flex-col items-center text-center space-y-4">

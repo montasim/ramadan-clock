@@ -1,31 +1,9 @@
 "use client";
 
 import { config } from "@/lib/config";
-import { Github, Linkedin, Mail, BookOpen } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Github, Linkedin, Mail } from "lucide-react";
 
 export function Footer() {
-  const [hadith, setHadith] = useState<{ text: string; source: string } | null>(null);
-
-  useEffect(() => {
-    // Fetch hadith on mount and rotate every 60 seconds
-    const fetchHadith = async () => {
-      try {
-        const response = await fetch('/api/hadith');
-        if (response.ok) {
-          const data = await response.json();
-          setHadith(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch hadith:', error);
-      }
-    };
-
-    fetchHadith();
-    const interval = setInterval(fetchHadith, 60000); // Change every 60 seconds
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <footer className="relative border-t border-border/50 py-6 md:py-6">
@@ -71,19 +49,6 @@ export function Footer() {
             Built with ❤️ for the Ramadan community
           </p>
         </div>
-
-        {/* Daily Hadith Section */}
-        {hadith && (
-          <div className="w-full max-w-5xl mt-4 p-4 rounded-lg bg-card/50 border border-border/40">
-            <div className="flex items-start gap-2">
-              <BookOpen className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm italic text-muted-foreground">"{hadith.text}"</p>
-                <p className="text-xs text-muted-foreground mt-1">— {hadith.source}</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </footer>
   );
