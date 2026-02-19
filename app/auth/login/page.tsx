@@ -62,10 +62,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10">
         {/* Card */}
-        <div className="gradient-border rounded-2xl bg-card/90 backdrop-blur-xl shadow-2xl overflow-hidden">
-          {/* Gradient bar */}
-          <div className="h-1.5 w-full" style={{ background: "var(--grad-primary)" }} />
-
+        <div className="rounded-2xl border-primary/30 bg-primary/5 backdrop-blur-sm shadow-sm overflow-hidden">
           <div className="px-8 py-9">
             {/* Header */}
             <div className="text-center mb-8">
