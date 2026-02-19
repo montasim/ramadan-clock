@@ -1,7 +1,8 @@
 import { config } from "@/lib/config";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Github, Linkedin, Mail, ExternalLink, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Github, Linkedin, Mail, ExternalLink, User, Code2 } from "lucide-react";
 
 export default function ContactPage() {
   return (
@@ -25,76 +26,99 @@ export default function ContactPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Project Info Card */}
-        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-          <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
-          <CardHeader>
-            <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              Project Information
-            </CardTitle>
-            <CardDescription>Open source Ramadan Clock project</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-1">Repository</p>
-              <Button asChild variant="outline" className="w-full justify-start">
-                <a href={config.projectRepoUrl} target="_blank" rel="noopener noreferrer">
-                  <Github className="h-4 w-4 mr-2" />
-                  View on GitHub
-                  <ExternalLink className="h-3 w-3 ml-auto" />
-                </a>
-              </Button>
+        <Card className="card-hover-lift border-none">
+          <div className="p-6 space-y-6">
+            {/* Icon Section */}
+            <div className="flex items-start justify-between">
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                Open Source
+              </Badge>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-1">Description</p>
-              <p className="text-sm text-muted-foreground">
-                A web application to track Sehri and Iftar times during Ramadan. Built with Next.js, Prisma, and PostgreSQL.
-              </p>
+
+            {/* Content */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-bold">Project Information</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Open source Ramadan Clock project
+                </p>
+              </div>
+
+              <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
+                <p className="text-sm text-muted-foreground">
+                  A web application to track Sehri and Iftar times during Ramadan. 
+                  Built with Next.js, Prisma, and PostgreSQL.
+                </p>
+              </div>
             </div>
-          </CardContent>
+
+            {/* CTA Button */}
+            <Button asChild variant="outline" className="w-full" size="lg">
+              <a href={config.projectRepoUrl} target="_blank" rel="noopener noreferrer">
+                <Github className="h-5 w-5 mr-2" />
+                View on GitHub
+                <ExternalLink className="h-4 w-4 ml-auto" />
+              </a>
+            </Button>
+          </div>
         </Card>
 
         {/* Developer Info Card */}
-        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-          <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
-          <CardHeader>
-            <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              Developer Information
-            </CardTitle>
-            <CardDescription>Project creator and maintainer</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <User className="h-5 w-5 text-primary" />
+        <Card className="card-hover-lift border-none">
+          <div className="p-6 space-y-6">
+            {/* Profile Section */}
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                  <User className="h-10 w-10 text-primary" />
+                </div>
               </div>
-              <div>
-                <p className="font-semibold">{config.developerName}</p>
+
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold">{config.developerName}</h3>
                 <p className="text-sm text-muted-foreground">{config.developerBio}</p>
               </div>
             </div>
-            <div className="space-y-2">
-              <Button asChild variant="outline" className="w-full justify-start">
-                <a href={config.developerGithub} target="_blank" rel="noopener noreferrer">
-                  <Github className="h-4 w-4 mr-2" />
-                  GitHub
-                  <ExternalLink className="h-3 w-3 ml-auto" />
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="w-full justify-start">
-                <a href={config.developerLinkedin} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-4 w-4 mr-2" />
-                  LinkedIn
-                  <ExternalLink className="h-3 w-3 ml-auto" />
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="w-full justify-start">
-                <a href={`mailto:${config.developerEmail}`}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  Email
-                </a>
-              </Button>
+
+            {/* Social Links Grid */}
+            <div className="grid grid-cols-3 gap-3">
+              <a 
+                href={config.developerGithub} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="social-link-btn group"
+                title="GitHub"
+              >
+                <Github className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </a>
+
+              <a 
+                href={config.developerLinkedin} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="social-link-btn group"
+                title="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </a>
+
+              <a 
+                href={`mailto:${config.developerEmail}`}
+                className="social-link-btn group"
+                title="Email"
+              >
+                <Mail className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </a>
             </div>
-          </CardContent>
+
+            {/* Contact CTA */}
+            <Button asChild variant="outline" className="w-full">
+              <a href={`mailto:${config.developerEmail}`}>
+                <Mail className="h-4 w-4 mr-2" />
+                Get in Touch
+              </a>
+            </Button>
+          </div>
         </Card>
       </div>
     </div>

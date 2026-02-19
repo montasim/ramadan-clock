@@ -192,16 +192,16 @@
   /* Primary gradient button */
   .btn-gradient {
     background: var(--grad-primary) !important;
-    color: white !important;
+    color: rgba(255, 255, 255, 0.85) !important;
     border: none !important;
-    box-shadow: 0 4px 24px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 4px 24px rgba(59, 130, 246, 0.25);
     transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
   }
 
   .btn-gradient:hover {
-    opacity: 0.92;
+    opacity: 0.85;
     transform: translateY(-1px);
-    box-shadow: 0 6px 32px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 6px 32px rgba(59, 130, 246, 0.35);
   }
 
   /* ─── "SaaS Background" = grid + blobs ─────── */
@@ -278,5 +278,76 @@
     filter: blur(80px);
     pointer-events: none;
     z-index: -1;
+  }
+
+  /* ─── Contact Page Card Styles ───────────────────── */
+
+  /* Modern card */
+  .card-modern {
+    position: relative;
+    background: var(--card);
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  /* Icon container with gradient */
+  .icon-gradient-bg {
+    background: var(--grad-primary);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Avatar with gradient ring */
+  .avatar-gradient-ring {
+    position: relative;
+    padding: 0.25rem;
+    background: var(--grad-primary);
+    border-radius: 9999px;
+  }
+
+  .avatar-gradient-ring::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: var(--grad-primary);
+    border-radius: 9999px;
+    filter: blur(8px);
+    opacity: 0.5;
+    z-index: -1;
+  }
+
+  /* Social link button */
+  .social-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+
+  .social-link-btn:hover {
+    background: var(--accent);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  /* Card hover effect */
+  .card-hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  }
+
+  .dark .card-hover-lift:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
   }
 }
