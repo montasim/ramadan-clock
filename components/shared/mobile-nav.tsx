@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Clock, CalendarDays, Mail } from "lucide-react";
+import { Menu, X, Clock, CalendarDays, Mail, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MobileNavProps {
@@ -60,9 +60,10 @@ export function MobileNav({ user }: MobileNavProps) {
               <>
                 <Link
                   href="/admin/dashboard"
-                  className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
+                  className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
                   onClick={() => setIsOpen(false)}
                 >
+                  <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Link>
               </>
