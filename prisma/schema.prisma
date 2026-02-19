@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model TimeEntry {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  date      String   // YYYY-MM-DD
+  sehri     String   // HH:mm
+  iftar     String   // HH:mm
+  location  String?
+  createdAt DateTime @default(now())
+
+  @@unique([date, location])
+  @@index([date])
+  @@index([location])
+}
+
+model AdminUser {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  password  String   // hashed
+  createdAt DateTime @default(now())
+}
+
+model UploadLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  fileName  String
+  rowCount  Int
+  status    String   // success, partial, failed
+  errors    String?  // JSON stringified
+  uploadedAt DateTime @default(now())
+}
