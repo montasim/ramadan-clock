@@ -14,6 +14,7 @@ import { Suspense } from "react";
 import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { getRandomHadith } from "@/lib/hadith-api";
+import { CountdownTimer } from "@/components/shared/countdown-timer";
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
@@ -119,6 +120,12 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               <div className="text-5xl font-bold text-amber-900 dark:text-amber-100 tracking-tight">
                 {displaySchedule.sehri}
               </div>
+              {!scheduleData.sehriPassed && (
+                <CountdownTimer
+                  targetTime={displaySchedule.sehri}
+                  className="mt-3 text-amber-700 dark:text-amber-400"
+                />
+              )}
               {displaySchedule.location && (
                 <p className="text-xs text-amber-700/60 dark:text-amber-400/60 mt-3 flex items-center gap-1">
                   <MapPin className="h-3 w-3" />{displaySchedule.location}
@@ -147,6 +154,12 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               <div className="text-5xl font-bold text-violet-900 dark:text-violet-100 tracking-tight">
                 {displaySchedule.iftar}
               </div>
+              {!scheduleData.iftarPassed && (
+                <CountdownTimer
+                  targetTime={displaySchedule.iftar}
+                  className="mt-3 text-violet-700 dark:text-violet-400"
+                />
+              )}
               {displaySchedule.location && (
                 <p className="text-xs text-violet-700/60 dark:text-violet-400/60 mt-3 flex items-center gap-1">
                   <MapPin className="h-3 w-3" />{displaySchedule.location}
