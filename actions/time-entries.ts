@@ -1,7 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/db";
-import { TimeEntry } from "@prisma/client";
+import { prisma, type TimeEntry } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 export async function getTodaySchedule(location?: string | null): Promise<TimeEntry | null> {
