@@ -31,54 +31,58 @@ export default async function LocationPage({ params }: LocationPageProps) {
   const decodedCity = decodeURIComponent(city);
   const locations = await getLocations();
 
-  // Check if location exists
   if (!locations.includes(decodedCity)) {
     notFound();
   }
 
   const schedule = await getFullSchedule(decodedCity);
-
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-12 px-4 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <MapPin className="h-8 w-8 text-primary" />
+    <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
+      {/* ── Hero Banner ─────────────────────────── */}
+      <div className="hero-section rounded-2xl px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl" style={{ background: "var(--grad-primary)" }}>
+            <MapPin className="h-6 w-6 text-white" />
+          </div>
           <div>
-            <h1 className="text-3xl font-semibold">{decodedCity}</h1>
-            <p className="text-muted-foreground">
-              Sehri & Iftar schedule for {decodedCity}
+            <p className="text-sm font-semibold uppercase tracking-widest gradient-text mb-1">
+              Location Schedule
+            </p>
+            <h1 className="text-4xl font-bold gradient-text">{decodedCity}</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Sehri &amp; Iftar schedule for {decodedCity}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/calendar">Back to Calendar</Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" asChild className="border-border/60 bg-background/70 backdrop-blur rounded-full">
+            <Link href="/calendar">← Back to Calendar</Link>
           </Button>
-          <Button variant="outline" size="icon" asChild>
+          <Button variant="outline" size="icon" asChild className="border-border/60 bg-background/70 backdrop-blur">
             <DownloadButton location={decodedCity} type="full" />
           </Button>
         </div>
       </div>
 
-      <Card>
+      {/* ── Schedule Table ────────────────────── */}
+      <Card className="border-border/60 overflow-hidden shadow-sm">
+        <div className="h-1 w-full" style={{ background: "var(--grad-primary)" }} />
         <CardHeader>
-          <CardTitle>Schedule for {decodedCity}</CardTitle>
-          <CardDescription>
-            {schedule.length} entries found
-          </CardDescription>
+          <CardTitle className="text-base">Schedule for {decodedCity}</CardTitle>
+          <CardDescription>{schedule.length} entries found</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {schedule.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[150px]">Date</TableHead>
+                  <TableRow className="hover:bg-transparent border-border/60">
+                    <TableHead className="w-[180px] pl-6">Date</TableHead>
                     <TableHead>Sehri</TableHead>
                     <TableHead>Iftar</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center pr-6">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -90,9 +94,13 @@ export default async function LocationPage({ params }: LocationPageProps) {
                     return (
                       <TableRow
                         key={entry.id}
-                        className={isToday ? "bg-primary/5" : ""}
+                        className={
+                          isToday
+                            ? "bg-primary/8 border-primary/20 hover:bg-primary/10"
+                            : "hover:bg-accent/30 border-border/40"
+                        }
                       >
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium pl-6">
                           {new Date(entry.date).toLocaleDateString("en-US", {
                             weekday: "short",
                             month: "short",
@@ -100,20 +108,32 @@ export default async function LocationPage({ params }: LocationPageProps) {
                             year: "numeric",
                           })}
                           {isToday && (
-                            <Badge variant="default" className="ml-2">
+                            <span
+                              className="ml-2 text-xs px-2 py-0.5 rounded-full text-white font-semibold"
+                              style={{ background: "var(--grad-primary)" }}
+                            >
                               Today
-                            </Badge>
+                            </span>
                           )}
                         </TableCell>
-                        <TableCell>{entry.sehri}</TableCell>
-                        <TableCell>{entry.iftar}</TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="text-amber-700 dark:text-amber-400 font-medium">
+                          {entry.sehri}
+                        </TableCell>
+                        <TableCell className="text-indigo-700 dark:text-indigo-400 font-medium">
+                          {entry.iftar}
+                        </TableCell>
+                        <TableCell className="text-center pr-6">
                           {isPast ? (
-                            <Badge variant="secondary">Past</Badge>
+                            <Badge variant="secondary" className="text-xs">Past</Badge>
                           ) : isToday ? (
-                            <Badge variant="default">Today</Badge>
+                            <span
+                              className="text-xs px-2.5 py-0.5 rounded-full text-white font-semibold"
+                              style={{ background: "var(--grad-primary)" }}
+                            >
+                              Today
+                            </span>
                           ) : (
-                            <Badge variant="outline">Upcoming</Badge>
+                            <Badge variant="outline" className="text-xs border-primary/30 text-primary">Upcoming</Badge>
                           )}
                         </TableCell>
                       </TableRow>
@@ -123,7 +143,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
               </Table>
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="text-center py-16 text-muted-foreground px-6">
               No schedule entries found for {decodedCity}.
             </div>
           )}

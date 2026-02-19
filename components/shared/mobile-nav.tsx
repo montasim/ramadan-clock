@@ -26,18 +26,20 @@ export function MobileNav({ user }: MobileNavProps) {
       </Button>
 
       {isOpen && (
-        <div className="absolute top-14 left-0 right-0 border-b bg-background p-4 md:hidden">
-          <nav className="flex flex-col space-y-4">
+        <div className="absolute top-16 left-0 right-0 border-b border-border/40 bg-background/95 backdrop-blur-xl p-5 md:hidden z-50">
+          {/* Gradient accent top line */}
+          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "var(--grad-primary)" }} />
+          <nav className="flex flex-col space-y-1">
             <Link
               href="/"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
               onClick={() => setIsOpen(false)}
             >
               Today
             </Link>
             <Link
               href="/calendar"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
               onClick={() => setIsOpen(false)}
             >
               Calendar
@@ -46,7 +48,7 @@ export function MobileNav({ user }: MobileNavProps) {
               <>
                 <Link
                   href="/admin/dashboard"
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
                   onClick={() => setIsOpen(false)}
                 >
                   Dashboard
@@ -55,10 +57,10 @@ export function MobileNav({ user }: MobileNavProps) {
             ) : (
               <Link
                 href="/auth/login"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
                 onClick={() => setIsOpen(false)}
               >
-                Admin
+                Admin Login
               </Link>
             )}
           </nav>
