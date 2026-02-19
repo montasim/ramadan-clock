@@ -148,7 +148,7 @@ export default function UploadPage() {
   return (
     <div className="w-full max-w-5xl mx-auto py-12 px-4 space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">Upload Schedule</h1>
+          <h1 className="text-3xl font-semibold">Upload Schedule</h1>
           <p className="text-muted-foreground">
             Upload Sehri & Iftar schedules via JSON or CSV
           </p>

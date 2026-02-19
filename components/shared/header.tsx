@@ -13,7 +13,7 @@ export async function Header() {
       <div className="flex h-14 items-center justify-center px-4">
         <div className="flex w-full max-w-5xl items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center space-x-2 font-bold">
+            <Link href="/" className="flex items-center space-x-2 font-semibold">
               <span>🌙</span>
               <span>Ramadan Clock</span>
             </Link>

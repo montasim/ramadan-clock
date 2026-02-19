@@ -21,7 +21,7 @@ export default async function AdminDashboard() {
     <div className="w-full max-w-5xl mx-auto py-12 px-4 space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl font-semibold">Dashboard</h1>
             <p className="text-muted-foreground">
               Manage Sehri & Iftar schedules
             </p>
@@ -41,7 +41,7 @@ export default async function AdminDashboard() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalEntries}</div>
+              <div className="text-2xl font-semibold">{stats.totalEntries}</div>
               <p className="text-xs text-muted-foreground">
                 Schedule entries in database
               </p>
@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalLocations}</div>
+              <div className="text-2xl font-semibold">{stats.totalLocations}</div>
               <p className="text-xs text-muted-foreground">
                 Cities covered
               </p>
@@ -65,7 +65,7 @@ export default async function AdminDashboard() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.recentUploads.length}</div>
+              <div className="text-2xl font-semibold">{stats.recentUploads.length}</div>
               <p className="text-xs text-muted-foreground">
                 Last 5 uploads
               </p>

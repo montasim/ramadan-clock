@@ -30,7 +30,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
       <div className="space-y-6">                                                                                                                                                           
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">                                                                                                
             <div>
-              <h1 className="text-3xl font-bold">Today&apos;s Schedule</h1>
+              <h1 className="text-3xl font-semibold">Today&apos;s Schedule</h1>
           <p className="text-muted-foreground">{today}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               <CardDescription>End time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold">{todaySchedule.sehri}</div>
+              <div className="text-4xl font-semibold">{todaySchedule.sehri}</div>
               {todaySchedule.location && (
                 <p className="text-sm text-muted-foreground mt-2">
                   {todaySchedule.location}
@@ -88,7 +88,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               <CardDescription>Start time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold">{todaySchedule.iftar}</div>
+              <div className="text-4xl font-semibold">{todaySchedule.iftar}</div>
               {todaySchedule.location && (
                 <p className="text-sm text-muted-foreground mt-2">
                   {todaySchedule.location}

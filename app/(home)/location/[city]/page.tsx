@@ -46,7 +46,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
         <div className="flex items-center gap-3">
           <MapPin className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold">{decodedCity}</h1>
+            <h1 className="text-3xl font-semibold">{decodedCity}</h1>
             <p className="text-muted-foreground">
               Sehri & Iftar schedule for {decodedCity}
             </p>
