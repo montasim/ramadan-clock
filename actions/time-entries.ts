@@ -48,6 +48,17 @@ function hasIftarPassed(todaySchedule: TimeEntry): boolean {
 }
 
 /**
+ * Check if sehri time has passed for today
+ */
+function hasSehriPassed(todaySchedule: TimeEntry): boolean {
+  const now = new Date();
+  const [sehriHours, sehriMinutes] = todaySchedule.sehri.split(':').map(Number);
+  const sehriTime = new Date();
+  sehriTime.setHours(sehriHours, sehriMinutes, 0, 0);
+  return now >= sehriTime;
+}
+
+/**
  * Get today's schedule or next day's schedule if iftar has passed
  */
 export async function getTodayOrNextDaySchedule(location?: string | null): Promise<TimeEntry | null> {
@@ -78,6 +89,57 @@ export async function getTodayOrNextDaySchedule(location?: string | null): Promi
   } catch (error) {
     console.error("Error fetching today/next day schedule:", error);
     return null;
+  }
+}
+
+/**
+ * Get schedule display data with time status information
+ * Returns both today's and tomorrow's schedules along with time status flags
+ */
+export async function getScheduleDisplayData(location?: string | null) {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+    // Get today's schedule
+    const todayWhere: Record<string, unknown> = { date: today };
+    if (location) {
+      todayWhere.location = location;
+    }
+    const todayEntry = await prisma.timeEntry.findFirst({ where: todayWhere });
+
+    // Get tomorrow's schedule
+    const tomorrowWhere: Record<string, unknown> = { date: tomorrowStr };
+    if (location) {
+      tomorrowWhere.location = location;
+    }
+    const tomorrowEntry = await prisma.timeEntry.findFirst({ where: tomorrowWhere });
+
+    // Determine time status
+    let sehriPassed = false;
+    let iftarPassed = false;
+
+    if (todayEntry) {
+      sehriPassed = hasSehriPassed(todayEntry);
+      iftarPassed = hasIftarPassed(todayEntry);
+    }
+
+    return {
+      today: todayEntry ? formatTimeEntry(todayEntry) : null,
+      tomorrow: tomorrowEntry ? formatTimeEntry(tomorrowEntry) : null,
+      sehriPassed,
+      iftarPassed,
+    };
+  } catch (error) {
+    console.error("Error fetching schedule display data:", error);
+    return {
+      today: null,
+      tomorrow: null,
+      sehriPassed: false,
+      iftarPassed: false,
+    };
   }
 }
 

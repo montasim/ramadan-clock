@@ -1,4 +1,4 @@
-import { getTodayOrNextDaySchedule, getLocations } from "@/actions/time-entries";
+import { getScheduleDisplayData, getLocations } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import { DownloadButton } from "@/components/shared/download-button";
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
-  const todaySchedule = await getTodayOrNextDaySchedule(location || null);
+  const scheduleData = await getScheduleDisplayData(location || null);
   const locations = await getLocations();
   const today = new Date().toISOString().split("T")[0];
   const todayDisplay = new Date().toLocaleDateString("en-US", {
@@ -40,7 +40,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
             ✦ Ramadan 1446 AH
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
-            Today&apos;s{" "}
+            {scheduleData.iftarPassed ? "Tomorrow's" : "Today&apos;s"}{" "}
             <span className="gradient-text">Schedule</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-2">{todayDisplay}</p>
@@ -66,98 +66,117 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
         </div>
       </div>
 
-      {/* Add next day info card if iftar has passed */}
-      {todaySchedule && todaySchedule.date !== today && (
+      {/* ── Sehri / Iftar Cards ─────────────── */}
+      {(() => {
+        // Determine which schedule to display on main cards
+        const displaySchedule = scheduleData.iftarPassed ? scheduleData.tomorrow : scheduleData.today;
+
+        if (!displaySchedule) {
+          return (
+            <div className="rounded-2xl border border-dashed border-border bg-card/50 p-14 text-center backdrop-blur-sm">
+              <div
+                className="mx-auto mb-4 inline-flex p-4 rounded-2xl"
+                style={{ background: "linear-gradient(135deg,rgba(59,130,246,.12),rgba(168,85,247,.12))" }}
+              >
+                <Clock className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold">No Schedule Available</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                {scheduleData.iftarPassed ? "Tomorrow's schedule has not been uploaded yet." : "Today's schedule has not been uploaded yet."}
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <div className="grid gap-5 md:grid-cols-2">
+            {/* Sehri */}
+            <div className={`relative overflow-hidden rounded-2xl p-6 shadow-sm ${
+              scheduleData.sehriPassed && !scheduleData.iftarPassed
+                ? 'card-sehri-passed opacity-60'
+                : 'card-sehri'
+            }`}>
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                <Sun className="h-32 w-32 text-amber-500" />
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-amber-500/15 shadow-inner">
+                  <Sun className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                    Sehri
+                  </p>
+                  <p className="text-xs text-amber-600/60 dark:text-amber-500/60">
+                    {scheduleData.sehriPassed && !scheduleData.iftarPassed
+                      ? 'Passed — fast has begun'
+                      : 'End time — fast begins'}
+                  </p>
+                </div>
+              </div>
+              <div className="text-5xl font-bold text-amber-900 dark:text-amber-100 tracking-tight">
+                {displaySchedule.sehri}
+              </div>
+              {displaySchedule.location && (
+                <p className="text-xs text-amber-700/60 dark:text-amber-400/60 mt-3 flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />{displaySchedule.location}
+                </p>
+              )}
+            </div>
+
+            {/* Iftar */}
+            <div className="relative overflow-hidden rounded-2xl card-iftar p-6 shadow-sm">
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                <Moon className="h-32 w-32 text-violet-500" />
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-violet-500/15 shadow-inner">
+                  <Moon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-violet-700 dark:text-violet-400">
+                    Iftar
+                  </p>
+                  <p className="text-xs text-violet-600/60 dark:text-violet-500/60">
+                    Start time — fast breaks
+                  </p>
+                </div>
+              </div>
+              <div className="text-5xl font-bold text-violet-900 dark:text-violet-100 tracking-tight">
+                {displaySchedule.iftar}
+              </div>
+              {displaySchedule.location && (
+                <p className="text-xs text-violet-700/60 dark:text-violet-400/60 mt-3 flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />{displaySchedule.location}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Add today's passed schedule card if iftar has passed */}
+      {scheduleData.iftarPassed && scheduleData.today && (
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
-              Next Day's Schedule
+              Today's Passed Schedule
             </CardTitle>
             <CardDescription>
-              Today's iftar time has passed. Showing tomorrow's schedule.
+              Today's sehri and iftar time have passed. View today's schedule.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex gap-4">
             <div className="flex-1">
               <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Sehri</p>
-              <p className="text-lg font-semibold">{todaySchedule.sehri}</p>
+              <p className="text-lg font-semibold">{scheduleData.today.sehri}</p>
             </div>
             <div className="flex-1">
               <p className="text-xs font-bold text-violet-600 dark:text-violet-400 mb-1">Iftar</p>
-              <p className="text-lg font-semibold">{todaySchedule.iftar}</p>
+              <p className="text-lg font-semibold">{scheduleData.today.iftar}</p>
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* ── Sehri / Iftar Cards ─────────────── */}
-      {todaySchedule ? (
-        <div className="grid gap-5 md:grid-cols-2">
-          {/* Sehri */}
-          <div className="relative overflow-hidden rounded-2xl card-sehri p-6 shadow-sm">
-            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-              <Sun className="h-32 w-32 text-amber-500" />
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 rounded-xl bg-amber-500/15 shadow-inner">
-                <Sun className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">
-                  Sehri
-                </p>
-                <p className="text-xs text-amber-600/60 dark:text-amber-500/60">End time — fast begins</p>
-              </div>
-            </div>
-            <div className="text-5xl font-bold text-amber-900 dark:text-amber-100 tracking-tight">
-              {todaySchedule.sehri}
-            </div>
-            {todaySchedule.location && (
-              <p className="text-xs text-amber-700/60 dark:text-amber-400/60 mt-3 flex items-center gap-1">
-                <MapPin className="h-3 w-3" />{todaySchedule.location}
-              </p>
-            )}
-          </div>
-
-          {/* Iftar */}
-          <div className="relative overflow-hidden rounded-2xl card-iftar p-6 shadow-sm">
-            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-              <Moon className="h-32 w-32 text-violet-500" />
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 rounded-xl bg-violet-500/15 shadow-inner">
-                <Moon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-violet-700 dark:text-violet-400">
-                  Iftar
-                </p>
-                <p className="text-xs text-violet-600/60 dark:text-violet-500/60">Start time — fast breaks</p>
-              </div>
-            </div>
-            <div className="text-5xl font-bold text-violet-900 dark:text-violet-100 tracking-tight">
-              {todaySchedule.iftar}
-            </div>
-            {todaySchedule.location && (
-              <p className="text-xs text-violet-700/60 dark:text-violet-400/60 mt-3 flex items-center gap-1">
-                <MapPin className="h-3 w-3" />{todaySchedule.location}
-              </p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-card/50 p-14 text-center backdrop-blur-sm">
-          <div
-            className="mx-auto mb-4 inline-flex p-4 rounded-2xl"
-            style={{ background: "linear-gradient(135deg,rgba(59,130,246,.12),rgba(168,85,247,.12))" }}
-          >
-            <Clock className="h-10 w-10 text-primary" />
-          </div>
-          <h3 className="text-lg font-bold">No Schedule Available</h3>
-          <p className="text-muted-foreground text-sm mt-1">
-            Today&apos;s schedule has not been uploaded yet.
-          </p>
-        </div>
       )}
 
       {/* ── Quick Links ─────────────────────── */}

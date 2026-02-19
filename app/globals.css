@@ -260,6 +260,17 @@
     border-color: rgba(139, 92, 246, 0.25);
   }
 
+  /* ─── Sehri card (passed) ───────────────────── */
+  .card-sehri-passed {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.05) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  .dark .card-sehri-passed {
+    background: linear-gradient(135deg, rgba(120, 53, 15, 0.15) 0%, rgba(78, 40, 5, 0.15) 100%);
+    border-color: rgba(245, 158, 11, 0.15);
+  }
+
   /* Blob (placed absolutely inside containers) */
   .blob {
     position: absolute;
