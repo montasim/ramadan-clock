@@ -9,16 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AppModal } from "@/components/ui/app-modal";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2, CloudUpload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ScheduleTable } from "@/components/shared/schedule-table";
+import { ScheduleCard } from "@/components/shared/schedule-card";
 
 interface ParsedEntry {
   date: string;
@@ -140,8 +134,7 @@ export default function UploadPage() {
       <div className="grid gap-6 md:grid-cols-2">
 
         {/* Upload Card */}
-        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-          <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
+        <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <CloudUpload className="h-4 w-4 text-primary" />
@@ -225,8 +218,7 @@ export default function UploadPage() {
         </Card>
 
         {/* Validation Card */}
-        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-          <div className="h-[2px] w-full" style={{ background: validationResult?.valid ? "linear-gradient(135deg,#10b981,#059669)" : "var(--grad-primary)" }} />
+        <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -296,37 +288,27 @@ export default function UploadPage() {
 
       {/* ── Preview Table ───────────────────────────── */}
       {validationResult && validationResult.preview.length > 0 && (
-        <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-          <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
-          <CardHeader>
-            <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              Preview
-            </CardTitle>
-            <CardDescription>First {validationResult.preview.length} entries from your file</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent border-border/50">
-                  <TableHead className="pl-6">Date</TableHead>
-                  <TableHead>Sehri</TableHead>
-                  <TableHead>Iftar</TableHead>
-                  <TableHead className="pr-6">Location</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {validationResult.preview.map((entry, index) => (
-                  <TableRow key={index} className="hover:bg-primary/4 border-border/40">
-                    <TableCell className="pl-6 font-medium">{entry.date}</TableCell>
-                    <TableCell className="font-semibold text-amber-600 dark:text-amber-400">{entry.sehri}</TableCell>
-                    <TableCell className="font-semibold text-violet-600 dark:text-violet-400">{entry.iftar}</TableCell>
-                    <TableCell className="pr-6 text-muted-foreground">{entry.location || "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <ScheduleCard
+          title="Preview"
+          description={`First ${validationResult.preview.length} entries from your file`}
+          contentClassName="p-0"
+        >
+          <ScheduleTable
+            entries={validationResult.preview.map((entry, index) => ({
+              id: `preview-${index}`,
+              date: entry.date,
+              sehri: entry.sehri,
+              iftar: entry.iftar,
+              location: entry.location || null,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }))}
+            showLocation={true}
+            showStatus={false}
+            showTodayBadge={false}
+            rowClassVariant="simple"
+          />
+        </ScheduleCard>
       )}
 
       {/* ── Confirm Dialog ──────────────────────────── */}

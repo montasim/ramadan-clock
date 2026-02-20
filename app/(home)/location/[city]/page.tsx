@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { SehriIftarCard } from "@/components/shared/sehri-iftar-card";
+import { ScheduleCard } from "@/components/shared/schedule-card";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DownloadButton } from "@/components/shared/download-button";
@@ -102,30 +103,25 @@ async function LocationPageContent({ params }: { params: Promise<{ city: string 
       )}
 
       {/* Table */}
-      <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-        <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
-        <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            Schedule
-          </CardTitle>
-          <CardDescription>{schedule.length} entries found</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          {schedule.length > 0 ? (
-            <ScheduleTable
-              entries={schedule}
-              showLocation={false}
-              showStatus={true}
-              showTodayBadge={true}
-              rowClassVariant="simple"
-            />
-          ) : (
-            <div className="text-center py-16 text-muted-foreground">
-              No entries for {decodedCity}.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <ScheduleCard
+        title="Schedule"
+        description={`${schedule.length} entries found`}
+        contentClassName="p-0"
+      >
+        {schedule.length > 0 ? (
+          <ScheduleTable
+            entries={schedule}
+            showLocation={false}
+            showStatus={true}
+            showTodayBadge={true}
+            rowClassVariant="simple"
+          />
+        ) : (
+          <div className="text-center py-16 text-muted-foreground">
+            No entries for {decodedCity}.
+          </div>
+        )}
+      </ScheduleCard>
     </div>
   );
 }

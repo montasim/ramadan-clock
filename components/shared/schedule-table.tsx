@@ -114,7 +114,7 @@ export function ScheduleTable({
   const today = moment().format('YYYY-MM-DD');
 
   return (
-    <div className="relative overflow-x-auto rounded-xl border border-border/40 bg-card/30">
+    <div className="relative overflow-x-auto rounded-xl border border-border/40 bg-primary/5">
       <Table className="min-w-[600px] sm:min-w-full">
         <TableHeader>
           <TableRow className="hover:bg-transparent border-border/50">
@@ -124,7 +124,7 @@ export function ScheduleTable({
                   checked={isAllSelected}
                   onCheckedChange={onSelectAll}
                   aria-label="Select all"
-                  className="hidden sm:inline-flex"
+                  className="border-primary/40 hidden sm:inline-flex"
                 />
               </TableHead>
             )}
@@ -161,6 +161,7 @@ export function ScheduleTable({
                 {editable && (
                   <TableCell className="px-3">
                     <Checkbox
+                    className="border-primary/40"
                       checked={isSelected}
                       onCheckedChange={(c) => onSelectOne?.(entry.id, c as boolean)}
                       aria-label={`Select entry for ${entry.date}`}
@@ -197,7 +198,7 @@ export function ScheduleTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+                        className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-lg bg-primary/10 text-primary/50 hover:bg-primary/20 hover:text-primary transition-colors"
                         onClick={() => onEdit?.(entry)}
                         title="Edit entry"
                       >
@@ -206,7 +207,7 @@ export function ScheduleTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-lg bg-destructive/10 text-destructive/50 hover:bg-destructive/20 hover:text-destructive transition-colors"
                         onClick={() => onDelete?.(entry)}
                         title="Delete entry"
                       >

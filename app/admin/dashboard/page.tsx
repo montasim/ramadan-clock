@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Calendar, Clock, MapPin, Upload, LayoutDashboard } from "lucide-react";
 import { CalendarView } from "@/components/admin/calendar-view";
+import { ScheduleCard } from "@/components/shared/schedule-card";
 
 export default async function AdminDashboard() {
   const session = await getSession();
@@ -76,8 +77,7 @@ export default async function AdminDashboard() {
       {/* ── Stat Cards ──────────────────────── */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
-          <Card key={title} className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-            <div className="h-[2px] w-full" style={{ background: gradient }} />
+          <Card key={title} className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
               <CardTitle className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 {title}
@@ -95,32 +95,24 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── Calendar Card ───────────────────── */}
-      <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-        <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
-        <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            Schedule Calendar
-          </CardTitle>
-          <CardDescription>
-            Manage all Sehri &amp; Iftar entries ({schedule.length} total)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {schedule.length > 0 ? (
-            <CalendarView entries={schedule} />
-          ) : (
-            <div className="text-center py-14 text-muted-foreground">
-              <p className="mb-4">No schedule entries yet.</p>
-              <Link href="/admin/upload">
-                <Button className="btn-gradient rounded-full gap-2 font-semibold">
-                  <Upload className="h-4 w-4" />
-                  Upload Schedule
-                </Button>
-              </Link>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <ScheduleCard
+        title="Schedule Calendar"
+        description={`Manage all Sehri &amp; Iftar entries (${schedule.length} total)`}
+      >
+        {schedule.length > 0 ? (
+          <CalendarView entries={schedule} />
+        ) : (
+          <div className="text-center py-14 text-muted-foreground">
+            <p className="mb-4">No schedule entries yet.</p>
+            <Link href="/admin/upload">
+              <Button className="btn-gradient rounded-full gap-2 font-semibold">
+                <Upload className="h-4 w-4" />
+                Upload Schedule
+              </Button>
+            </Link>
+          </div>
+        )}
+      </ScheduleCard>
     </div>
   );
 }

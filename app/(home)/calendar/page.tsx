@@ -14,6 +14,7 @@ import CalendarSkeleton from "@/components/public/calendar-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { SehriIftarCard } from "@/components/shared/sehri-iftar-card";
 import { ScheduleTable } from "@/components/shared/schedule-table";
+import { ScheduleCard } from "@/components/shared/schedule-card";
 import moment from 'moment';
 
 async function CalendarContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
@@ -95,30 +96,23 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
       )}
 
       {/* Table Card */}
-      <Card className="border-border/60 overflow-hidden shadow-sm bg-card/70 backdrop-blur-sm">
-        <div className="h-[2px] w-full" style={{ background: "var(--grad-primary)" }} />
-        <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            Schedule Table
-          </CardTitle>
-          <CardDescription>
-            {schedule.length} entries {location ? `for ${location}` : "across all locations"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          {schedule.length > 0 ? (
-            <ScheduleTable
-              entries={schedule}
-              showLocation={true}
-              showStatus={true}
-              showTodayBadge={true}
-              rowClassVariant="full"
-            />
-          ) : (
-            <div className="text-center py-16 text-muted-foreground">No schedule entries found.</div>
-          )}
-        </CardContent>
-      </Card>
+      <ScheduleCard
+        title="Schedule Table"
+        description={`${schedule.length} entries ${location ? `for ${location}` : "across all locations"}`}
+        contentClassName="p-0"
+      >
+        {schedule.length > 0 ? (
+          <ScheduleTable
+            entries={schedule}
+            showLocation={true}
+            showStatus={true}
+            showTodayBadge={true}
+            rowClassVariant="full"
+          />
+        ) : (
+          <div className="text-center py-16 text-muted-foreground">No schedule entries found.</div>
+        )}
+      </ScheduleCard>
     </div>
   );
 }
