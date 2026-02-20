@@ -1,0 +1,17 @@
+# Robots.txt for Ramadan Clock
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+
+# Disallow admin and auth pages
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /api/
+
+# Allow specific API endpoints if needed
+# Allow: /api/schedule
+# Allow: /api/hadith
+
+# Sitemap location
+Sitemap: https://ramadanclock.com/sitemap.xml

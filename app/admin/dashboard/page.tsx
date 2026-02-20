@@ -6,6 +6,9 @@ import Link from "next/link";
 import { Calendar, Clock, MapPin, Upload, LayoutDashboard } from "lucide-react";
 import { CalendarView } from "@/components/admin/calendar-view";
 import { ScheduleCard } from "@/components/shared/schedule-card";
+import { getAdminMetadata } from "@/lib/seo/metadata";
+
+export const metadata = getAdminMetadata('Dashboard');
 
 export default async function AdminDashboard() {
   const session = await withDashboardGuard();

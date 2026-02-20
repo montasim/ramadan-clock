@@ -11,9 +11,18 @@ import { DownloadButton } from "@/components/shared/download-button";
 import LocationSkeleton from "@/components/public/location-skeleton";
 import { Suspense } from "react";
 import moment from 'moment';
+import { getLocationMetadata } from "@/lib/seo/metadata";
+import { JsonLd } from "@/components/seo/json-ld";
+import { createWebPageSchema, createBreadcrumbSchema, createLocalBusinessSchema } from "@/lib/seo/schemas";
 
 interface LocationPageProps {
   params: Promise<{ city: string }>;
+}
+
+export async function generateMetadata({ params }: LocationPageProps) {
+  const { city } = await params;
+  const decodedCity = decodeURIComponent(city);
+  return getLocationMetadata(decodedCity);
 }
 
 export async function generateStaticParams() {
@@ -127,9 +136,29 @@ async function LocationPageContent({ params }: { params: Promise<{ city: string 
 }
 
 export default async function LocationPage({ params }: LocationPageProps) {
+  const { city } = await params;
+  const decodedCity = decodeURIComponent(city);
+  const siteUrl = process.env.NEXTAUTH_URL || 'https://ramadanclock.com';
+  
   return (
-    <Suspense fallback={<LocationSkeleton />}>
-      <LocationPageContent params={params} />
-    </Suspense>
+    <>
+      <JsonLd data={createWebPageSchema({
+        name: `Ramadan Times in ${decodedCity}`,
+        description: `Get accurate Sehri and Iftar times for ${decodedCity} during Ramadan 1446 AH. Download the complete schedule and never miss a prayer time.`,
+        url: `${siteUrl}/location/${encodeURIComponent(decodedCity)}`,
+      })} />
+      <JsonLd data={createLocalBusinessSchema({
+        name: `Ramadan Clock - ${decodedCity}`,
+        city: decodedCity,
+        description: `Sehri and Iftar times for ${decodedCity}`,
+      })} />
+      <JsonLd data={createBreadcrumbSchema([
+        { name: 'Home', url: siteUrl },
+        { name: decodedCity, url: `${siteUrl}/location/${encodeURIComponent(decodedCity)}` },
+      ])} />
+      <Suspense fallback={<LocationSkeleton />}>
+        <LocationPageContent params={params} />
+      </Suspense>
+    </>
   );
 }

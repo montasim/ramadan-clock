@@ -16,6 +16,11 @@ import { SehriIftarCard } from "@/components/shared/sehri-iftar-card";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { ScheduleCard } from "@/components/shared/schedule-card";
 import moment from 'moment';
+import { getCalendarMetadata } from "@/lib/seo/metadata";
+import { JsonLd } from "@/components/seo/json-ld";
+import { createWebPageSchema, createBreadcrumbSchema, createCollectionPageSchema } from "@/lib/seo/schemas";
+
+export const metadata = getCalendarMetadata();
 
 async function CalendarContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
@@ -118,11 +123,29 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
 }
 
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
+  const siteUrl = process.env.NEXTAUTH_URL || 'https://ramadanclock.com';
+  
   return (
-    <div className="w-full max-w-5xl mx-auto py-10 px-4">
-      <Suspense fallback={<CalendarSkeleton />}>
-        <CalendarContent searchParams={searchParams} />
-      </Suspense>
-    </div>
+    <>
+      <JsonLd data={createCollectionPageSchema({
+        name: 'Ramadan Calendar 1446 AH',
+        description: 'View the complete Ramadan calendar with Sehri and Iftar times for all days. Download PDF schedules and plan your fasting month ahead.',
+        url: `${siteUrl}/calendar`,
+      })} />
+      <JsonLd data={createWebPageSchema({
+        name: 'Ramadan Calendar 1446 AH',
+        description: 'View the complete Ramadan calendar with Sehri and Iftar times for all days. Download PDF schedules and plan your fasting month ahead.',
+        url: `${siteUrl}/calendar`,
+      })} />
+      <JsonLd data={createBreadcrumbSchema([
+        { name: 'Home', url: siteUrl },
+        { name: 'Calendar', url: `${siteUrl}/calendar` },
+      ])} />
+      <div className="w-full max-w-5xl mx-auto py-10 px-4">
+        <Suspense fallback={<CalendarSkeleton />}>
+          <CalendarContent searchParams={searchParams} />
+        </Suspense>
+      </div>
+    </>
   );
 }

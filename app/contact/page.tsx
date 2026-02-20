@@ -3,10 +3,36 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Github, Linkedin, Mail, ExternalLink, User, Code2 } from "lucide-react";
+import { getContactMetadata } from "@/lib/seo/metadata";
+import { JsonLd } from "@/components/seo/json-ld";
+import { createWebPageSchema, createBreadcrumbSchema, createOrganizationSchema } from "@/lib/seo/schemas";
+
+export const metadata = getContactMetadata();
 
 export default function ContactPage() {
+  const siteUrl = process.env.NEXTAUTH_URL || 'https://ramadanclock.com';
+  
   return (
-    <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-7">
+    <>
+      <JsonLd data={createWebPageSchema({
+        name: 'Contact - Ramadan Clock Open Source Project',
+        description: 'Get in touch with the Ramadan Clock team. Learn about this open source project built with Next.js, Prisma, and PostgreSQL.',
+        url: `${siteUrl}/contact`,
+      })} />
+      <JsonLd data={createOrganizationSchema({
+        logo: `${siteUrl}/logo.png`,
+        sameAs: [
+          config.projectRepoUrl,
+          config.developerGithub,
+          config.developerLinkedin,
+        ],
+        description: 'Open source Ramadan prayer times application',
+      })} />
+      <JsonLd data={createBreadcrumbSchema([
+        { name: 'Home', url: siteUrl },
+        { name: 'Contact', url: `${siteUrl}/contact` },
+      ])} />
+      <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-7">
       {/* Hero */}
       <div className="hero-section px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 overflow-hidden">
         <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: "var(--grad-primary)" }} />
@@ -122,5 +148,6 @@ export default function ContactPage() {
         </Card>
       </div>
     </div>
+    </>
   );
 }
