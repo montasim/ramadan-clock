@@ -26,7 +26,8 @@ interface CalendarViewProps {
 
 // Get today's date in local timezone (YYYY-MM-DD format) using moment
 const getTodayLocal = () => {
-  return moment().format('YYYY-MM-DD');
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Dhaka';
+  return moment().tz(userTimezone).format('YYYY-MM-DD');
 };
 
 export function CalendarView({ entries, locations }: CalendarViewProps) {
@@ -225,17 +226,17 @@ export function CalendarView({ entries, locations }: CalendarViewProps) {
         open={!!deletingEntry}
         onOpenChange={() => setDeletingEntry(null)}
         title="Delete Entry"
-        description={
-          <>
-            Are you sure you want to delete schedule for{" "}
-            <strong>
-              {deletingEntry
-                ? moment(deletingEntry.date).format("ddd, MMMM D, YYYY")
-                : ""}
-            </strong>
-            {deletingEntry?.location ? ` (${deletingEntry.location})` : ""}? This action cannot be undone.
-          </>
-        }
+          description={
+            <>
+              Are you sure you want to delete schedule for{" "}
+              <strong>
+                {deletingEntry
+                  ? moment.tz(deletingEntry.date, Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Dhaka').format("ddd, MMMM D, YYYY")
+                  : ""}
+              </strong>
+              {deletingEntry?.location ? ` (${deletingEntry.location})` : ""}? This action cannot be undone.
+            </>
+          }
         icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
         iconClassName="bg-destructive/10"
         titleClassName="text-destructive"

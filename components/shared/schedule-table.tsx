@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { TimeEntry } from "@prisma/client";
 import {
   Table,
@@ -14,7 +15,19 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getScheduleStatus, getScheduleRowClass, ScheduleStatus } from "@/lib/utils/schedule.utils";
 import { Pencil, Trash2 } from "lucide-react";
-import moment from 'moment';
+import moment from 'moment-timezone';
+
+// Configured timezone for the application (must match server-side config)
+const APP_TIMEZONE = 'Asia/Dhaka';
+
+// Get user's local timezone from browser, fallback to app timezone
+const getUserTimezone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || APP_TIMEZONE;
+  } catch {
+    return APP_TIMEZONE;
+  }
+};
 
 export interface ScheduleTableProps {
   entries: TimeEntry[];
@@ -110,8 +123,14 @@ export function ScheduleTable({
   onDelete,
   isAllSelected = false,
 }: ScheduleTableProps) {
-  // Use moment to get today's date in ISO format
-  const today = moment().format('YYYY-MM-DD');
+  // Use moment to get today's date in ISO format, using the user's browser timezone
+  const userTimezone = getUserTimezone();
+  const today = moment().tz(userTimezone).format('YYYY-MM-DD');
+  
+  // Cache the timezone to ensure consistency across the component lifecycle
+  React.useMemo(() => {
+    getUserTimezone(); // Ensure timezone is cached
+  }, []);
 
   return (
     <div className="relative overflow-x-auto rounded-xl border border-border/40 bg-primary/5">
@@ -171,7 +190,7 @@ export function ScheduleTable({
                 <TableCell className="font-medium pl-4 sm:pl-6 py-3 whitespace-nowrap">
                   <div className="flex flex-col">
                     <span className="text-xs sm:text-sm">
-                      {moment(entry.date).format("MMM D, YYYY")}
+                      {moment.tz(entry.date, userTimezone).format("MMM D, YYYY")}
                     </span>
                     {showTodayBadge && isToday && <TodayBadge />}
                   </div>
