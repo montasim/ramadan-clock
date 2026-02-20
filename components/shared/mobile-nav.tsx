@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Clock, CalendarDays, Mail, LayoutDashboard } from "lucide-react";
+import { Menu, X, Clock, CalendarDays, Mail, LayoutDashboard, LogOut, LogIn, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "./theme-toggle";
+import { LogoutButton } from "./logout-button";
 
 interface MobileNavProps {
   user: {
@@ -66,16 +68,26 @@ export function MobileNav({ user }: MobileNavProps) {
                   <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Link>
+                <div className="flex items-center gap-2 px-3 py-2.5">
+                  <LogoutButton />
+                </div>
               </>
             ) : (
               <Link
                 href="/auth/login"
-                className="px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
+                className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-lg hover:bg-accent/50"
                 onClick={() => setIsOpen(false)}
               >
+                <LogIn className="h-4 w-4" />
                 Admin Login
               </Link>
             )}
+            
+            {/* Theme Toggle */}
+            <div className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground">
+              <ThemeToggle />
+              <span>Theme</span>
+            </div>
           </nav>
         </div>
       )}

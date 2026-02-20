@@ -11,7 +11,7 @@ import {
 
 export default function LocationSkeleton() {
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8">
+    <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
       {/* Hero banner skeleton */}
       <div className="hero-section px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div className="flex items-start gap-4">
