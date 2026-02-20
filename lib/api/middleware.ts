@@ -44,7 +44,7 @@ export interface AuthOptions {
  */
 export type NextHandler = (
   request: NextRequest,
-  context?: { params?: Record<string, string> }
+  context?: { params: Promise<Record<string, string>> }
 ) => Promise<NextResponse>;
 
 /**

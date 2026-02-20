@@ -34,14 +34,15 @@ import { logger } from '@/lib/logger';
  */
 async function getScheduleEntryHandler(
   request: NextRequest,
-  context?: { params?: Record<string, string> }
+  context?: { params: Promise<Record<string, string>> }
 ): Promise<NextResponse> {
   try {
-    if (!context?.params?.id) {
+    const params = await context?.params;
+    if (!params?.id) {
       return error(400, 'BadRequest', 'Missing ID parameter');
     }
     
-    const { id } = scheduleIdSchema.parse({ id: context.params.id });
+    const { id } = scheduleIdSchema.parse({ id: params.id });
 
     const entry = await prisma.timeEntry.findUnique({
       where: { id },
@@ -55,7 +56,8 @@ async function getScheduleEntryHandler(
 
     return success(entry);
   } catch (err) {
-    const id = context?.params?.id || 'unknown';
+    const params = await context?.params;
+    const id = params?.id || 'unknown';
     logger.error('Failed to fetch time entry', { id }, err as Error);
 
     if (err instanceof Error) {
@@ -89,14 +91,15 @@ async function getScheduleEntryHandler(
  */
 async function updateScheduleEntryHandler(
   request: NextRequest,
-  context?: { params?: Record<string, string> }
+  context?: { params: Promise<Record<string, string>> }
 ): Promise<NextResponse> {
   try {
-    if (!context?.params?.id) {
+    const params = await context?.params;
+    if (!params?.id) {
       return error(400, 'BadRequest', 'Missing ID parameter');
     }
     
-    const { id } = scheduleIdSchema.parse({ id: context.params.id });
+    const { id } = scheduleIdSchema.parse({ id: params.id });
     const body = await request.json();
     const data = timeEntryUpdateSchema.parse(body);
 
@@ -119,7 +122,8 @@ async function updateScheduleEntryHandler(
 
     return success(entry);
   } catch (err) {
-    const id = context?.params?.id || 'unknown';
+    const params = await context?.params;
+    const id = params?.id || 'unknown';
     logger.error('Failed to update time entry', { id }, err as Error);
 
     if (err instanceof Error) {
@@ -152,14 +156,15 @@ async function updateScheduleEntryHandler(
  */
 async function deleteScheduleEntryHandler(
   request: NextRequest,
-  context?: { params?: Record<string, string> }
+  context?: { params: Promise<Record<string, string>> }
 ): Promise<NextResponse> {
   try {
-    if (!context?.params?.id) {
+    const params = await context?.params;
+    if (!params?.id) {
       return error(400, 'BadRequest', 'Missing ID parameter');
     }
     
-    const { id } = scheduleIdSchema.parse({ id: context.params.id });
+    const { id } = scheduleIdSchema.parse({ id: params.id });
 
     // Check if entry exists
     const existing = await prisma.timeEntry.findUnique({
@@ -179,7 +184,8 @@ async function deleteScheduleEntryHandler(
 
     return success({ message: 'Time entry deleted successfully' });
   } catch (err) {
-    const id = context?.params?.id || 'unknown';
+    const params = await context?.params;
+    const id = params?.id || 'unknown';
     logger.error('Failed to delete time entry', { id }, err as Error);
 
     if (err instanceof Error) {
