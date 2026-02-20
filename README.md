@@ -412,6 +412,540 @@ Client Component (countdown timer, UI)
 Display to User
 ```
 
+## 🏗️ Advanced Architecture & Complex Logic Features
+
+This application implements several sophisticated architectural patterns and complex logic systems to ensure scalability, maintainability, and performance. Below are detailed explanations of these advanced features.
+
+### API Architecture & Middleware System
+
+The application implements a robust API architecture with a composable middleware pipeline in [`lib/api/middleware.ts`](lib/api/middleware.ts:1).
+
+#### Middleware Pipeline
+
+The middleware system follows a functional composition pattern where each middleware wraps the handler:
+
+```typescript
+// Compose multiple middleware functions
+export function compose(...middlewares: Array<(handler: NextHandler) => NextHandler>) {
+  return (handler: NextHandler): NextHandler => {
+    return middlewares.reduceRight(
+      (acc, middleware) => middleware(acc),
+      handler
+    );
+  };
+}
+```
+
+#### Available Middleware
+
+1. **Request ID Middleware** ([`withRequestId`](lib/api/middleware.ts:53))
+   - Generates unique request IDs for tracing
+   - Adds `x-request-id` header to both request and response
+   - Supports external request ID propagation
+
+2. **Rate Limiting Middleware** ([`withRateLimit`](lib/api/middleware.ts:85))
+   - In-memory rate limiting using sliding window algorithm
+   - Configurable limits and time windows
+   - Returns rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+   - Automatic retry-after calculation for 429 responses
+
+3. **Authentication Middleware** ([`withAuth`](lib/api/middleware.ts:123))
+   - Integrates with NextAuth.js session management
+   - Supports optional admin role checking
+   - Injects session data into request headers for downstream use
+
+4. **Validation Middleware** ([`withValidation`](lib/api/middleware.ts:182))
+   - Zod schema validation for query/body parameters
+   - Detailed error reporting with field-level validation errors
+   - Supports validation of both query and body data
+
+5. **Error Handling Middleware** ([`withErrorHandler`](lib/api/middleware.ts:232))
+   - Catches and transforms all errors to standardized API responses
+   - Adds response time tracking via `X-Response-Time` header
+   - Distinguishes between operational and programming errors
+
+6. **Logging Middleware** ([`withLogging`](lib/api/middleware.ts:282))
+   - Logs all incoming requests with method, URL, and user agent
+   - Logs successful responses with status and duration
+   - Logs errors with full context
+
+#### Standardized API Responses
+
+All API responses follow a consistent structure defined in [`lib/api/api-response.ts`](lib/api/api-response.ts:1):
+
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  meta?: {
+    requestId: string;
+    timestamp: string;
+  };
+}
+```
+
+Response helpers include:
+- [`success()`](lib/api/api-response.ts:55) - Successful responses
+- [`paginated()`](lib/api/api-response.ts:75) - Paginated data responses
+- [`error()`](lib/api/api-response.ts:97) - Error responses
+- [`validationError()`](lib/api/api-response.ts:139) - Validation errors
+- [`rateLimitExceeded()`](lib/api/api-response.ts:205) - Rate limit errors
+
+#### External API Client
+
+The [`ExternalApiClient`](lib/api/external-api-client.ts:51) provides robust external API integration:
+
+**Features:**
+- **Timeout Handling**: Configurable request timeouts with AbortController
+- **Retry Logic**: Exponential backoff retry for transient failures
+- **Caching**: Built-in in-memory caching with TTL support
+- **Configurable Retry Options**: Custom retryable status codes, delays, and multipliers
+
+**Retry Strategy:**
+```typescript
+const defaultRetryOptions = {
+  maxRetries: 3,
+  initialDelay: 1000,      // 1 second
+  maxDelay: 10000,         // 10 seconds
+  backoffMultiplier: 2,    // Exponential
+  retryableStatuses: [408, 429, 500, 502, 503, 504]
+};
+```
+
+#### Security Headers
+
+Comprehensive security headers are implemented in [`lib/api/security-headers.ts`](lib/api/security-headers.ts:1):
+
+- **X-Content-Type-Options**: Prevents MIME type sniffing
+- **X-Frame-Options**: Prevents clickjacking (DENY)
+- **X-XSS-Protection**: Enables XSS filtering
+- **Referrer-Policy**: Controls referrer information
+- **Permissions-Policy**: Restricts browser features
+- **Content-Security-Policy**: Comprehensive CSP policy
+- **CORS Support**: Configurable CORS headers with preflight handling
+
+### Cache Implementation Strategy
+
+The application implements a multi-layered caching strategy for optimal performance.
+
+#### Cache Configuration
+
+Centralized cache configuration in [`lib/cache/cache-config.ts`](lib/cache/cache-config.ts:1):
+
+```typescript
+const CACHE_DURATIONS = {
+  SHORT: 60,      // 1 minute - frequently changing data
+  MEDIUM: 300,    // 5 minutes - moderately changing data
+  LONG: 900,      // 15 minutes - rarely changing data
+  VERY_LONG: 1800,// 30 minutes - very rarely changing data
+  HOUR: 3600,     // 1 hour - static data
+};
+
+const CACHE_TAGS = {
+  SCHEDULE: 'schedule',
+  LOCATIONS: 'locations',
+  STATS: 'stats',
+  HADITH: 'hadith',
+  PDF: 'pdf',
+};
+```
+
+#### Cache Helpers
+
+Utility functions in [`lib/cache/cache-helpers.ts`](lib/cache/cache-helpers.ts:1):
+
+- [`createCachedFn()`](lib/cache/cache-helpers.ts:27) - Wraps async functions with Next.js unstable_cache
+- [`invalidateScheduleCache()`](lib/cache/cache-helpers.ts:42) - Invalidates all schedule-related caches
+- [`invalidateLocationCache()`](lib/cache/cache-helpers.ts:54) - Invalidates location caches
+- [`invalidatePdfCache()`](lib/cache/cache-helpers.ts:62) - Invalidates PDF caches
+- [`getCacheKey()`](lib/cache/cache-helpers.ts:90) - Creates hierarchical cache keys
+- [`getLocationCacheKey()`](lib/cache/cache-helpers.ts:101) - Creates location-specific cache keys
+- [`getDateCacheKey()`](lib/cache/cache-helpers.ts:113) - Creates date-specific cache keys
+
+#### Cache Monitoring
+
+The [`CacheMonitor`](lib/cache/cache-monitor.ts:30) class provides comprehensive cache performance tracking:
+
+**Features:**
+- Hit/miss tracking per cache key
+- Hit rate calculation
+- Overall cache statistics
+- Per-key statistics
+- Metrics export as JSON
+- Decorator support for class methods
+
+**Usage Example:**
+```typescript
+// Record hits/misses manually
+CacheMonitor.recordHit('schedule:dhaka');
+CacheMonitor.recordMiss('schedule:dhaka');
+
+// Get statistics
+const stats = CacheMonitor.getOverallStats();
+// { hits: 100, misses: 20, hitRate: '83.33%', total: 120 }
+
+// Wrap a function with monitoring
+const monitoredFn = withCacheMonitoring(
+  async () => await fetchData(),
+  'data-fetch'
+);
+```
+
+#### Cache Cleanup
+
+The [`CacheCleanup`](lib/cache/cache-cleanup.ts:12) class manages periodic cache maintenance:
+
+**Features:**
+- Automatic cleanup of expired cache entries
+- Periodic cleanup scheduling (default: 1 hour)
+- Manual cleanup triggering
+- Cleanup status monitoring
+- External API cache cleanup
+
+**Initialization:**
+```typescript
+import { initializeCacheCleanup } from '@/lib/cache';
+
+// Auto-initializes on server start
+initializeCacheCleanup();
+
+// Or manually schedule
+CacheCleanup.schedulePeriodicCleanup(3600000); // 1 hour
+```
+
+### SEO & Metadata System
+
+The application implements a comprehensive SEO strategy for maximum search engine visibility.
+
+#### Metadata Generation
+
+The [`lib/seo/metadata.ts`](lib/seo/metadata.ts:1) module provides metadata generators:
+
+- [`getBaseMetadata()`](lib/seo/metadata.ts:96) - Base metadata for all pages
+- [`getPageMetadata()`](lib/seo/metadata.ts:166) - Page-specific metadata
+- [`getHomeMetadata()`](lib/seo/metadata.ts:230) - Home page metadata
+- [`getCalendarMetadata()`](lib/seo/metadata.ts:250) - Calendar page metadata
+- [`getLocationMetadata()`](lib/seo/metadata.ts:269) - Dynamic location page metadata
+- [`getContactMetadata()`](lib/seo/metadata.ts:291) - Contact page metadata
+- [`getAdminMetadata()`](lib/seo/metadata.ts:308) - Admin pages (noindex)
+- [`getAuthMetadata()`](lib/seo/metadata.ts:320) - Auth pages (noindex)
+
+**Features:**
+- Open Graph tags for social media sharing
+- Twitter Card support
+- Canonical URL generation
+- Dynamic keyword generation
+- Robots meta configuration
+- Favicon and manifest configuration
+
+#### JSON-LD Structured Data
+
+The [`lib/seo/schemas.ts`](lib/seo/schemas.ts:1) module generates JSON-LD schemas:
+
+**Available Schemas:**
+- [`createWebSiteSchema()`](lib/seo/schemas.ts:20) - Website schema with search action
+- [`createOrganizationSchema()`](lib/seo/schemas.ts:38) - Organization information
+- [`createBreadcrumbSchema()`](lib/seo/schemas.ts:59) - Breadcrumb navigation
+- [`createFAQSchema()`](lib/seo/schemas.ts:78) - FAQ page schema
+- [`createArticleSchema()`](lib/seo/schemas.ts:99) - Article/blog post schema
+- [`createSoftwareApplicationSchema()`](lib/seo/schemas.ts:140) - App store schema
+- [`createLocalBusinessSchema()`](lib/seo/schemas.ts:174) - Location-specific business schema
+- [`createCollectionPageSchema()`](lib/seo/schemas.ts:197) - Listing page schema
+- [`createWebPageSchema()`](lib/seo/schemas.ts:221) - Generic web page schema
+- [`createEventSchema()`](lib/seo/schemas.ts:249) - Event schema for Ramadan
+- [`createHowToSchema()`](lib/seo/schemas.ts:281) - How-to guide schema
+
+### Feature-Based Architecture (DDD)
+
+The application follows Domain-Driven Design (DDD) principles with a feature-based architecture in [`features/schedule/`](features/schedule/).
+
+#### Architecture Layers
+
+```
+features/schedule/
+├── domain/
+│   ├── entities/           # Domain entities with business logic
+│   ├── value-objects/      # Value objects with validation
+│   └── types/              # Domain types and interfaces
+├── repositories/           # Data access layer
+├── services/               # Business logic services
+└── use-cases/             # Application use cases
+```
+
+#### Domain Entities
+
+The [`TimeEntry`](features/schedule/domain/entities/time-entry.entity.ts:25) entity encapsulates schedule data with domain logic:
+
+**Features:**
+- Immutable properties (readonly)
+- Time comparison methods: [`isSehriPassed()`](features/schedule/domain/entities/time-entry.entity.ts:77), [`isIftarPassed()`](features/schedule/domain/entities/time-entry.entity.ts:93)
+- Date comparison methods: [`isPast()`](features/schedule/domain/entities/time-entry.entity.ts:108), [`isToday()`](features/schedule/domain/entities/time-entry.entity.ts:116), [`isTomorrow()`](features/schedule/domain/entities/time-entry.entity.ts:124)
+- DTO conversion: [`toDTO()`](features/schedule/domain/entities/time-entry.entity.ts:48), [`toFormattedDTO()`](features/schedule/domain/entities/time-entry.entity.ts:62)
+- Static factory methods: [`fromDTO()`](features/schedule/domain/entities/time-entry.entity.ts:142), [`fromDTOArray()`](features/schedule/domain/entities/time-entry.entity.ts:151)
+
+#### Value Objects
+
+The [`LocationVO`](features/schedule/domain/value-objects/location.vo.ts:10) value object encapsulates location logic:
+
+**Features:**
+- Null-safe location handling
+- Display name generation
+- Validation and normalization
+- Equality comparison
+- Static factory methods: [`create()`](features/schedule/domain/value-objects/location.vo.ts:67), [`all()`](features/schedule/domain/value-objects/location.vo.ts:74)
+
+#### Services
+
+The [`ScheduleService`](features/schedule/services/schedule.service.ts:17) contains business logic:
+
+**Methods:**
+- [`getTodaySchedule()`](features/schedule/services/schedule.service.ts:29) - Get today's entry
+- [`getTomorrowSchedule()`](features/schedule/services/schedule.service.ts:40) - Get tomorrow's entry
+- [`getTodayOrNextDaySchedule()`](features/schedule/services/schedule.service.ts:52) - Smart schedule selection
+- [`getScheduleDisplayData()`](features/schedule/services/schedule.service.ts:68) - Complete display data
+- [`getFullSchedule()`](features/schedule/services/schedule.service.ts:80) - All entries
+- [`getScheduleByDateRange()`](features/schedule/services/schedule.service.ts:92) - Date range query
+- [`getLocations()`](features/schedule/services/schedule.service.ts:105) - Unique locations
+- [`getStats()`](features/schedule/services/schedule.service.ts:113) - Dashboard statistics
+- [`getTimeEntryById()`](features/schedule/services/schedule.service.ts:132) - Single entry lookup
+- [`updateTimeEntry()`](features/schedule/services/schedule.service.ts:143) - Update entry
+- [`deleteTimeEntry()`](features/schedule/services/schedule.service.ts:155) - Delete entry
+
+#### Use Cases
+
+Use cases encapsulate application-level logic:
+
+- [`GetTodayScheduleUseCase`](features/schedule/use-cases/get-today-schedule.use-case.ts:1)
+- [`GetFullScheduleUseCase`](features/schedule/use-cases/get-full-schedule.use-case.ts:1)
+- [`GetScheduleDisplayDataUseCase`](features/schedule/use-cases/get-schedule-display-data.use-case.ts:13)
+- [`GetLocationsUseCase`](features/schedule/use-cases/get-locations.use-case.ts:1)
+- [`UploadScheduleUseCase`](features/schedule/use-cases/upload-schedule.use-case.ts:1)
+- [`UpdateEntryUseCase`](features/schedule/use-cases/update-entry.use-case.ts:1)
+- [`DeleteEntryUseCase`](features/schedule/use-cases/delete-entry.use-case.ts:1)
+
+### Error Handling System
+
+The application implements a comprehensive error handling system in [`lib/errors/app-error.ts`](lib/errors/app-error.ts:1).
+
+#### Custom Error Classes
+
+All errors extend the base [`AppError`](lib/errors/app-error.ts:10) class:
+
+- [`DatabaseError`](lib/errors/app-error.ts:51) - Database operation failures
+- [`ValidationError`](lib/errors/app-error.ts:64) - Input validation failures
+- [`NotFoundError`](lib/errors/app-error.ts:83) - Resource not found
+- [`UnauthorizedError`](lib/errors/app-error.ts:99) - Authentication failures
+- [`ForbiddenError`](lib/errors/app-error.ts:112) - Authorization failures
+- [`ConflictError`](lib/errors/app-error.ts:125) - Resource conflicts
+- [`FileUploadError`](lib/errors/app-error.ts:138) - File upload failures
+
+**Features:**
+- HTTP status code mapping
+- Operational vs programming error distinction
+- Error cause chaining
+- JSON serialization
+- Type guard: [`isAppError()`](lib/errors/app-error.ts:150)
+- Error converter: [`toAppError()`](lib/errors/app-error.ts:159)
+
+### Parser System
+
+The application uses a factory pattern for file parsing in [`lib/parsers/index.ts`](lib/parsers/index.ts:1).
+
+#### Parser Factory
+
+The [`ParserFactory`](lib/parsers/index.ts:14) manages parser registration and selection:
+
+**Features:**
+- Automatic parser selection based on file extension
+- Extensible parser registration
+- Support for multiple file formats (JSON, CSV)
+- Type-safe parsing with [`ParsedScheduleEntry`](lib/parsers/parser.interface.ts:1) interface
+
+**Available Parsers:**
+- [`JsonParser`](lib/parsers/json-parser.ts:1) - JSON file parsing
+- [`CsvParser`](lib/parsers/csv-parser.ts:1) - CSV file parsing with PapaParse
+
+**Usage:**
+```typescript
+const parser = ParserFactory.getParser('schedule.json');
+const entries = await parser.parse(fileContent);
+```
+
+### Logging System
+
+A comprehensive logging system is implemented in [`lib/logger/logger.ts`](lib/logger/logger.ts:1).
+
+#### Logger Features
+
+- **Multiple Log Levels**: error, warn, info, debug
+- **Environment-Aware**: Different behavior for dev/test/production
+- **Console Logging**: Color-coded output for development
+- **Context Support**: Structured logging with context objects
+- **Child Loggers**: Create loggers with default context
+- **Production-Ready**: Placeholder for external service integration (Sentry, Datadog)
+
+**Usage:**
+```typescript
+import { logger, createLogger } from '@/lib/logger';
+
+// Global logger
+logger.error('Error message', { context: 'value' }, error);
+
+// Child logger with context
+const apiLogger = createLogger('api');
+apiLogger.info('API request', { endpoint: '/schedule' });
+```
+
+### Configuration Management
+
+Centralized configuration management in [`lib/config/index.ts`](lib/config/index.ts:1).
+
+#### Configuration Modules
+
+- [`APP_CONFIG`](lib/config/index.ts:6) - Application metadata
+- [`UPLOAD_CONFIG`](lib/config/index.ts:12) - File upload limits and allowed types
+- [`TIME_CONFIG`](lib/config/index.ts:19) - Time-related constants
+- [`PDF_CONFIG`](lib/config/index.ts:25) - PDF generation settings
+- [`UI_CONFIG`](lib/config/index.ts:33) - UI display limits
+- [`locations.config.ts`](lib/config/locations.config.ts:1) - Location data
+- [`env.config.ts`](lib/config/env.config.ts:1) - Environment variables
+
+### Guards & Authorization
+
+The application implements a dual-layer guard system in [`lib/guards/`](lib/guards/index.ts:1).
+
+#### Client-Side Guards
+
+The [`DashboardGuard`](lib/guards/client-dashboard-guard.tsx:1) component protects client-side routes:
+
+**Features:**
+- Session checking
+- Redirect to login if unauthenticated
+- Loading state during authentication check
+- Configurable options (requireAdmin)
+
+#### Server-Side Guards
+
+The [`dashboardGuard`](lib/guards/dashboard-guard.ts:1) function protects server components:
+
+**Features:**
+- Server-side session validation
+- Early return for unauthenticated requests
+- Type-safe options
+
+### Advanced Schedule Logic
+
+The schedule display system implements sophisticated time-based logic.
+
+#### Time Comparison Logic
+
+Using moment.js for accurate time comparisons:
+
+```typescript
+// Check if sehri/iftar time has passed
+isSehriPassed(referenceDate?: Date): boolean {
+  const now = referenceDate ? moment(referenceDate) : moment();
+  const sehriTime = moment(this.sehri, 'HH:mm');
+  sehriTime.set({
+    year: now.year(),
+    month: now.month(),
+    date: now.date(),
+  });
+  return now.isSameOrAfter(sehriTime);
+}
+```
+
+#### Smart Schedule Selection
+
+The [`getTodayOrNextDaySchedule()`](features/schedule/services/schedule.service.ts:52) method intelligently selects the appropriate schedule:
+
+**Logic:**
+1. Fetch today's schedule
+2. Check if today's iftar has passed
+3. If iftar passed, return tomorrow's schedule
+4. Otherwise, return today's schedule
+
+#### Display Data Structure
+
+The [`ScheduleDisplayData`](features/schedule/domain/types/schedule-status.types.ts:1) interface provides complete display information:
+
+```typescript
+interface ScheduleDisplayData {
+  today: TimeEntry | null;
+  tomorrow: TimeEntry | null;
+  sehriPassed: boolean;
+  iftarPassed: boolean;
+}
+```
+
+#### Countdown Timer
+
+The [`CountdownTimer`](components/shared/countdown-timer.tsx:1) component provides real-time countdown:
+
+**Features:**
+- Only visible within 1 hour of target time
+- Updates every second
+- Automatically handles next day transitions
+- Format: `HH:MM:SS` with pulsing clock icon
+
+### Rate Limiter Implementation
+
+The [`RateLimiter`](lib/api/rate-limiter.ts:29) class provides in-memory rate limiting:
+
+**Features:**
+- Sliding window algorithm
+- Per-identifier tracking (IP or user ID)
+- Configurable limits and time windows
+- Automatic cleanup of expired entries
+- Store size monitoring
+- Singleton pattern for global instance
+
+**Usage:**
+```typescript
+const rateLimiter = new RateLimiter();
+const result = await rateLimiter.checkLimit('user:123', 100, 60000);
+// { allowed: true, remaining: 99, resetAt: Date }
+```
+
+### API Validation System
+
+Comprehensive validation using Zod schemas in [`lib/validations/api-schemas.ts`](lib/validations/api-schemas.ts:1).
+
+**Features:**
+- Request validation schemas
+- Response validation schemas
+- Type-safe validation
+- Detailed error reporting
+
+### Security Features
+
+1. **Input Sanitization**: [`sanitizeInput()`](lib/api/security-headers.ts:166) prevents XSS attacks
+2. **URL Validation**: [`sanitizeUrl()`](lib/api/security-headers.ts:176) prevents open redirects
+3. **IP Detection**: [`getClientIp()`](lib/api/security-headers.ts:136) handles various proxy headers
+4. **User Agent**: [`getUserAgent()`](lib/api/security-headers.ts:159) extracts user agent information
+
+### Performance Optimizations
+
+1. **Next.js Caching**: Uses `unstable_cache` for data caching
+2. **Static Generation**: Location pages pre-rendered with [`generateStaticParams()`](app/(home)/location/[city]/page.tsx:24)
+3. **Cache Tags**: Selective cache invalidation
+4. **Stale-While-Revalidate**: Background revalidation for improved UX
+5. **External API Caching**: Built-in caching with TTL
+
+### Monitoring & Observability
+
+1. **Request Tracking**: Unique request IDs for tracing
+2. **Response Time**: `X-Response-Time` header
+3. **Cache Metrics**: Hit/miss tracking and hit rate calculation
+4. **Structured Logging**: Context-aware logging throughout the application
+5. **Error Tracking**: Comprehensive error logging with context
+
+
 ## 🎨 UI Components
 
 Built with shadcn/ui:
