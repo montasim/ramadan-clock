@@ -13,6 +13,7 @@ import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2,
 import { Badge } from "@/components/ui/badge";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { ScheduleCard } from "@/components/shared/schedule-card";
+import { DashboardGuard } from "@/lib/guards";
 
 interface ParsedEntry {
   date: string;
@@ -110,7 +111,8 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
+    <DashboardGuard>
+      <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
       {/* ── Hero Banner ──────────────────────────────── */}
       <div className="hero-section px-6 py-8 overflow-hidden">
         <div
@@ -365,6 +367,7 @@ export default function UploadPage() {
           )}
         </AppModal>
       )}
-    </div>
+      </div>
+    </DashboardGuard>
   );
 }

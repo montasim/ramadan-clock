@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { withDashboardGuard } from "@/lib/guards/dashboard-guard";
 import { getStats, getFullSchedule } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +8,7 @@ import { CalendarView } from "@/components/admin/calendar-view";
 import { ScheduleCard } from "@/components/shared/schedule-card";
 
 export default async function AdminDashboard() {
-  const session = await getSession();
-  if (!session) redirect("/auth/login");
+  const session = await withDashboardGuard();
 
   const stats = await getStats();
   const schedule = await getFullSchedule(null);
