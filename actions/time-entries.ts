@@ -2,9 +2,10 @@
 
 import { prisma, type TimeEntry } from "@/lib/db";
 import { revalidatePath, revalidateTag } from "next/cache";
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { unstable_cache } from 'next/cache';
 import { CACHE_CONFIG, CACHE_TAGS } from '@/lib/cache';
+import { APP_CONFIG } from '@/lib/config/index';
 
 // Extended type for formatted entries with both 12-hour and 24-hour formats
 type FormattedTimeEntry = TimeEntry & {
@@ -28,7 +29,7 @@ function formatTimeEntry(entry: TimeEntry): FormattedTimeEntry {
 // Uncached version of getTodaySchedule for internal use
 async function getTodayScheduleUncached(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = moment().format('YYYY-MM-DD');
+    const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
 
     const where: Record<string, unknown> = {
       date: today,
@@ -63,8 +64,8 @@ export const getTodaySchedule = unstable_cache(
  * Check if iftar time has passed for today
  */
 function hasIftarPassed(todaySchedule: TimeEntry): boolean {
-  const now = moment();
-  const iftarTime = moment(todaySchedule.iftar, 'HH:mm');
+  const now = moment().tz(APP_CONFIG.timezone);
+  const iftarTime = moment.tz(todaySchedule.iftar, 'HH:mm', APP_CONFIG.timezone);
   iftarTime.set({
     year: now.year(),
     month: now.month(),
@@ -77,8 +78,8 @@ function hasIftarPassed(todaySchedule: TimeEntry): boolean {
  * Check if sehri time has passed for today
  */
 function hasSehriPassed(todaySchedule: TimeEntry): boolean {
-  const now = moment();
-  const sehriTime = moment(todaySchedule.sehri, 'HH:mm');
+  const now = moment().tz(APP_CONFIG.timezone);
+  const sehriTime = moment.tz(todaySchedule.sehri, 'HH:mm', APP_CONFIG.timezone);
   sehriTime.set({
     year: now.year(),
     month: now.month(),
@@ -92,8 +93,8 @@ function hasSehriPassed(todaySchedule: TimeEntry): boolean {
  */
 async function getTodayOrNextDayScheduleUncached(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = moment().format('YYYY-MM-DD');
-    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
+    const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
+    const tomorrow = moment().tz(APP_CONFIG.timezone).add(1, 'day').format('YYYY-MM-DD');
 
     const where: Record<string, unknown> = { date: today };
     if (location) {
@@ -135,8 +136,8 @@ export const getTodayOrNextDaySchedule = unstable_cache(
  */
 async function getScheduleDisplayDataUncached(location?: string | null) {
   try {
-    const today = moment().format('YYYY-MM-DD');
-    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
+    const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
+    const tomorrow = moment().tz(APP_CONFIG.timezone).add(1, 'day').format('YYYY-MM-DD');
 
     // Get today's schedule
     const todayWhere: Record<string, unknown> = { date: today };

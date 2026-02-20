@@ -10,10 +10,11 @@ import Link from "next/link";
 import { DownloadButton } from "@/components/shared/download-button";
 import LocationSkeleton from "@/components/public/location-skeleton";
 import { Suspense } from "react";
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { getLocationMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createLocalBusinessSchema } from "@/lib/seo/schemas";
+import { APP_CONFIG } from "@/lib/config/index";
 
 interface LocationPageProps {
   params: Promise<{ city: string }>;
@@ -44,7 +45,7 @@ async function LocationPageContent({ params }: { params: Promise<{ city: string 
 
   const schedule = await getFullSchedule(decodedCity);
   const todaySchedule = await getTodayOrNextDaySchedule(decodedCity);
-  const today = moment().format('YYYY-MM-DD');
+  const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
 
   return (
     <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-7">

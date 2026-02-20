@@ -15,10 +15,11 @@ import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { getRandomHadith } from "@/lib/hadith-api";
 import { CountdownTimer } from "@/components/shared/countdown-timer";
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { getHomeMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createSoftwareApplicationSchema } from "@/lib/seo/schemas";
+import { APP_CONFIG } from "@/lib/config/index";
 
 export const metadata = getHomeMetadata();
 
@@ -33,8 +34,8 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
   const scheduleData = await getScheduleDisplayData(location || null);
   const locations = await getLocations();
   const hadith = await getRandomHadith();
-  const today = moment().format('YYYY-MM-DD');
-  const todayDisplay = moment().format("dddd, MMMM D, YYYY");
+  const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
+  const todayDisplay = moment().tz(APP_CONFIG.timezone).format("dddd, MMMM D, YYYY");
 
   return (
     <div className="space-y-7">
