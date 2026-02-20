@@ -146,11 +146,11 @@ export function ScheduleTable({
           {entries.map((entry) => {
             const isToday = entry.date === today;
             const isSelected = selectedIds?.has(entry.id) ?? false;
-            const { status, rowClass } = getScheduleStatus(entry);
+            const { status, rowClass } = getScheduleStatus(entry, entries);
             
             // Use simple row class for location page
             const finalRowClass = rowClassVariant === "simple"
-              ? getScheduleRowClass(entry)
+              ? getScheduleRowClass(entry, entries)
               : rowClass;
 
             return (
