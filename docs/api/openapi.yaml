@@ -1,0 +1,742 @@
+openapi: 3.0.3
+info:
+  title: Ramadan Clock API
+  version: 1.0.0
+  description: |
+    API for managing Ramadan prayer schedules and related data.
+    
+    ## Authentication
+    
+    Some endpoints require authentication. To authenticate, include your session token in the request headers.
+    
+    ## Rate Limiting
+    
+    All endpoints are rate-limited. Rate limit information is included in the response headers:
+    - `X-RateLimit-Limit`: Maximum requests per window
+    - `X-RateLimit-Remaining`: Remaining requests in current window
+    - `X-RateLimit-Reset`: Time when the rate limit resets
+    
+    ## Error Responses
+    
+    All endpoints return errors in a consistent format:
+    ```json
+    {
+      "success": false,
+      "error": {
+        "code": "ErrorCode",
+        "message": "Error message",
+        "details": {}
+      },
+      "meta": {
+        "requestId": "req_...",
+        "timestamp": "2024-03-12T10:00:00.000Z"
+      }
+    }
+    ```
+    
+  contact:
+    name: API Support
+    email: support@example.com
+  
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.example.com
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Hadith
+    description: Hadith endpoints
+  - name: PDF
+    description: PDF generation endpoints
+  - name: Schedule
+    description: Schedule management endpoints
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Get system health status
+      description: Check the health of the API and its dependencies
+      operationId: getHealth
+      responses:
+        '200':
+          description: Health check successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/hadith:
+    get:
+      tags:
+        - Hadith
+      summary: Get a random hadith
+      description: Retrieve a random hadith from the collection
+      operationId: getRandomHadith
+      parameters:
+        - name: collection
+          in: query
+          description: Hadith collection to fetch from
+          required: false
+          schema:
+            type: string
+            enum: [bukhari, muslim, abudawud, tirmidhi, nasai, ibnmajah]
+        - name: id
+          in: query
+          description: Specific hadith ID
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+      responses:
+        '200':
+          description: Hadith retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HadithResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security: []
+
+  /api/pdf:
+    get:
+      tags:
+        - PDF
+      summary: Generate PDF schedule
+      description: Generate a PDF file containing the prayer schedule
+      operationId: generatePdf
+      parameters:
+        - name: location
+          in: query
+          description: Location to filter by (use 'all' for all locations)
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Type of schedule to generate
+          required: false
+          schema:
+            type: string
+            enum: [today, full]
+            default: today
+      responses:
+        '200':
+          description: PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Schedule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+  /api/schedule:
+    get:
+      tags:
+        - Schedule
+      summary: Get schedule with pagination
+      description: Retrieve a paginated list of schedule entries
+      operationId: getSchedule
+      parameters:
+        - name: location
+          in: query
+          description: Location to filter by
+          required: false
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          description: Start date (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Schedule retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedScheduleResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security: []
+    
+    post:
+      tags:
+        - Schedule
+      summary: Create new time entry
+      description: Create a new time entry (admin only)
+      operationId: createTimeEntry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryCreate'
+      responses:
+        '201':
+          description: Time entry created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - Entry already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+  /api/schedule/{id}:
+    get:
+      tags:
+        - Schedule
+      summary: Get specific time entry
+      description: Retrieve a specific time entry by ID
+      operationId: getTimeEntry
+      parameters:
+        - name: id
+          in: path
+          description: Time entry ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Time entry retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryResponse'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Time entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security: []
+    
+    put:
+      tags:
+        - Schedule
+      summary: Update time entry
+      description: Update a specific time entry (admin only)
+      operationId: updateTimeEntry
+      parameters:
+        - name: id
+          in: path
+          description: Time entry ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryUpdate'
+      responses:
+        '200':
+          description: Time entry updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Time entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+    
+    delete:
+      tags:
+        - Schedule
+      summary: Delete time entry
+      description: Delete a specific time entry (admin only)
+      operationId: deleteTimeEntry
+      parameters:
+        - name: id
+          in: path
+          description: Time entry ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Time entry deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Time entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from NextAuth session
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [ok, error, degraded]
+              example: ok
+            timestamp:
+              type: string
+              format: date-time
+              example: '2024-03-12T10:00:00.000Z'
+            version:
+              type: string
+              example: '1.0.0'
+            checks:
+              type: object
+              properties:
+                database:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [ok, error]
+                      example: ok
+                    latency:
+                      type: integer
+                      example: 5
+                memory:
+                  type: object
+                  properties:
+                    used:
+                      type: integer
+                      example: 128
+                    total:
+                      type: integer
+                      example: 512
+                    percentage:
+                      type: integer
+                      example: 25
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    HadithResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            text:
+              type: string
+              example: 'The Prophet (peace be upon him) said...'
+            source:
+              type: string
+              example: 'Sahih Bukhari - Book 1, Hadith 1'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    TimeEntryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/TimeEntry'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    PaginatedScheduleResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    TimeEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '550e8400-e29b-41d4-a716-446655440000'
+        date:
+          type: string
+          format: date
+          example: '2024-03-12'
+        sehri:
+          type: string
+          example: '04:30'
+        iftar:
+          type: string
+          example: '18:15'
+        location:
+          type: string
+          nullable: true
+          example: 'Dhaka'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-03-01T10:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2024-03-01T10:00:00.000Z'
+
+    TimeEntryCreate:
+      type: object
+      required:
+        - date
+        - sehri
+        - iftar
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date in YYYY-MM-DD format
+          example: '2024-03-12'
+        sehri:
+          type: string
+          pattern: '^\\d{2}:\\d{2}$'
+          description: Time in HH:mm format
+          example: '04:30'
+        iftar:
+          type: string
+          pattern: '^\\d{2}:\\d{2}$'
+          description: Time in HH:mm format
+          example: '18:15'
+        location:
+          type: string
+          nullable: true
+          example: 'Dhaka'
+
+    TimeEntryUpdate:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date in YYYY-MM-DD format
+          example: '2024-03-12'
+        sehri:
+          type: string
+          pattern: '^\\d{2}:\\d{2}$'
+          description: Time in HH:mm format
+          example: '04:30'
+        iftar:
+          type: string
+          pattern: '^\\d{2}:\\d{2}$'
+          description: Time in HH:mm format
+          example: '18:15'
+        location:
+          type: string
+          nullable: true
+          example: 'Dhaka'
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 5
+        hasNext:
+          type: boolean
+          example: true
+        hasPrev:
+          type: boolean
+          example: false
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          example:
+            message: 'Time entry deleted successfully'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: 'ValidationError'
+            message:
+              type: string
+              example: 'Invalid input parameters'
+            details:
+              type: object
+              additionalProperties: true
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    ResponseMeta:
+      type: object
+      properties:
+        requestId:
+          type: string
+          example: 'req_1710240000000_abc123'
+        timestamp:
+          type: string
+          format: date-time
+          example: '2024-03-12T10:00:00.000Z'
