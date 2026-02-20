@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
-import { uploadSchedule, validateScheduleFile, type UploadResult } from "@/actions/upload";
+import { uploadSchedule, validateScheduleFile, type ActionResult } from "@/actions/upload.actions.new";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ interface ParsedEntry {
 }
 
 export default function UploadPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<ParsedEntry[]>([]);
   const [validationResult, setValidationResult] = useState<{
@@ -36,7 +38,7 @@ export default function UploadPage() {
   } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [uploadResult, setUploadResult] = useState<ActionResult | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -51,7 +53,12 @@ export default function UploadPage() {
         const json = JSON.parse(text);
         setParsedData(json);
         const validation = await validateScheduleFile(json);
-        setValidationResult(validation);
+        if (validation.success) {
+          setValidationResult(validation.data);
+        } else {
+          toast.error(validation.error?.message || "Validation failed");
+          setValidationResult(null);
+        }
       } catch {
         toast.error("Invalid JSON file");
         setParsedData([]);
@@ -64,7 +71,12 @@ export default function UploadPage() {
           const data = results.data as ParsedEntry[];
           setParsedData(data);
           const validation = await validateScheduleFile(data);
-          setValidationResult(validation);
+          if (validation.success) {
+            setValidationResult(validation.data);
+          } else {
+            toast.error(validation.error?.message || "Validation failed");
+            setValidationResult(null);
+          }
         },
         error: () => {
           toast("Failed to parse CSV file");
@@ -91,8 +103,8 @@ export default function UploadPage() {
     setUploadResult(result);
     setIsUploading(false);
     setShowConfirmDialog(false);
-    if (result.success) toast.success(result.message);
-    else toast.error(result.message);
+    if (result.success) toast.success(result.data?.message || "Upload successful");
+    else toast.error(result.error?.message || "Upload failed");
   };
 
   const downloadSampleJSON = () => {
@@ -347,25 +359,36 @@ export default function UploadPage() {
           open={!!uploadResult}
           onOpenChange={() => setUploadResult(null)}
           title={uploadResult.success ? "✓ Upload Successful" : "✗ Upload Failed"}
-          description={uploadResult.message}
+          description={uploadResult.success ? uploadResult.data?.message : uploadResult.error?.message}
           titleClassName={uploadResult.success ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}
           primaryAction={{
-            label: "Close",
-            onClick: () => setUploadResult(null),
+            label: uploadResult.success ? "Go to Dashboard" : "Close",
+            onClick: () => {
+              if (uploadResult.success) {
+                // Clear all upload data and redirect to dashboard
+                setFile(null);
+                setParsedData([]);
+                setValidationResult(null);
+                setUploadResult(null);
+                router.push('/admin/dashboard');
+              } else {
+                setUploadResult(null);
+              }
+            },
           }}
           showFooter={true}
         >
-          {uploadResult.rowCount && (
+          {uploadResult.success && uploadResult.data?.rowCount && (
             <div className="py-2 px-4 rounded-xl border border-border/60 bg-muted/30">
               <p className="text-sm font-medium">
-                Entries uploaded: <span className="gradient-text font-bold">{uploadResult.rowCount}</span>
+                Entries uploaded: <span className="gradient-text font-bold">{uploadResult.data.rowCount}</span>
               </p>
             </div>
           )}
-          {uploadResult.errors && uploadResult.errors.length > 0 && (
+          {uploadResult.success && uploadResult.data?.errors && uploadResult.data.errors.length > 0 && (
             <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl bg-destructive/5 p-3">
               <p className="text-xs font-bold text-destructive mb-2">Errors:</p>
-              {uploadResult.errors.map((error, i) => (
+              {uploadResult.data.errors.map((error: { row: number; error: string }, i: number) => (
                 <p key={i} className="text-xs text-destructive">
                   Row {error.row}: {error.error}
                 </p>

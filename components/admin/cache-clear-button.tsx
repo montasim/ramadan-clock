@@ -32,10 +32,9 @@ export function CacheClearButton() {
   return (
     <Button
       variant="outline"
-      size="sm"
       onClick={handleClearCache}
       disabled={isClearing}
-      className="rounded-full gap-2 border-border/60 hover:border-primary/50 hover:text-primary"
+      className="rounded-full gap-2 font-semibold w-full sm:w-auto px-6 border-border/60 hover:border-primary/50 hover:text-primary"
     >
       <RefreshCw className={`h-3.5 w-3.5 ${isClearing ? "animate-spin" : ""}`} />
       {isClearing ? "Clearing..." : "Clear Cache"}

@@ -49,11 +49,11 @@ export async function clearAllCache(): Promise<ActionResult> {
     await requireAdminSession();
 
     // Invalidate all cache tags
-    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
-    revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
-    revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
-    revalidateTag(CACHE_TAGS.PDF, CACHE_TAGS.PDF);
-    revalidateTag(CACHE_TAGS.HADITH, CACHE_TAGS.HADITH);
+    revalidateTag(CACHE_TAGS.SCHEDULE, 'max');
+    revalidateTag(CACHE_TAGS.STATS, 'max');
+    revalidateTag(CACHE_TAGS.LOCATIONS, 'max');
+    revalidateTag(CACHE_TAGS.PDF, 'max');
+    revalidateTag(CACHE_TAGS.HADITH, 'max');
 
     // Revalidate all paths
     revalidatePath('/');
@@ -98,7 +98,7 @@ export async function clearScheduleCache(): Promise<ActionResult> {
   try {
     await requireAdminSession();
 
-    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+    revalidateTag(CACHE_TAGS.SCHEDULE, 'max');
     revalidatePath('/');
     revalidatePath('/calendar');
     revalidatePath('/admin/dashboard');

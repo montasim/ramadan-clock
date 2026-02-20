@@ -5,9 +5,10 @@
 
 import { getPrayerTimeAPIService } from '@/lib/api/prayer-time-api';
 import { getPrayerTimeProcessor } from '@/lib/services/prayer-time-processor.service';
-import { uploadSchedule } from '@/actions/upload';
-import { revalidatePath } from 'next/cache';
+import { uploadSchedule } from '@/actions/upload.actions.new';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
+import { CACHE_TAGS } from '@/lib/cache';
 
 /**
  * Cron execution result
@@ -118,13 +119,17 @@ export class PrayerTimeCron {
       );
 
       if (!uploadResult.success) {
-        throw new Error(uploadResult.message);
+        throw new Error(uploadResult.error?.message || 'Upload failed');
       }
 
-      console.log(`[Cron] Upload successful: ${uploadResult.message}`);
+      console.log(`[Cron] Upload successful: ${uploadResult.data?.message || 'Success'}`);
 
       // Step 4: Revalidate cache
       console.log('[Cron] Revalidating cache...');
+      revalidateTag(CACHE_TAGS.SCHEDULE, 'max');
+      revalidateTag(CACHE_TAGS.STATS, 'max');
+      revalidateTag(CACHE_TAGS.LOCATIONS, 'max');
+      revalidateTag(CACHE_TAGS.PDF, 'max');
       revalidatePath('/');
       revalidatePath('/calendar');
 
@@ -136,7 +141,7 @@ export class PrayerTimeCron {
         duration: Date.now() - startTime,
         locationsProcessed,
         entriesProcessed: processingResult.total,
-        entriesCreated: uploadResult.rowCount || 0,
+        entriesCreated: uploadResult.data?.rowCount || 0,
         entriesUpdated: 0, // uploadSchedule doesn't distinguish between create/update
         entriesFailed: processingResult.invalid,
         errors: errors.length > 0 ? JSON.stringify(errors) : null,
@@ -151,7 +156,7 @@ export class PrayerTimeCron {
         duration,
         locationsProcessed,
         entriesProcessed: processingResult.total,
-        entriesCreated: uploadResult.rowCount || 0,
+        entriesCreated: uploadResult.data?.rowCount || 0,
         entriesUpdated: 0,
         entriesFailed: processingResult.invalid,
         errors,

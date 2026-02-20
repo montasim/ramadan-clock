@@ -3,6 +3,7 @@
  * Business logic for file upload operations
  */
 
+import { prisma } from '@/lib/db';
 import { TimeEntryRepository } from '../repositories/time-entry.repository';
 import { UploadLogRepository } from '../repositories/upload-log.repository';
 import { logger } from '@/lib/logger';
@@ -34,6 +35,8 @@ export interface UploadResult {
  * Handles file upload validation and processing
  */
 export class UploadService {
+  private readonly BATCH_SIZE = 50;
+
   constructor(
     private readonly timeEntryRepository: TimeEntryRepository,
     private readonly uploadLogRepository: UploadLogRepository
@@ -89,7 +92,50 @@ export class UploadService {
   }
 
   /**
-   * Upload schedule entries
+   * Bulk upsert entries with transaction support
+   * @param entries - Entries to upsert
+   * @returns Number of entries upserted
+   */
+  private async bulkUpsertWithTransaction(entries: ParsedEntry[]): Promise<number> {
+    return await prisma.$transaction(async (tx) => {
+      let upsertedCount = 0;
+
+      // Process in batches to avoid overwhelming the database
+      for (let i = 0; i < entries.length; i += this.BATCH_SIZE) {
+        const batch = entries.slice(i, i + this.BATCH_SIZE);
+
+        await Promise.all(
+          batch.map((entry) =>
+            tx.timeEntry.upsert({
+              where: {
+                date_location: {
+                  date: entry.date,
+                  location: entry.location as string,
+                },
+              },
+              update: {
+                sehri: entry.sehri,
+                iftar: entry.iftar,
+              },
+              create: {
+                date: entry.date,
+                sehri: entry.sehri,
+                iftar: entry.iftar,
+                location: entry.location as string,
+              },
+            })
+          )
+        );
+
+        upsertedCount += batch.length;
+      }
+
+      return upsertedCount;
+    });
+  }
+
+  /**
+   * Upload schedule entries with transaction support and batching
    * @param entries - Parsed entries from file
    * @param fileName - Name of the uploaded file
    * @returns Upload result
@@ -138,31 +184,22 @@ export class UploadService {
       }
     }
 
-    // Bulk upsert entries
+    // Bulk upsert entries with transaction support
     try {
-      await Promise.all(
-        uniqueEntries.map((entry) =>
-          this.timeEntryRepository.upsert({
-            date: entry.date,
-            sehri: entry.sehri,
-            iftar: entry.iftar,
-            location: entry.location as string,
-          })
-        )
-      );
+      const upsertedCount = await this.bulkUpsertWithTransaction(uniqueEntries);
 
       // Log the upload
       await this.uploadLogRepository.create({
         fileName,
-        rowCount: uniqueEntries.length,
+        rowCount: upsertedCount,
         status: errors.length > 0 ? 'partial' : 'success',
         errors: errors.length > 0 ? JSON.stringify(errors) : null,
       });
 
       return {
         success: true,
-        message: `Successfully uploaded ${uniqueEntries.length} entries`,
-        rowCount: uniqueEntries.length,
+        message: `Successfully uploaded ${upsertedCount} entries`,
+        rowCount: upsertedCount,
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {

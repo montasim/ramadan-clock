@@ -140,11 +140,11 @@ export async function uploadSchedule(
 
     if (result.success) {
       // Invalidate caches
-      revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
-      revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
-      revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
-      revalidateTag(CACHE_TAGS.PDF, CACHE_TAGS.PDF);
-      
+      revalidateTag(CACHE_TAGS.SCHEDULE, 'max');
+      revalidateTag(CACHE_TAGS.STATS, 'max');
+      revalidateTag(CACHE_TAGS.LOCATIONS, 'max');
+      revalidateTag(CACHE_TAGS.PDF, 'max');
+
       // Revalidate paths for ISR
       revalidatePath('/');
       revalidatePath('/calendar');
