@@ -13,13 +13,12 @@ import autoTable from 'jspdf-autotable';
 import {
   withErrorHandler,
   withRateLimit,
-  withAuth,
-  withValidation,
   error,
 } from '@/lib/api';
 import { pdfQuerySchema } from '@/lib/validations/api-schemas';
 import { logger } from '@/lib/logger';
 import { createHash } from 'crypto';
+import { getClientIp, getUserAgent, setSecurityHeaders } from '@/lib/api/security-headers';
 
 /**
  * Generate ETag for schedule data
@@ -27,6 +26,63 @@ import { createHash } from 'crypto';
 function generateETag(schedule: any[]): string {
   const scheduleString = JSON.stringify(schedule);
   return createHash('md5').update(scheduleString).digest('hex');
+}
+
+/**
+ * Validate user agent to prevent bot abuse
+ */
+function validateUserAgent(userAgent: string): boolean {
+  if (!userAgent || userAgent === 'unknown') {
+    return false;
+  }
+
+  // Block common bot patterns
+  const blockedPatterns = [
+    /bot/i,
+    /crawler/i,
+    /spider/i,
+    /scraper/i,
+    /curl/i,
+    /wget/i,
+    /python/i,
+    /java/i,
+    /perl/i,
+  ];
+
+  // Check if user agent matches blocked patterns
+  for (const pattern of blockedPatterns) {
+    if (pattern.test(userAgent)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Validate referer to prevent CSRF and unauthorized access
+ */
+function validateReferer(referer: string | null, host: string | null): boolean {
+  if (!referer) {
+    // Allow requests without referer (direct links)
+    return true;
+  }
+
+  try {
+    const refererUrl = new URL(referer);
+    const refererHost = refererUrl.hostname;
+
+    // Allow same-origin requests
+    if (!host) {
+      return true;
+    }
+
+    // Check if referer matches current host
+    return refererHost === host || refererHost.endsWith(`.${host}`);
+  } catch {
+    // Invalid referer URL, allow the request
+    return true;
+  }
 }
 
 /**
@@ -40,14 +96,63 @@ function generateETag(schedule: any[]): string {
  * // Response: PDF file
  * 
  * @throws {ValidationError} When query parameters are invalid
- * @throws {UnauthorizedError} When user is not authenticated
  * @throws {RateLimitError} When rate limit is exceeded
+ * @throws {ForbiddenError} When user agent is invalid or referer is blocked
  * 
- * Rate limit: 5 requests per minute
- * Requires: Admin authentication
+ * Rate limit: 3 requests per minute per IP
+ * Requires: No authentication (public endpoint)
+ * 
+ * Abuse prevention:
+ * - IP-based rate limiting (3 requests/minute)
+ * - User-Agent validation (blocks bots/scrapers)
+ * - Referer validation (prevents CSRF)
+ * - Security headers (X-Content-Type-Options, X-Frame-Options, etc.)
+ * - Request logging for monitoring
  */
 async function generatePdfHandler(request: NextRequest): Promise<NextResponse> {
   try {
+    // Abuse prevention: Get client information
+    const clientIp = getClientIp(request);
+    const userAgent = getUserAgent(request);
+    const referer = request.headers.get('referer');
+    const host = request.headers.get('host');
+
+    // Abuse prevention: Validate user agent
+    if (!validateUserAgent(userAgent)) {
+      logger.warn('PDF download blocked: Invalid user agent', {
+        ip: clientIp,
+        userAgent,
+      });
+      return error(
+        403,
+        'ForbiddenError',
+        'Invalid user agent. Please use a web browser to download PDFs.',
+        { ip: clientIp }
+      );
+    }
+
+    // Abuse prevention: Validate referer
+    if (!validateReferer(referer, host)) {
+      logger.warn('PDF download blocked: Invalid referer', {
+        ip: clientIp,
+        referer,
+        host,
+      });
+      return error(
+        403,
+        'ForbiddenError',
+        'Invalid referer. Please access PDFs from the website.',
+        { ip: clientIp }
+      );
+    }
+
+    // Abuse prevention: Log request for monitoring
+    logger.info('PDF download request', {
+      ip: clientIp,
+      userAgent: userAgent.substring(0, 100), // Truncate for logging
+      referer: referer ? referer.substring(0, 100) : 'none',
+    });
+
     // Parse query parameters
     const queryParams = Object.fromEntries(request.nextUrl.searchParams.entries());
     const { location, type } = pdfQuerySchema.parse(queryParams);
@@ -173,6 +278,9 @@ async function generatePdfHandler(request: NextRequest): Promise<NextResponse> {
       },
     });
 
+    // Add security headers to prevent abuse
+    setSecurityHeaders(response);
+
     logger.info('PDF generated successfully', {
       location: actualLocation,
       type,
@@ -205,8 +313,8 @@ async function generatePdfHandler(request: NextRequest): Promise<NextResponse> {
  */
 export const GET = withErrorHandler(
   withRateLimit(
-    withAuth(generatePdfHandler, { requireAdmin: true }),
-    { limit: 5, windowMs: 60 * 1000 }
+    generatePdfHandler,
+    { limit: 3, windowMs: 60 * 1000 }
   )
 );
 
