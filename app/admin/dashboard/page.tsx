@@ -102,7 +102,7 @@ export default async function AdminDashboard() {
       {/* ── Calendar Card ───────────────────── */}
       <ScheduleCard
         title="Schedule Calendar"
-        description={`Manage all Sehri &amp; Iftar entries (${schedule.length} total)`}
+        description={`Manage all Sehri & Iftar entries (${schedule.length} total)`}
       >
         {schedule.length > 0 ? (
           <CalendarView entries={schedule} />
