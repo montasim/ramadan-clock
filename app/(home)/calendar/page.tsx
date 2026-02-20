@@ -14,6 +14,7 @@ import { getCalendarMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createCollectionPageSchema } from "@/lib/seo/schemas";
 import { APP_CONFIG } from "@/lib/config/index";
+import { config } from "@/lib/config";
 
 export const metadata = getCalendarMetadata();
 
@@ -27,7 +28,7 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
   const schedule = await getFullSchedule(selectedLocation);
   const locations = await getLocations();
   const todaySchedule = await getTodayOrNextDaySchedule(selectedLocation);
-  const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
+  const today = moment().tz(config.timezone).format('YYYY-MM-DD');
 
   return (
     <div className="space-y-7">

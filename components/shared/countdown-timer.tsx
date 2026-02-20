@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import moment from 'moment-timezone';
+import { config } from "@/lib/config";
 
-// Configured timezone for the application (must match server-side config)
-const APP_TIMEZONE = 'Asia/Dhaka';
+// Configured timezone for the application (from config)
+const APP_TIMEZONE = config.timezone;
 
 interface CountdownTimerProps {
   targetTime: string; // Format: "HH:MM"

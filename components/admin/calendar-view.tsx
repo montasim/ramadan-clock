@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/select";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import moment from 'moment';
+import { APP_CONFIG } from '@/lib/config/app.config';
+import { config } from "@/lib/config";
 
 interface CalendarViewProps {
   entries: Array<TimeEntry & { sehri24?: string; iftar24?: string }>;
@@ -26,7 +28,7 @@ interface CalendarViewProps {
 
 // Get today's date in local timezone (YYYY-MM-DD format) using moment
 const getTodayLocal = () => {
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Dhaka';
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || config.timezone;
   return moment().tz(userTimezone).format('YYYY-MM-DD');
 };
 
@@ -231,7 +233,7 @@ export function CalendarView({ entries, locations }: CalendarViewProps) {
               Are you sure you want to delete schedule for{" "}
               <strong>
                 {deletingEntry
-                  ? moment.tz(deletingEntry.date, Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Dhaka').format("ddd, MMMM D, YYYY")
+                  ? moment.tz(deletingEntry.date, Intl.DateTimeFormat().resolvedOptions().timeZone || config.timezone).format("ddd, MMMM D, YYYY")
                   : ""}
               </strong>
               {deletingEntry?.location ? ` (${deletingEntry.location})` : ""}? This action cannot be undone.

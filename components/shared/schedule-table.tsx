@@ -16,9 +16,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getScheduleStatus, getScheduleRowClass, ScheduleStatus } from "@/lib/utils/schedule.utils";
 import { Pencil, Trash2 } from "lucide-react";
 import moment from 'moment-timezone';
+import { config } from "@/lib/config";
 
-// Configured timezone for the application (must match server-side config)
-const APP_TIMEZONE = 'Asia/Dhaka';
+// Configured timezone for the application (from config)
+const APP_TIMEZONE = config.timezone;
 
 // Get user's local timezone from browser, fallback to app timezone
 const getUserTimezone = () => {

@@ -14,6 +14,7 @@ import { getHomeMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createSoftwareApplicationSchema } from "@/lib/seo/schemas";
 import { APP_CONFIG } from "@/lib/config/index";
+import { config } from "@/lib/config";
 
 export const metadata = getHomeMetadata();
 
@@ -27,8 +28,9 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
   const scheduleData = await getScheduleDisplayData(selectedLocation);
   const locations = await getLocations();
   const hadith = await getRandomHadith();
-  const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
-  const todayDisplay = moment().tz(APP_CONFIG.timezone).format("dddd, MMMM D, YYYY");
+  const timezone = config.timezone;
+  const today = moment().tz(timezone).format('YYYY-MM-DD');
+  const todayDisplay = moment().tz(timezone).format("dddd, MMMM D, YYYY");
 
   return (
     <div className="space-y-7">

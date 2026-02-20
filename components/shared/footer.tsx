@@ -1,10 +1,9 @@
-"use client";
-
 import { config } from "@/lib/config";
 import { Github, Linkedin, Mail } from "lucide-react";
 import moment from 'moment';
 
 export function Footer() {
+  const currentYear = moment().year();
 
   return (
     <footer className="relative border-t border-border/50 py-6 md:py-6">
@@ -12,7 +11,7 @@ export function Footer() {
       <div className="flex flex-col items-center justify-center gap-3 px-4">
         <div className="flex w-full max-w-5xl flex-col items-center justify-between gap-2 md:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {moment().year()}{" "}
+            © {currentYear}{" "}
             <span className="gradient-text font-semibold">Ramadan Clock</span>.
             All rights reserved.
           </p>
@@ -20,7 +19,7 @@ export function Footer() {
           {/* Developer Social Icons */}
           <div className="flex items-center gap-5">
             <a
-              href={''}
+              href={config.developerGithub}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -29,7 +28,7 @@ export function Footer() {
               <Github className="h-5 w-5" />
             </a>
             <a
-              href={''}
+              href={config.developerLinkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -38,7 +37,7 @@ export function Footer() {
               <Linkedin className="h-5 w-5" />
             </a>
             <a
-              href={`mailto:${''}`}
+              href={`mailto:${config.developerEmail}`}
               className="text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Developer Email"
             >

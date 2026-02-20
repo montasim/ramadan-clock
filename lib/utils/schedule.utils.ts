@@ -1,8 +1,9 @@
 import moment from 'moment-timezone';
 import { TimeEntry } from "@prisma/client";
+import { config } from '../config';
 
-// Configured timezone for the application (must match server-side config)
-const APP_TIMEZONE = 'Asia/Dhaka';
+// Configured timezone for the application (from config)
+const APP_TIMEZONE = config.timezone;
 
 // Cache the user timezone to ensure consistency across multiple calls
 let cachedUserTimezone: string | null = null;
