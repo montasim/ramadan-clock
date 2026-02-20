@@ -2,14 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppModal } from "@/components/ui/app-modal";
 import { useState } from "react";
 
 export function LogoutButton() {
@@ -31,24 +24,21 @@ export function LogoutButton() {
         Logout
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Logout</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to log out? You will need to sign in again to access your account.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleLogout}>
-              Logout
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AppModal
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        title="Confirm Logout"
+        description="Are you sure you want to log out? You will need to sign in again to access your account."
+        primaryAction={{
+          label: "Logout",
+          onClick: handleLogout,
+          variant: "destructive",
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setIsOpen(false),
+        }}
+      />
     </>
   );
 }

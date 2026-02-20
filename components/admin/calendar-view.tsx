@@ -3,14 +3,7 @@
 import { useState } from "react";
 import { TimeEntry } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppModal } from "@/components/ui/app-modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { deleteTimeEntry, updateTimeEntry } from "@/actions/time-entries";
@@ -185,151 +178,133 @@ export function CalendarView({ entries }: CalendarViewProps) {
       />
 
       {/* ── Edit Dialog ────────────────────────── */}
-      <Dialog open={!!editingEntry} onOpenChange={() => setEditingEntry(null)}>
-        <DialogContent className="border-border/60 bg-card sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold gradient-text">Edit Entry</DialogTitle>
-            <DialogDescription>
-              Update Sehri & Iftar times for this date
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-1.5">
-              <Label htmlFor="edit-date" className="text-sm font-semibold">Date</Label>
-              <Input
-                id="edit-date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="h-10 rounded-xl border-border/60"
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="edit-sehri" className="text-sm font-semibold">Sehri Time</Label>
-              <Input
-                id="edit-sehri"
-                type="time"
-                value={formData.sehri}
-                onChange={(e) => setFormData({ ...formData, sehri: e.target.value })}
-                className="h-10 rounded-xl border-border/60"
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="edit-iftar" className="text-sm font-semibold">Iftar Time</Label>
-              <Input
-                id="edit-iftar"
-                type="time"
-                value={formData.iftar}
-                onChange={(e) => setFormData({ ...formData, iftar: e.target.value })}
-                className="h-10 rounded-xl border-border/60"
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="edit-location" className="text-sm font-semibold">Location</Label>
-              <Select
-                value={formData.location}
-                onValueChange={(v) => setFormData({ ...formData, location: v })}
-              >
-                <SelectTrigger id="edit-location" className="h-10 w-full rounded-xl border-border/60">
-                  <SelectValue placeholder="Select a district" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px] overflow-y-auto" position="popper">
-                  {bangladeshDistricts.map((district) => (
-                    <SelectItem key={district} value={district}>{district}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <AppModal
+        open={!!editingEntry}
+        onOpenChange={() => setEditingEntry(null)}
+        title="Edit Entry"
+        description="Update Sehri & Iftar times for this date"
+        titleClassName="gradient-text"
+        maxWidth="md"
+        primaryAction={{
+          label: (loading) => loading ? "Saving…" : "Save Changes",
+          onClick: handleUpdate,
+          loading: isUpdating,
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setEditingEntry(null),
+        }}
+      >
+        <div className="grid gap-4 py-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="edit-date" className="text-sm font-semibold">Date</Label>
+            <Input
+              id="edit-date"
+              type="date"
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              className="h-10 rounded-xl border-border/60"
+            />
           </div>
-          <DialogFooter>
-            <Button variant="outline" className="rounded-full" onClick={() => setEditingEntry(null)} disabled={isUpdating}>
-              Cancel
-            </Button>
-            <Button className="btn-gradient rounded-full" onClick={handleUpdate} disabled={isUpdating}>
-              {isUpdating ? "Saving…" : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="grid gap-1.5">
+            <Label htmlFor="edit-sehri" className="text-sm font-semibold">Sehri Time</Label>
+            <Input
+              id="edit-sehri"
+              type="time"
+              value={formData.sehri}
+              onChange={(e) => setFormData({ ...formData, sehri: e.target.value })}
+              className="h-10 rounded-xl border-border/60"
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="edit-iftar" className="text-sm font-semibold">Iftar Time</Label>
+            <Input
+              id="edit-iftar"
+              type="time"
+              value={formData.iftar}
+              onChange={(e) => setFormData({ ...formData, iftar: e.target.value })}
+              className="h-10 rounded-xl border-border/60"
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="edit-location" className="text-sm font-semibold">Location</Label>
+            <Select
+              value={formData.location}
+              onValueChange={(v) => setFormData({ ...formData, location: v })}
+            >
+              <SelectTrigger id="edit-location" className="h-10 w-full rounded-xl border-border/60">
+                <SelectValue placeholder="Select a district" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto" position="popper">
+                {bangladeshDistricts.map((district) => (
+                  <SelectItem key={district} value={district}>{district}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </AppModal>
 
       {/* ── Single Delete Confirm Dialog ───────── */}
-      <Dialog open={!!deletingEntry} onOpenChange={() => setDeletingEntry(null)}>
-        <DialogContent className="border-border/60 bg-card sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="p-2.5 rounded-xl bg-destructive/10">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-              </div>
-              <DialogTitle className="text-lg font-bold text-destructive">Delete Entry</DialogTitle>
-            </div>
-            <DialogDescription className="pl-[52px]">
-              Are you sure you want to delete schedule for{" "}
-              <strong>
-                {deletingEntry
-                  ? moment(deletingEntry.date).format("ddd, MMMM D, YYYY")
-                  : ""}
-              </strong>
-              {deletingEntry?.location ? ` (${deletingEntry.location})` : ""}? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-2">
-            <Button
-              variant="outline"
-              className="rounded-full"
-              onClick={() => setDeletingEntry(null)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              className="rounded-full gap-2"
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting}
-            >
-              <Trash2 className="h-4 w-4" />
-              {isDeleting ? "Deleting…" : "Delete Entry"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AppModal
+        open={!!deletingEntry}
+        onOpenChange={() => setDeletingEntry(null)}
+        title="Delete Entry"
+        description={
+          <>
+            Are you sure you want to delete schedule for{" "}
+            <strong>
+              {deletingEntry
+                ? moment(deletingEntry.date).format("ddd, MMMM D, YYYY")
+                : ""}
+            </strong>
+            {deletingEntry?.location ? ` (${deletingEntry.location})` : ""}? This action cannot be undone.
+          </>
+        }
+        icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
+        iconClassName="bg-destructive/10"
+        titleClassName="text-destructive"
+        maxWidth="md"
+        primaryAction={{
+          label: (loading) => loading ? "Deleting…" : "Delete Entry",
+          onClick: handleDeleteConfirm,
+          variant: "destructive",
+          loading: isDeleting,
+          icon: <Trash2 className="h-4 w-4" />,
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setDeletingEntry(null),
+        }}
+      />
 
       {/* ── Bulk Delete Confirm Dialog ─────────── */}
-      <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
-        <DialogContent className="border-border/60 bg-card sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="p-2.5 rounded-xl bg-destructive/10">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-              </div>
-              <DialogTitle className="text-lg font-bold text-destructive">Delete {selectedIds.size} Entries</DialogTitle>
-            </div>
-            <DialogDescription className="pl-[52px]">
-              You are about to permanently delete{" "}
-              <strong>{selectedIds.size} schedule entries</strong>. This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-2">
-            <Button
-              variant="outline"
-              className="rounded-full"
-              onClick={() => setShowBulkDeleteModal(false)}
-              disabled={isBulkDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              className="rounded-full gap-2"
-              onClick={handleBulkDeleteConfirm}
-              disabled={isBulkDeleting}
-            >
-              <Trash2 className="h-4 w-4" />
-              {isBulkDeleting ? "Deleting…" : `Delete All ${selectedIds.size}`}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AppModal
+        open={showBulkDeleteModal}
+        onOpenChange={setShowBulkDeleteModal}
+        title={`Delete ${selectedIds.size} Entries`}
+        description={
+          <>
+            You are about to permanently delete{" "}
+            <strong>{selectedIds.size} schedule entries</strong>. This action cannot be undone.
+          </>
+        }
+        icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
+        iconClassName="bg-destructive/10"
+        titleClassName="text-destructive"
+        maxWidth="md"
+        primaryAction={{
+          label: (loading) => loading ? "Deleting…" : `Delete All ${selectedIds.size}`,
+          onClick: handleBulkDeleteConfirm,
+          variant: "destructive",
+          loading: isBulkDeleting,
+          icon: <Trash2 className="h-4 w-4" />,
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setShowBulkDeleteModal(false),
+        }}
+      />
     </>
   );
 }

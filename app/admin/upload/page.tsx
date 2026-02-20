@@ -8,14 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppModal } from "@/components/ui/app-modal";
 import {
   Table,
   TableBody,
@@ -337,64 +330,58 @@ export default function UploadPage() {
       )}
 
       {/* ── Confirm Dialog ──────────────────────────── */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="border-border/60 bg-card">
-          <div className="h-[2px] w-full rounded-t-lg" style={{ background: "var(--grad-primary)" }} />
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold">Confirm Upload</DialogTitle>
-            <DialogDescription>
-              This will upload <strong>{parsedData.length}</strong> entries to the database. Existing entries with the same date and location will be updated.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" className="rounded-full" onClick={() => setShowConfirmDialog(false)}>
-              Cancel
-            </Button>
-            <Button className="btn-gradient rounded-full" onClick={handleUpload} disabled={isUploading}>
-              {isUploading ? "Uploading…" : "Confirm Upload"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AppModal
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        title="Confirm Upload"
+        description={
+          <>
+            This will upload <strong>{parsedData.length}</strong> entries to the database. Existing entries with the same date and location will be updated.
+          </>
+        }
+        primaryAction={{
+          label: (loading) => loading ? "Uploading…" : "Confirm Upload",
+          onClick: handleUpload,
+          loading: isUploading,
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setShowConfirmDialog(false),
+        }}
+      />
 
       {/* ── Result Dialog ───────────────────────────── */}
       {uploadResult && (
-        <Dialog open={!!uploadResult} onOpenChange={() => setUploadResult(null)}>
-          <DialogContent className="border-border/60 bg-card">
-            <div
-              className="h-[2px] w-full rounded-t-lg"
-              style={{ background: uploadResult.success ? "linear-gradient(135deg,#10b981,#059669)" : "linear-gradient(135deg,#ef4444,#dc2626)" }}
-            />
-            <DialogHeader>
-              <DialogTitle className={`text-lg font-bold ${uploadResult.success ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
-                {uploadResult.success ? "✓ Upload Successful" : "✗ Upload Failed"}
-              </DialogTitle>
-              <DialogDescription>{uploadResult.message}</DialogDescription>
-            </DialogHeader>
-            {uploadResult.rowCount && (
-              <div className="py-2 px-4 rounded-xl border border-border/60 bg-muted/30">
-                <p className="text-sm font-medium">
-                  Entries uploaded: <span className="gradient-text font-bold">{uploadResult.rowCount}</span>
+        <AppModal
+          open={!!uploadResult}
+          onOpenChange={() => setUploadResult(null)}
+          title={uploadResult.success ? "✓ Upload Successful" : "✗ Upload Failed"}
+          description={uploadResult.message}
+          titleClassName={uploadResult.success ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}
+          primaryAction={{
+            label: "Close",
+            onClick: () => setUploadResult(null),
+          }}
+          showFooter={true}
+        >
+          {uploadResult.rowCount && (
+            <div className="py-2 px-4 rounded-xl border border-border/60 bg-muted/30">
+              <p className="text-sm font-medium">
+                Entries uploaded: <span className="gradient-text font-bold">{uploadResult.rowCount}</span>
+              </p>
+            </div>
+          )}
+          {uploadResult.errors && uploadResult.errors.length > 0 && (
+            <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl bg-destructive/5 p-3">
+              <p className="text-xs font-bold text-destructive mb-2">Errors:</p>
+              {uploadResult.errors.map((error, i) => (
+                <p key={i} className="text-xs text-destructive">
+                  Row {error.row}: {error.error}
                 </p>
-              </div>
-            )}
-            {uploadResult.errors && uploadResult.errors.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl bg-destructive/5 p-3">
-                <p className="text-xs font-bold text-destructive mb-2">Errors:</p>
-                {uploadResult.errors.map((error, i) => (
-                  <p key={i} className="text-xs text-destructive">
-                    Row {error.row}: {error.error}
-                  </p>
-                ))}
-              </div>
-            )}
-            <DialogFooter>
-              <Button className="btn-gradient rounded-full" onClick={() => setUploadResult(null)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              ))}
+            </div>
+          )}
+        </AppModal>
       )}
     </div>
   );
