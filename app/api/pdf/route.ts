@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
+import moment from 'moment';
 import { prisma } from "@/lib/db";
 // @ts-ignore
 import { jsPDF } from "jspdf";
 // @ts-ignore
 import autoTable from "jspdf-autotable";
-import { formatDate } from "@/lib/utils/date.utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     let titleSuffix = "";
 
     if (type === "today") {
-      const today = formatDate(new Date(), 'iso');
+      const today = moment().format('YYYY-MM-DD');
       const where: any = { date: today };
       if (actualLocation) {
         where.location = actualLocation;
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         where,
         orderBy: { date: "asc" },
       });
-      titleSuffix = `- ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+      titleSuffix = `- ${moment().format("MMMM D, YYYY")}`;
     } else {
       const where: any = {};
       if (actualLocation) {
@@ -65,12 +65,7 @@ export async function GET(request: NextRequest) {
 
     // Prepare table data
     const tableData = schedule.map((entry: any) => [
-      new Date(entry.date).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
+      moment(entry.date).format("ddd, MMM D, YYYY"),
       entry.sehri,
       entry.iftar,
       entry.location || "-",
@@ -90,7 +85,7 @@ export async function GET(request: NextRequest) {
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
         doc.text(
-          `Generated on ${new Date().toLocaleString()}`,
+          `Generated on ${moment().format()}`,
           pageWidth / 2,
           data.settings.margin!.top! + (data.pageNumber * 280) - 10,
           { align: "center" }
@@ -106,7 +101,7 @@ export async function GET(request: NextRequest) {
 
     // Generate filename
     const locationPart = actualLocation ? `-${actualLocation.toLowerCase().replace(/\s+/g, "-")}` : "";
-    const year = new Date().getFullYear();
+    const year = moment().year();
     const filename = `sehri-iftar${locationPart}-${year}.pdf`;
 
     // Return PDF as response

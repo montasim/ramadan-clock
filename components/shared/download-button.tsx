@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import moment from 'moment';
 
 interface DownloadButtonProps {
   location?: string | null;
@@ -30,7 +31,7 @@ export function DownloadButton({ location, type = "today", className }: Download
       link.href = url;
 
       const locationPart = location ? `-${location.toLowerCase().replace(/\s+/g, "-")}` : "";
-      const year = new Date().getFullYear();
+      const year = moment().year();
       link.download = `sehri-iftar${locationPart}-${year}.pdf`;
 
       document.body.appendChild(link);

@@ -24,18 +24,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScheduleTable } from "@/components/shared/schedule-table";
+import moment from 'moment';
 
 interface CalendarViewProps {
   entries: Array<TimeEntry & { sehri24?: string; iftar24?: string }>;
 }
 
-// Get today's date in local timezone (YYYY-MM-DD format)
+// Get today's date in local timezone (YYYY-MM-DD format) using moment
 const getTodayLocal = () => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return moment().format('YYYY-MM-DD');
 };
 
 const bangladeshDistricts = [
@@ -193,7 +190,7 @@ export function CalendarView({ entries }: CalendarViewProps) {
           <DialogHeader>
             <DialogTitle className="text-lg font-bold gradient-text">Edit Entry</DialogTitle>
             <DialogDescription>
-              Update the Sehri &amp; Iftar times for this date
+              Update Sehri & Iftar times for this date
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-2">
@@ -266,12 +263,10 @@ export function CalendarView({ entries }: CalendarViewProps) {
               <DialogTitle className="text-lg font-bold text-destructive">Delete Entry</DialogTitle>
             </div>
             <DialogDescription className="pl-[52px]">
-              Are you sure you want to delete the schedule for{" "}
+              Are you sure you want to delete schedule for{" "}
               <strong>
                 {deletingEntry
-                  ? new Date(deletingEntry.date).toLocaleDateString("en-US", {
-                    weekday: "short", month: "long", day: "numeric", year: "numeric",
-                  })
+                  ? moment(deletingEntry.date).format("ddd, MMMM D, YYYY")
                   : ""}
               </strong>
               {deletingEntry?.location ? ` (${deletingEntry.location})` : ""}? This action cannot be undone.

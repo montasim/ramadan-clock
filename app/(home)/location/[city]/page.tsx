@@ -9,7 +9,7 @@ import Link from "next/link";
 import { DownloadButton } from "@/components/shared/download-button";
 import LocationSkeleton from "@/components/public/location-skeleton";
 import { Suspense } from "react";
-import { formatDate } from "@/lib/utils/date.utils";
+import moment from 'moment';
 
 interface LocationPageProps {
   params: Promise<{ city: string }>;
@@ -28,7 +28,7 @@ async function LocationPageContent({ params }: { params: Promise<{ city: string 
 
   const schedule = await getFullSchedule(decodedCity);
   const todaySchedule = await getTodayOrNextDaySchedule(decodedCity);
-  const today = formatDate(new Date(), 'iso');
+  const today = moment().format('YYYY-MM-DD');
 
   return (
     <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-7">
@@ -46,14 +46,14 @@ async function LocationPageContent({ params }: { params: Promise<{ city: string 
             <MapPin className="h-6 w-6 text-white" />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-1">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb1">
               Location Schedule
             </p>
             <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
               <span className="gradient-text">{decodedCity}</span>
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Sehri &amp; Iftar schedule for {decodedCity}
+              Sehri & Iftar schedule for {decodedCity}
             </p>
           </div>
         </div>

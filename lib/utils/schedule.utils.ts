@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { TimeEntry } from "@prisma/client";
 
 export type ScheduleStatus = "passed" | "today" | "tomorrow" | "upcoming";
@@ -12,30 +13,25 @@ export interface ScheduleStatusResult {
  * Parse a time string (HH:MM) into hours and minutes
  */
 export function parseTime(timeStr: string): { hours: number; minutes: number } {
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  return { hours, minutes };
+  const m = moment(timeStr, 'HH:mm');
+  return { hours: m.hours(), minutes: m.minutes() };
 }
 
 /**
  * Check if current time is past a given time
  */
 export function isTimePast(hours: number, minutes: number): boolean {
-  const now = new Date();
-  const currentHours = now.getHours();
-  const currentMinutes = now.getMinutes();
-  return currentHours > hours || (currentHours === hours && currentMinutes >= minutes);
+  const now = moment();
+  const targetTime = moment().set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+  return now.isSameOrAfter(targetTime);
 }
 
 /**
  * Determine the status of a schedule entry based on date and time
  */
 export function getScheduleStatus(entry: TimeEntry): ScheduleStatusResult {
-  // Use local date instead of UTC to handle timezone correctly
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const isToday = entry.date === today;
-  const entryDate = new Date(entry.date);
-  const todayDate = new Date(today);
+  const today = moment();
+  const entryDate = moment(entry.date);
   
   const sehriTime = parseTime(entry.sehri);
   const iftarTime = parseTime(entry.iftar);
@@ -44,12 +40,12 @@ export function getScheduleStatus(entry: TimeEntry): ScheduleStatusResult {
   let statusText: string;
   let rowClass: string;
   
-  if (entryDate < todayDate) {
+  if (entryDate.isBefore(today, 'day')) {
     // Past dates are always passed
     status = "passed";
     statusText = "Passed";
     rowClass = "bg-red-500/15 border-l-4 border-l-red-500/60 border-b border-red-500/40";
-  } else if (isToday) {
+  } else if (entryDate.isSame(today, 'day')) {
     // Today: check if iftar time has passed
     if (isTimePast(iftarTime.hours, iftarTime.minutes)) {
       status = "passed";
@@ -62,9 +58,8 @@ export function getScheduleStatus(entry: TimeEntry): ScheduleStatusResult {
     }
   } else {
     // Future dates: check if it's tomorrow
-    const tomorrowDate = new Date(todayDate);
-    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-    const isTomorrow = entryDate.getTime() === tomorrowDate.getTime();
+    const tomorrow = moment().add(1, 'day');
+    const isTomorrow = entryDate.isSame(tomorrow, 'day');
     
     if (isTomorrow) {
       // Tomorrow: check if sehri time has passed

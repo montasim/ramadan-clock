@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import moment from 'moment';
 
 interface CountdownTimerProps {
   targetTime: string; // Format: "HH:MM"
@@ -14,18 +15,22 @@ export function CountdownTimer({ targetTime, className = "" }: CountdownTimerPro
 
   useEffect(() => {
     const calculateTimeRemaining = () => {
-      const now = new Date();
-      const [hours, minutes] = targetTime.split(":").map(Number);
+      const now = moment();
+      const targetDate = moment(targetTime, 'HH:mm');
       
-      const targetDate = new Date();
-      targetDate.setHours(hours, minutes, 0, 0);
+      // Set target date to today
+      targetDate.set({
+        year: now.year(),
+        month: now.month(),
+        date: now.date(),
+      });
       
       // If target time has passed today, assume it's for tomorrow
-      if (targetDate <= now) {
-        targetDate.setDate(targetDate.getDate() + 1);
+      if (targetDate.isSameOrBefore(now)) {
+        targetDate.add(1, 'day');
       }
       
-      const diff = targetDate.getTime() - now.getTime();
+      const diff = targetDate.diff(now);
       const oneHourMs = 60 * 60 * 1000;
       
       // Show countdown only if within 1 hour

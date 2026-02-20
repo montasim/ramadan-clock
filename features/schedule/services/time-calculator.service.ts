@@ -3,6 +3,7 @@
  * Business logic for calculating schedule status and time-related operations
  */
 
+import moment from 'moment';
 import { TimeEntry } from '../domain/entities/time-entry.entity';
 import type { ScheduleStatusInfo } from '../domain/types/schedule-status.types';
 
@@ -18,11 +19,11 @@ export class TimeCalculatorService {
    * @returns Status information with status type, text, and CSS class
    */
   calculateScheduleStatus(entry: TimeEntry): ScheduleStatusInfo {
-    const entryDate = entry.date.toDate();
-    const today = new Date();
+    const entryDate = moment(entry.date);
+    const today = moment();
 
     // Past dates are always passed
-    if (entry.isPast()) {
+    if (entryDate.isBefore(today, 'day')) {
       return {
         status: 'passed',
         statusText: 'Passed',
@@ -31,8 +32,15 @@ export class TimeCalculatorService {
     }
 
     // Today: check if iftar time has passed
-    if (entry.isToday()) {
-      if (entry.isIftarPassed()) {
+    if (entryDate.isSame(today, 'day')) {
+      const iftarTime = moment(entry.iftar, 'HH:mm');
+      iftarTime.set({
+        year: today.year(),
+        month: today.month(),
+        date: today.date(),
+      });
+      
+      if (today.isSameOrAfter(iftarTime)) {
         return {
           status: 'passed',
           statusText: 'Passed',
@@ -47,8 +55,16 @@ export class TimeCalculatorService {
     }
 
     // Tomorrow: check if sehri time has passed
-    if (entry.isTomorrow()) {
-      if (entry.isSehriPassed()) {
+    const tomorrow = moment().add(1, 'day');
+    if (entryDate.isSame(tomorrow, 'day')) {
+      const sehriTime = moment(entry.sehri, 'HH:mm');
+      sehriTime.set({
+        year: today.year(),
+        month: today.month(),
+        date: today.date(),
+      });
+      
+      if (today.isSameOrAfter(sehriTime)) {
         return {
           status: 'today',
           statusText: 'Today',
@@ -90,8 +106,23 @@ export class TimeCalculatorService {
     let iftarPassed = false;
 
     if (todayEntry) {
-      sehriPassed = todayEntry.isSehriPassed();
-      iftarPassed = todayEntry.isIftarPassed();
+      const now = moment();
+      const sehriTime = moment(todayEntry.sehri, 'HH:mm');
+      const iftarTime = moment(todayEntry.iftar, 'HH:mm');
+      
+      sehriTime.set({
+        year: now.year(),
+        month: now.month(),
+        date: now.date(),
+      });
+      iftarTime.set({
+        year: now.year(),
+        month: now.month(),
+        date: now.date(),
+      });
+      
+      sehriPassed = now.isSameOrAfter(sehriTime);
+      iftarPassed = now.isSameOrAfter(iftarTime);
     }
 
     return {
@@ -125,11 +156,14 @@ export class TimeCalculatorService {
    * @returns True if countdown should be shown, false otherwise
    */
   shouldShowCountdown(timeStr: string, thresholdMinutes: number = 60): boolean {
-    const now = new Date();
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    const targetTime = new Date();
-    targetTime.setHours(hours, minutes, 0, 0);
-    const diff = targetTime.getTime() - now.getTime();
+    const now = moment();
+    const targetTime = moment(timeStr, 'HH:mm');
+    targetTime.set({
+      year: now.year(),
+      month: now.month(),
+      date: now.date(),
+    });
+    const diff = targetTime.diff(now);
     const thresholdMs = thresholdMinutes * 60 * 1000;
 
     return diff <= thresholdMs && diff > 0;

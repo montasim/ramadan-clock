@@ -2,6 +2,7 @@
 
 import { config } from "@/lib/config";
 import { Github, Linkedin, Mail } from "lucide-react";
+import moment from 'moment';
 
 export function Footer() {
 
@@ -11,7 +12,7 @@ export function Footer() {
       <div className="flex flex-col items-center justify-center gap-3 px-4">
         <div className="flex w-full max-w-5xl flex-col items-center justify-between gap-2 md:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()}{" "}
+            © {moment().year()}{" "}
             <span className="gradient-text font-semibold">Ramadan Clock</span>.
             All rights reserved.
           </p>

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getScheduleStatus, getScheduleRowClass, ScheduleStatus } from "@/lib/utils/schedule.utils";
 import { Pencil, Trash2 } from "lucide-react";
+import moment from 'moment';
 
 export interface ScheduleTableProps {
   entries: TimeEntry[];
@@ -85,7 +86,7 @@ function TodayBadge() {
  * @param entries - Array of TimeEntry objects to display
  * @param showLocation - Whether to show the location column (default: true)
  * @param showStatus - Whether to show the status column (default: true)
- * @param showTodayBadge - Whether to show the TODAY badge for today's entry (default: true)
+ * @param showTodayBadge - Whether to show TODAY badge for today's entry (default: true)
  * @param rowClassVariant - Row styling variant: "full" (with border-l) or "simple" (without) (default: "full")
  * @param editable - Whether to show edit/delete actions (default: false)
  * @param selectedIds - Set of selected entry IDs for bulk operations
@@ -109,9 +110,8 @@ export function ScheduleTable({
   onDelete,
   isAllSelected = false,
 }: ScheduleTableProps) {
-  // Use local date instead of UTC to handle timezone correctly
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  // Use moment to get today's date in ISO format
+  const today = moment().format('YYYY-MM-DD');
 
   return (
     <div className="relative overflow-x-auto rounded-xl border border-border/40 bg-card/30">
@@ -170,9 +170,7 @@ export function ScheduleTable({
                 <TableCell className="font-medium pl-4 sm:pl-6 py-3 whitespace-nowrap">
                   <div className="flex flex-col">
                     <span className="text-xs sm:text-sm">
-                      {new Date(entry.date).toLocaleDateString("en-US", {
-                        month: "short", day: "numeric", year: "numeric",
-                      })}
+                      {moment(entry.date).format("MMM D, YYYY")}
                     </span>
                     {showTodayBadge && isToday && <TodayBadge />}
                   </div>

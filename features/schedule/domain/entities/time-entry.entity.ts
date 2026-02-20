@@ -3,8 +3,7 @@
  * Domain entity representing a schedule entry
  */
 
-import { DateVO } from '../value-objects/date.vo';
-import { TimeVO } from '../value-objects/time.vo';
+import moment from 'moment';
 import { LocationVO } from '../value-objects/location.vo';
 
 /**
@@ -25,9 +24,9 @@ export interface TimeEntryDTO {
  */
 export class TimeEntry {
   readonly id: string;
-  readonly date: DateVO;
-  readonly sehri: TimeVO;
-  readonly iftar: TimeVO;
+  readonly date: string;
+  readonly sehri: string;
+  readonly iftar: string;
   readonly location: LocationVO;
 
   /**
@@ -36,9 +35,9 @@ export class TimeEntry {
    */
   constructor(dto: TimeEntryDTO) {
     this.id = dto.id;
-    this.date = new DateVO(dto.date);
-    this.sehri = new TimeVO(dto.sehri);
-    this.iftar = new TimeVO(dto.iftar);
+    this.date = dto.date;
+    this.sehri = dto.sehri;
+    this.iftar = dto.iftar;
     this.location = new LocationVO(dto.location);
   }
 
@@ -49,9 +48,9 @@ export class TimeEntry {
   toDTO(): TimeEntryDTO {
     return {
       id: this.id,
-      date: this.date.value,
-      sehri: this.sehri.value,
-      iftar: this.iftar.value,
+      date: this.date,
+      sehri: this.sehri,
+      iftar: this.iftar,
       location: this.location.value,
     };
   }
@@ -63,9 +62,9 @@ export class TimeEntry {
   toFormattedDTO(): TimeEntryDTO {
     return {
       id: this.id,
-      date: this.date.value,
-      sehri: this.sehri.to12HourFormat(),
-      iftar: this.iftar.to12HourFormat(),
+      date: this.date,
+      sehri: moment(this.sehri, 'HH:mm').format('h:mm A'),
+      iftar: moment(this.iftar, 'HH:mm').format('h:mm A'),
       location: this.location.value,
     };
   }
@@ -76,7 +75,14 @@ export class TimeEntry {
    * @returns True if sehri time has passed, false otherwise
    */
   isSehriPassed(referenceDate?: Date): boolean {
-    return this.sehri.hasPassed(referenceDate);
+    const now = referenceDate ? moment(referenceDate) : moment();
+    const sehriTime = moment(this.sehri, 'HH:mm');
+    sehriTime.set({
+      year: now.year(),
+      month: now.month(),
+      date: now.date(),
+    });
+    return now.isSameOrAfter(sehriTime);
   }
 
   /**
@@ -85,7 +91,14 @@ export class TimeEntry {
    * @returns True if iftar time has passed, false otherwise
    */
   isIftarPassed(referenceDate?: Date): boolean {
-    return this.iftar.hasPassed(referenceDate);
+    const now = referenceDate ? moment(referenceDate) : moment();
+    const iftarTime = moment(this.iftar, 'HH:mm');
+    iftarTime.set({
+      year: now.year(),
+      month: now.month(),
+      date: now.date(),
+    });
+    return now.isSameOrAfter(iftarTime);
   }
 
   /**
@@ -93,7 +106,7 @@ export class TimeEntry {
    * @returns True if date is in the past, false otherwise
    */
   isPast(): boolean {
-    return this.date.isPast();
+    return moment(this.date).startOf('day').isBefore(moment().startOf('day'));
   }
 
   /**
@@ -101,7 +114,7 @@ export class TimeEntry {
    * @returns True if date is today, false otherwise
    */
   isToday(): boolean {
-    return this.date.isToday();
+    return moment(this.date).isSame(moment(), 'day');
   }
 
   /**
@@ -109,7 +122,7 @@ export class TimeEntry {
    * @returns True if date is tomorrow, false otherwise
    */
   isTomorrow(): boolean {
-    return this.date.isTomorrow();
+    return moment(this.date).isSame(moment().add(1, 'day'), 'day');
   }
 
   /**

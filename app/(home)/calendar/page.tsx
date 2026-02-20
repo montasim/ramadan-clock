@@ -14,14 +14,14 @@ import CalendarSkeleton from "@/components/public/calendar-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { SehriIftarCard } from "@/components/shared/sehri-iftar-card";
 import { ScheduleTable } from "@/components/shared/schedule-table";
-import { formatDate } from "@/lib/utils/date.utils";
+import moment from 'moment';
 
 async function CalendarContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
   const schedule = await getFullSchedule(location || null);
   const locations = await getLocations();
   const todaySchedule = await getTodayOrNextDaySchedule(location || null);
-  const today = formatDate(new Date(), 'iso');
+  const today = moment().format('YYYY-MM-DD');
 
   return (
     <div className="space-y-7">
@@ -39,7 +39,7 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
           <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
             Ramadan <span className="gradient-text">Calendar</span>
           </h1>
-          <p className="text-muted-foreground text-sm mt-2">Complete Sehri &amp; Iftar timetable</p>
+          <p className="text-muted-foreground text-sm mt-2">Complete Sehri & Iftar timetable</p>
         </div>
         <div className="flex items-center gap-2 shrink-0 relative z-10">
           <Select defaultValue={location || "all"}>

@@ -3,12 +3,11 @@
  * Business logic for schedule-related operations
  */
 
+import moment from 'moment';
 import { TimeEntryRepository } from '../repositories/time-entry.repository';
 import { UploadLogRepository } from '../repositories/upload-log.repository';
 import { TimeEntry } from '../domain/entities/time-entry.entity';
 import { TimeCalculatorService } from './time-calculator.service';
-import { DateVO } from '../domain/value-objects/date.vo';
-import { addDays, formatDate } from '@/lib/utils/date.utils';
 import type { ScheduleDisplayData } from '../domain/types/schedule-status.types';
 
 /**
@@ -28,7 +27,7 @@ export class ScheduleService {
    * @returns Today's time entry or null if not found
    */
   async getTodaySchedule(location?: string | null): Promise<TimeEntry | null> {
-    const today = formatDate(new Date(), 'iso');
+    const today = moment().format('YYYY-MM-DD');
     const dto = await this.timeEntryRepository.findByDate(today, location);
     return dto ? new TimeEntry(dto) : null;
   }
@@ -39,7 +38,7 @@ export class ScheduleService {
    * @returns Tomorrow's time entry or null if not found
    */
   async getTomorrowSchedule(location?: string | null): Promise<TimeEntry | null> {
-    const tomorrow = formatDate(addDays(new Date(), 1), 'iso');
+    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
     const dto = await this.timeEntryRepository.findByDate(tomorrow, location);
     return dto ? new TimeEntry(dto) : null;
   }

@@ -2,8 +2,7 @@
 
 import { prisma, type TimeEntry } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { formatTime12Hour } from "@/lib/utils";
-import { formatDate } from "@/lib/utils/date.utils";
+import moment from 'moment';
 
 // Extended type for formatted entries with both 12-hour and 24-hour formats
 type FormattedTimeEntry = TimeEntry & {
@@ -16,8 +15,8 @@ type FormattedTimeEntry = TimeEntry & {
 function formatTimeEntry(entry: TimeEntry): FormattedTimeEntry {
   return {
     ...entry,
-    sehri: formatTime12Hour(entry.sehri),
-    iftar: formatTime12Hour(entry.iftar),
+    sehri: moment(entry.sehri, 'HH:mm').format('h:mm A'),
+    iftar: moment(entry.iftar, 'HH:mm').format('h:mm A'),
     // Preserve original 24-hour format for editing
     sehri24: entry.sehri,
     iftar24: entry.iftar,
@@ -26,7 +25,7 @@ function formatTimeEntry(entry: TimeEntry): FormattedTimeEntry {
 
 export async function getTodaySchedule(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = formatDate(new Date(), 'iso');
+    const today = moment().format('YYYY-MM-DD');
 
     const where: Record<string, unknown> = {
       date: today,
@@ -51,22 +50,28 @@ export async function getTodaySchedule(location?: string | null): Promise<TimeEn
  * Check if iftar time has passed for today
  */
 function hasIftarPassed(todaySchedule: TimeEntry): boolean {
-  const now = new Date();
-  const [iftarHours, iftarMinutes] = todaySchedule.iftar.split(':').map(Number);
-  const iftarTime = new Date();
-  iftarTime.setHours(iftarHours, iftarMinutes, 0, 0);
-  return now >= iftarTime;
+  const now = moment();
+  const iftarTime = moment(todaySchedule.iftar, 'HH:mm');
+  iftarTime.set({
+    year: now.year(),
+    month: now.month(),
+    date: now.date(),
+  });
+  return now.isSameOrAfter(iftarTime);
 }
 
 /**
  * Check if sehri time has passed for today
  */
 function hasSehriPassed(todaySchedule: TimeEntry): boolean {
-  const now = new Date();
-  const [sehriHours, sehriMinutes] = todaySchedule.sehri.split(':').map(Number);
-  const sehriTime = new Date();
-  sehriTime.setHours(sehriHours, sehriMinutes, 0, 0);
-  return now >= sehriTime;
+  const now = moment();
+  const sehriTime = moment(todaySchedule.sehri, 'HH:mm');
+  sehriTime.set({
+    year: now.year(),
+    month: now.month(),
+    date: now.date(),
+  });
+  return now.isSameOrAfter(sehriTime);
 }
 
 /**
@@ -74,10 +79,8 @@ function hasSehriPassed(todaySchedule: TimeEntry): boolean {
  */
 export async function getTodayOrNextDaySchedule(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = formatDate(new Date(), 'iso');
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = formatDate(tomorrow, 'iso');
+    const today = moment().format('YYYY-MM-DD');
+    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
 
     const where: Record<string, unknown> = { date: today };
     if (location) {
@@ -88,7 +91,7 @@ export async function getTodayOrNextDaySchedule(location?: string | null): Promi
 
     if (todayEntry && hasIftarPassed(todayEntry)) {
       // Get next day's schedule
-      const tomorrowWhere: Record<string, unknown> = { date: tomorrowStr };
+      const tomorrowWhere: Record<string, unknown> = { date: tomorrow };
       if (location) {
         tomorrowWhere.location = location;
       }
@@ -109,10 +112,8 @@ export async function getTodayOrNextDaySchedule(location?: string | null): Promi
  */
 export async function getScheduleDisplayData(location?: string | null) {
   try {
-    const today = formatDate(new Date(), 'iso');
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = formatDate(tomorrow, 'iso');
+    const today = moment().format('YYYY-MM-DD');
+    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
 
     // Get today's schedule
     const todayWhere: Record<string, unknown> = { date: today };
@@ -122,7 +123,7 @@ export async function getScheduleDisplayData(location?: string | null) {
     const todayEntry = await prisma.timeEntry.findFirst({ where: todayWhere });
 
     // Get tomorrow's schedule
-    const tomorrowWhere: Record<string, unknown> = { date: tomorrowStr };
+    const tomorrowWhere: Record<string, unknown> = { date: tomorrow };
     if (location) {
       tomorrowWhere.location = location;
     }

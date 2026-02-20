@@ -15,20 +15,15 @@ import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { getRandomHadith } from "@/lib/hadith-api";
 import { CountdownTimer } from "@/components/shared/countdown-timer";
-import { formatDate } from "@/lib/utils/date.utils";
+import moment from 'moment';
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
   const scheduleData = await getScheduleDisplayData(location || null);
   const locations = await getLocations();
   const hadith = await getRandomHadith();
-  const today = formatDate(new Date(), 'iso');
-  const todayDisplay = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const today = moment().format('YYYY-MM-DD');
+  const todayDisplay = moment().format("dddd, MMMM D, YYYY");
 
   return (
     <div className="space-y-7">
@@ -69,12 +64,12 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
           />
         </div>
       </div>
-
+      
       {/* ── Sehri / Iftar Cards ─────────────── */}
       {(() => {
         // Determine which schedule to display on main cards
         const displaySchedule = scheduleData.iftarPassed ? scheduleData.tomorrow : scheduleData.today;
-
+        
         if (!displaySchedule) {
           return (
             <div className="rounded-2xl border border-dashed border-border bg-card/50 p-14 text-center backdrop-blur-sm">
@@ -194,7 +189,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
           </CardContent>
         </Card>
       )}
-
+      
       {/* ── Hadith of the Day ─────────────────────── */}
       {hadith && (
         <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
