@@ -51,6 +51,27 @@ export async function searchHadiths(
 
 // Get a random hadith from a collection
 export async function getRandomHadith(): Promise<{ text: string; source: string } | null> {
-  // Feature temporarily disabled
-  return null;
+  try {
+    // Pick a random collection and a random hadith ID
+    const collection = COLLECTIONS[Math.floor(Math.random() * COLLECTIONS.length)];
+    const randomId = Math.floor(Math.random() * 1000) + 1; // Random ID between 1 and 1000
+    
+    const response = await fetch(
+      `https://hadithapi.pages.dev/api/${collection}/${randomId}`
+    );
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    const data: HadithResponse = await response.json();
+    
+    return {
+      text: data.hadith_english,
+      source: `${data.bookName} - ${data.refno}`
+    };
+  } catch (error) {
+    console.error('Error fetching random hadith:', error);
+    return null;
+  }
 }
