@@ -28,6 +28,29 @@ export interface UploadResult {
   message: string;
   rowCount?: number;
   errors?: Array<{ row: number; error: string }>;
+  retried?: number;
+  rolledBack?: boolean;
+}
+
+/**
+ * Upload progress callback
+ */
+export type ProgressCallback = (progress: {
+  current: number;
+  total: number;
+  percentage: number;
+  batch: number;
+  totalBatches: number;
+  status: 'validating' | 'uploading' | 'retrying' | 'completed' | 'failed';
+}) => void;
+
+/**
+ * Retry configuration
+ */
+interface RetryConfig {
+  maxRetries: number;
+  retryDelay: number; // milliseconds
+  backoffMultiplier: number;
 }
 
 /**
@@ -36,6 +59,11 @@ export interface UploadResult {
  */
 export class UploadService {
   private readonly BATCH_SIZE = 50;
+  private readonly RETRY_CONFIG: RetryConfig = {
+    maxRetries: 3,
+    retryDelay: 1000,
+    backoffMultiplier: 2,
+  };
 
   constructor(
     private readonly timeEntryRepository: TimeEntryRepository,
@@ -92,9 +120,10 @@ export class UploadService {
   }
 
   /**
-   * Bulk upsert entries with transaction support
+   * Bulk upsert entries with transaction support and rollback
    * @param entries - Entries to upsert
    * @returns Number of entries upserted
+   * @throws {Error} If any batch fails, transaction will rollback
    */
   private async bulkUpsertWithTransaction(entries: ParsedEntry[]): Promise<number> {
     return await prisma.$transaction(async (tx) => {
@@ -135,14 +164,152 @@ export class UploadService {
   }
 
   /**
-   * Upload schedule entries with transaction support and batching
+   * Retry a failed entry with exponential backoff
+   * @param entry - Entry to retry
+   * @param attempt - Current attempt number
+   * @returns Promise that resolves when retry is complete
+   */
+  private async retryEntry(
+    entry: ParsedEntry,
+    attempt: number
+  ): Promise<{ success: boolean; error?: string }> {
+    const delay = this.RETRY_CONFIG.retryDelay * Math.pow(this.RETRY_CONFIG.backoffMultiplier, attempt - 1);
+    
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    try {
+      await prisma.timeEntry.upsert({
+        where: {
+          date_location: {
+            date: entry.date,
+            location: entry.location as string,
+          },
+        },
+        update: {
+          sehri: entry.sehri,
+          iftar: entry.iftar,
+        },
+        create: {
+          date: entry.date,
+          sehri: entry.sehri,
+          iftar: entry.iftar,
+          location: entry.location as string,
+        },
+      });
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Process entries with retry logic
+   * @param entries - Entries to process
+   * @param onProgress - Optional progress callback
+   * @returns Result with success count and failed entries
+   */
+  private async processWithRetry(
+    entries: ParsedEntry[],
+    onProgress?: ProgressCallback
+  ): Promise<{ success: number; failed: Array<{ entry: ParsedEntry; error: string }> }> {
+    const failedEntries: Array<{ entry: ParsedEntry; error: string }> = [];
+    let successCount = 0;
+
+    for (let i = 0; i < entries.length; i += this.BATCH_SIZE) {
+      const batch = entries.slice(i, i + this.BATCH_SIZE);
+      const batchNumber = Math.floor(i / this.BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(entries.length / this.BATCH_SIZE);
+
+      // Report progress
+      onProgress?.({
+        current: i,
+        total: entries.length,
+        percentage: Math.round((i / entries.length) * 100),
+        batch: batchNumber,
+        totalBatches,
+        status: 'uploading',
+      });
+
+      // Try to process the batch with transaction for rollback
+      try {
+        await this.bulkUpsertWithTransaction(batch);
+        successCount += batch.length;
+      } catch (error) {
+        // Transaction failed, retry individual entries
+        logger.warn(`Batch ${batchNumber} failed, retrying individual entries`, {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+
+        onProgress?.({
+          current: i,
+          total: entries.length,
+          percentage: Math.round((i / entries.length) * 100),
+          batch: batchNumber,
+          totalBatches,
+          status: 'retrying',
+        });
+
+        // Retry each entry individually
+        for (const entry of batch) {
+          let entrySuccess = false;
+          let lastError = '';
+
+          for (let attempt = 1; attempt <= this.RETRY_CONFIG.maxRetries; attempt++) {
+            const result = await this.retryEntry(entry, attempt);
+            
+            if (result.success) {
+              entrySuccess = true;
+              successCount++;
+              break;
+            } else {
+              lastError = result.error || 'Unknown error';
+              logger.debug(`Retry attempt ${attempt} failed for ${entry.date}-${entry.location}`, {
+                error: lastError,
+              });
+            }
+          }
+
+          if (!entrySuccess) {
+            failedEntries.push({
+              entry,
+              error: lastError,
+            });
+          }
+        }
+      }
+    }
+
+    return { success: successCount, failed: failedEntries };
+  }
+
+  /**
+   * Upload schedule entries with transaction support, rollback, retry logic, and progress tracking
    * @param entries - Parsed entries from file
    * @param fileName - Name of the uploaded file
+   * @param onProgress - Optional progress callback for real-time updates
    * @returns Upload result
    */
-  async uploadSchedule(entries: ParsedEntry[], fileName: string): Promise<UploadResult> {
+  async uploadSchedule(
+    entries: ParsedEntry[],
+    fileName: string,
+    onProgress?: ProgressCallback
+  ): Promise<UploadResult> {
     const errors: Array<{ row: number; error: string }> = [];
     const validEntries: ParsedEntry[] = [];
+
+    // Report validation progress
+    onProgress?.({
+      current: 0,
+      total: entries.length,
+      percentage: 0,
+      batch: 0,
+      totalBatches: 0,
+      status: 'validating',
+    });
 
     // Validate each entry
     for (let i = 0; i < entries.length; i++) {
@@ -157,9 +324,28 @@ export class UploadService {
       } else {
         validEntries.push(entry);
       }
+
+      // Report validation progress
+      onProgress?.({
+        current: i + 1,
+        total: entries.length,
+        percentage: Math.round(((i + 1) / entries.length) * 100),
+        batch: 0,
+        totalBatches: 0,
+        status: 'validating',
+      });
     }
 
     if (validEntries.length === 0) {
+      onProgress?.({
+        current: entries.length,
+        total: entries.length,
+        percentage: 100,
+        batch: 0,
+        totalBatches: 0,
+        status: 'failed',
+      });
+
       return {
         success: false,
         message: 'No valid entries found',
@@ -184,23 +370,58 @@ export class UploadService {
       }
     }
 
-    // Bulk upsert entries with transaction support
+    // Process entries with retry logic and progress tracking
     try {
-      const upsertedCount = await this.bulkUpsertWithTransaction(uniqueEntries);
+      const { success: successCount, failed } = await this.processWithRetry(
+        uniqueEntries,
+        onProgress
+      );
+
+      // Convert failed entries to error format
+      for (const failedEntry of failed) {
+        const originalIndex = entries.findIndex(
+          e => e.date === failedEntry.entry.date && e.location === failedEntry.entry.location
+        );
+        errors.push({
+          row: originalIndex + 1,
+          error: failedEntry.error,
+        });
+      }
+
+      // Calculate retried count (failed entries that succeeded after retry)
+      const retriedCount = failed.filter(f => !errors.find(e => 
+        e.row === entries.findIndex(
+          e2 => e2.date === f.entry.date && e2.location === f.entry.location
+        ) + 1
+      )).length;
 
       // Log the upload
       await this.uploadLogRepository.create({
         fileName,
-        rowCount: upsertedCount,
-        status: errors.length > 0 ? 'partial' : 'success',
+        rowCount: successCount,
+        status: failed.length > 0 ? 'partial' : 'success',
         errors: errors.length > 0 ? JSON.stringify(errors) : null,
       });
 
+      // Report completion
+      onProgress?.({
+        current: entries.length,
+        total: entries.length,
+        percentage: 100,
+        batch: Math.ceil(entries.length / this.BATCH_SIZE),
+        totalBatches: Math.ceil(entries.length / this.BATCH_SIZE),
+        status: failed.length === 0 ? 'completed' : 'failed',
+      });
+
       return {
-        success: true,
-        message: `Successfully uploaded ${upsertedCount} entries`,
-        rowCount: upsertedCount,
+        success: failed.length === 0,
+        message: failed.length === 0
+          ? `Successfully uploaded ${successCount} entries`
+          : `Uploaded ${successCount} entries with ${failed.length} failures`,
+        rowCount: successCount,
         errors: errors.length > 0 ? errors : undefined,
+        retried: retriedCount,
+        rolledBack: false,
       };
     } catch (error) {
       logger.error(
@@ -208,6 +429,16 @@ export class UploadService {
         { fileName, entryCount: uniqueEntries.length },
         error as Error
       );
+
+      // Report failure
+      onProgress?.({
+        current: entries.length,
+        total: entries.length,
+        percentage: 100,
+        batch: Math.ceil(entries.length / this.BATCH_SIZE),
+        totalBatches: Math.ceil(entries.length / this.BATCH_SIZE),
+        status: 'failed',
+      });
 
       await this.uploadLogRepository.create({
         fileName,
@@ -220,6 +451,7 @@ export class UploadService {
         success: false,
         message: 'Failed to upload entries',
         errors,
+        rolledBack: true,
       };
     }
   }

@@ -11,7 +11,7 @@ export const APP_CONFIG = {
 
 export const UPLOAD_CONFIG = {
   maxFileSize: 1024 * 1024, // 1MB in bytes
-  maxRows: 1000,
+  maxRows: 5000,
   allowedFileTypes: ['application/json', 'text/csv'] as const,
   allowedExtensions: ['.json', '.csv'] as const,
 } as const;

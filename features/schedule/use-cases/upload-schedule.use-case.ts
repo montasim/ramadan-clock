@@ -4,7 +4,7 @@
  */
 
 import { UploadService } from '../services/upload.service';
-import type { UploadResult, ParsedEntry } from '../services/upload.service';
+import type { UploadResult, ParsedEntry, ProgressCallback } from '../services/upload.service';
 
 /**
  * Upload Schedule Use Case
@@ -26,9 +26,14 @@ export class UploadScheduleUseCase {
    * Upload schedule entries
    * @param entries - Parsed entries from file
    * @param fileName - Name of the uploaded file
+   * @param onProgress - Optional progress callback for real-time updates
    * @returns Upload result
    */
-  async upload(entries: ParsedEntry[], fileName: string): Promise<UploadResult> {
-    return await this.uploadService.uploadSchedule(entries, fileName);
+  async upload(
+    entries: ParsedEntry[],
+    fileName: string,
+    onProgress?: ProgressCallback
+  ): Promise<UploadResult> {
+    return await this.uploadService.uploadSchedule(entries, fileName, onProgress);
   }
 }

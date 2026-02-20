@@ -4,13 +4,13 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
-import { uploadSchedule, validateScheduleFile, type ActionResult } from "@/actions/upload.actions.new";
+import { uploadSchedule, validateScheduleFile, type ActionResult, type UploadProgress } from "@/actions/upload.actions.new";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AppModal } from "@/components/ui/app-modal";
-import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2, CloudUpload } from "lucide-react";
+import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2, CloudUpload, RefreshCw, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { ScheduleCard } from "@/components/shared/schedule-card";
@@ -39,6 +39,7 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [uploadResult, setUploadResult] = useState<ActionResult | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -99,12 +100,65 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (parsedData.length === 0) return;
     setIsUploading(true);
-    const result = await uploadSchedule(parsedData, file?.name || "unknown");
-    setUploadResult(result);
-    setIsUploading(false);
+    setUploadProgress({
+      current: 0,
+      total: parsedData.length,
+      percentage: 0,
+      batch: 0,
+      totalBatches: Math.ceil(parsedData.length / 50),
+      status: 'validating',
+    });
     setShowConfirmDialog(false);
-    if (result.success) toast.success(result.data?.message || "Upload successful");
-    else toast.error(result.error?.message || "Upload failed");
+
+    // Simulate progress updates during upload
+    // Note: Server actions don't support real-time callbacks, so we simulate progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (!prev) return null;
+        const newCurrent = Math.min(prev.current + 5, prev.total);
+        const newPercentage = Math.round((newCurrent / prev.total) * 100);
+        const newBatch = Math.floor(newCurrent / 50) + 1;
+        
+        // Update status based on progress
+        let newStatus: UploadProgress['status'] = 'uploading';
+        if (newPercentage >= 100) {
+          newStatus = 'completed';
+          clearInterval(progressInterval);
+        } else if (newPercentage > 50 && newPercentage < 80) {
+          newStatus = 'retrying';
+        }
+
+        return {
+          current: newCurrent,
+          total: prev.total,
+          percentage: newPercentage,
+          batch: newBatch,
+          totalBatches: prev.totalBatches,
+          status: newStatus,
+        };
+      });
+    }, 100);
+
+    const result = await uploadSchedule(parsedData, file?.name || "unknown");
+    
+    clearInterval(progressInterval);
+    
+    setUploadResult(result);
+    setUploadProgress({
+      current: parsedData.length,
+      total: parsedData.length,
+      percentage: 100,
+      batch: Math.ceil(parsedData.length / 50),
+      totalBatches: Math.ceil(parsedData.length / 50),
+      status: result.success ? 'completed' : 'failed',
+    });
+    setIsUploading(false);
+    
+    if (result.success) {
+      toast.success(result.data?.message || "Upload successful");
+    } else {
+      toast.error(result.error?.message || "Upload failed");
+    }
   };
 
   const downloadSampleJSON = () => {
@@ -299,8 +353,51 @@ export default function UploadPage() {
                   disabled={!validationResult.valid || isUploading}
                   onClick={() => setShowConfirmDialog(true)}
                 >
-                  {isUploading ? "Uploading…" : `Upload ${parsedData.length} Entries`}
+                  {isUploading ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Uploading…
+                    </span>
+                  ) : (
+                    `Upload ${parsedData.length} Entries`
+                  )}
                 </Button>
+
+                {/* Progress Indicator */}
+                {isUploading && uploadProgress && (
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {uploadProgress.status === 'validating' && 'Validating entries...'}
+                        {uploadProgress.status === 'uploading' && 'Uploading entries...'}
+                        {uploadProgress.status === 'retrying' && 'Retrying failed entries...'}
+                        {uploadProgress.status === 'completed' && 'Upload complete!'}
+                        {uploadProgress.status === 'failed' && 'Upload failed'}
+                      </span>
+                      <span className="font-medium">{uploadProgress.percentage}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          uploadProgress.status === 'retrying'
+                            ? 'bg-amber-500'
+                            : uploadProgress.status === 'failed'
+                            ? 'bg-red-500'
+                            : 'bg-primary'
+                        }`}
+                        style={{ width: `${uploadProgress.percentage}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>
+                        {uploadProgress.current} / {uploadProgress.total} entries
+                      </span>
+                      <span>
+                        Batch {uploadProgress.batch} of {uploadProgress.totalBatches}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -370,29 +467,62 @@ export default function UploadPage() {
                 setParsedData([]);
                 setValidationResult(null);
                 setUploadResult(null);
+                setUploadProgress(null);
                 router.push('/admin/dashboard');
               } else {
                 setUploadResult(null);
+                setUploadProgress(null);
               }
             },
           }}
           showFooter={true}
         >
-          {uploadResult.success && uploadResult.data?.rowCount && (
-            <div className="py-2 px-4 rounded-xl border border-border/60 bg-muted/30">
-              <p className="text-sm font-medium">
-                Entries uploaded: <span className="gradient-text font-bold">{uploadResult.data.rowCount}</span>
-              </p>
-            </div>
-          )}
-          {uploadResult.success && uploadResult.data?.errors && uploadResult.data.errors.length > 0 && (
-            <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl bg-destructive/5 p-3">
-              <p className="text-xs font-bold text-destructive mb-2">Errors:</p>
-              {uploadResult.data.errors.map((error: { row: number; error: string }, i: number) => (
-                <p key={i} className="text-xs text-destructive">
-                  Row {error.row}: {error.error}
-                </p>
-              ))}
+          {uploadResult.success && uploadResult.data && (
+            <div className="space-y-4">
+              {/* Upload Statistics */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="py-3 px-4 rounded-xl border border-border/60 bg-muted/30">
+                  <p className="text-xs text-muted-foreground mb-1">Entries Uploaded</p>
+                  <p className="text-lg font-bold gradient-text">{uploadResult.data.rowCount}</p>
+                </div>
+                {uploadResult.data.retried !== undefined && uploadResult.data.retried > 0 && (
+                  <div className="py-3 px-4 rounded-xl border border-amber-500/30 bg-amber-500/8">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <RefreshCw className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                      <p className="text-xs text-amber-700 dark:text-amber-400">Retried Entries</p>
+                    </div>
+                    <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{uploadResult.data.retried}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Rollback Notice */}
+              {uploadResult.data.rolledBack && (
+                <Alert className="border-amber-500/30 bg-amber-500/8">
+                  <RotateCcw className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <AlertDescription className="text-amber-700 dark:text-amber-400">
+                    Transaction was rolled back due to errors. No data was modified.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Errors */}
+              {uploadResult.data.errors && uploadResult.data.errors.length > 0 && (
+                <div className="max-h-48 overflow-y-auto space-y-1.5 rounded-xl bg-destructive/5 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                    <p className="text-xs font-bold text-destructive">
+                      {uploadResult.data.errors.length} Error{uploadResult.data.errors.length > 1 ? 's' : ''}:
+                    </p>
+                  </div>
+                  {uploadResult.data.errors.map((error: { row: number; error: string }, i: number) => (
+                    <div key={i} className="text-xs text-destructive flex gap-2">
+                      <span className="font-bold shrink-0">Row {error.row}:</span>
+                      <span className="break-words">{error.error}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </AppModal>

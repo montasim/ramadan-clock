@@ -43,6 +43,18 @@ export interface ActionResult<T = any> {
 }
 
 /**
+ * Upload progress update type
+ */
+export interface UploadProgress {
+  current: number;
+  total: number;
+  percentage: number;
+  batch: number;
+  totalBatches: number;
+  status: 'validating' | 'uploading' | 'retrying' | 'completed' | 'failed';
+}
+
+/**
  * Require admin session
  * @throws {UnauthorizedError} If not authenticated
  */
@@ -118,7 +130,7 @@ export async function validateScheduleFile(
  * Upload schedule entries (admin only)
  * @param entries - Parsed entries from file
  * @param fileName - Name of the uploaded file
- * @returns Upload result
+ * @returns Upload result with retry and rollback information
  */
 export async function uploadSchedule(
   entries: Array<{
@@ -136,6 +148,7 @@ export async function uploadSchedule(
     // Validate input
     batchTimeEntrySchema.parse({ entries });
 
+    // Upload with enhanced retry and rollback logic
     const result = await uploadScheduleUseCase.upload(entries, fileName);
 
     if (result.success) {
@@ -153,6 +166,8 @@ export async function uploadSchedule(
       logger.info('Schedule uploaded successfully', {
         fileName,
         entriesCount: entries.length,
+        rowCount: result.rowCount,
+        retried: result.retried,
       });
     }
 
