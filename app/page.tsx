@@ -1,14 +1,8 @@
 import { getScheduleDisplayData, getLocations } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Clock, Moon, Sun, MapPin, CalendarDays, Quote } from "lucide-react";
+import { LocationSelector } from "@/components/shared/location-selector";
 import Link from "next/link";
 import { Suspense } from "react";
 import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
@@ -26,12 +20,11 @@ export const metadata = getHomeMetadata();
 // Page-level caching with ISR
 // Revalidate every 5 minutes to ensure fresh data while improving performance
 export const revalidate = 300;
-export const dynamic = 'force-static';
-export const fetchCache = 'force-cache';
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
-  const scheduleData = await getScheduleDisplayData(location || null);
+  const selectedLocation = location || "Rangpur"; // Default to Rangpur
+  const scheduleData = await getScheduleDisplayData(selectedLocation);
   const locations = await getLocations();
   const hadith = await getRandomHadith();
   const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
@@ -58,20 +51,9 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
           <p className="text-muted-foreground text-sm mt-2">{todayDisplay}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0 relative z-10">
-          <Select defaultValue={location || "all"}>
-            <SelectTrigger className="w-[200px] bg-card/80 backdrop-blur border-border/60 shadow-sm">
-              <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="Select location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <LocationSelector locations={locations} currentLocation={location} />
           <DownloadButton
-            location={location}
+            location={selectedLocation}
             type="today"
             className="border-border/60 shadow-sm bg-card/80"
           />

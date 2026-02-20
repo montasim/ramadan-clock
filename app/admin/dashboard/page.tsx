@@ -1,11 +1,13 @@
 import { withDashboardGuard } from "@/lib/guards/dashboard-guard";
-import { getStats, getFullSchedule } from "@/actions/time-entries";
+import { getStats, getFullSchedule, getLocations } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Calendar, Clock, MapPin, Upload, LayoutDashboard } from "lucide-react";
 import { CalendarView } from "@/components/admin/calendar-view";
 import { ScheduleCard } from "@/components/shared/schedule-card";
+import { CronStatusWidget } from "@/components/admin/cron-status-widget";
+import { CacheClearButton } from "@/components/admin/cache-clear-button";
 import { getAdminMetadata } from "@/lib/seo/metadata";
 
 export const metadata = getAdminMetadata('Dashboard');
@@ -19,6 +21,7 @@ export default async function AdminDashboard() {
 
   const stats = await getStats();
   const schedule = await getFullSchedule(null);
+  const locations = await getLocations();
 
   const statCards = [
     {
@@ -71,16 +74,19 @@ export default async function AdminDashboard() {
             <p className="text-muted-foreground text-xs sm:text-sm">Manage Sehri &amp; Iftar schedules</p>
           </div>
         </div>
-        <Link href="/admin/upload" className="relative z-10 w-full sm:w-auto">
-          <Button className="btn-gradient rounded-full gap-2 font-semibold w-full sm:w-auto px-6">
-            <Upload className="h-4 w-4" />
-            Upload Schedule
-          </Button>
-        </Link>
+        <div className="relative z-10 flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <CacheClearButton />
+          <Link href="/admin/upload" className="w-full sm:w-auto">
+            <Button className="btn-gradient rounded-full gap-2 font-semibold w-full sm:w-auto px-6">
+              <Upload className="h-4 w-4" />
+              Upload Schedule
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* ── Stat Cards ──────────────────────── */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
           <Card key={title} className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
@@ -97,6 +103,7 @@ export default async function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
+        <CronStatusWidget />
       </div>
 
       {/* ── Calendar Card ───────────────────── */}
@@ -105,7 +112,7 @@ export default async function AdminDashboard() {
         description={`Manage all Sehri & Iftar entries (${schedule.length} total)`}
       >
         {schedule.length > 0 ? (
-          <CalendarView entries={schedule} />
+          <CalendarView entries={schedule} locations={locations} />
         ) : (
           <div className="text-center py-14 text-muted-foreground">
             <p className="mb-4">No schedule entries yet.</p>

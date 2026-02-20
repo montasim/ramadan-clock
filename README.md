@@ -1,6 +1,6 @@
 # 🌙 Ramadan Clock - Sehri & Iftar Time Viewer
 
-A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, MongoDB, and shadcn/ui.
+A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, PostgreSQL, and shadcn/ui.
 
 ## ✨ Features
 
@@ -22,15 +22,27 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
 - **Sample Templates**: Download sample JSON/CSV templates
 - **Dashboard**: View statistics and recent uploads
 
+### 🆕 Automated Prayer Time Updates
+- **API Integration**: Automatic fetching from Aladhan API
+- **Monthly Updates**: Scheduled cron job updates all 64 Bangladesh districts
+- **Manual Trigger**: Admin can trigger updates anytime from dashboard
+- **64 Districts**: Complete coverage with precise coordinates
+- **Error Handling**: Comprehensive error handling with retry logic
+- **Health Monitoring**: Real-time health checks and status monitoring
+- **Configurable**: Adjustable calculation methods and time offsets
+
+See [Prayer Time Automation Setup Guide](docs/prayer-time-automation-setup-guide.md) for detailed setup instructions.
+
 ## 🛠️ Technology Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
-- **Database**: MongoDB (via Prisma ORM)
+- **Database**: PostgreSQL (via Prisma ORM)
 - **UI Components**: shadcn/ui + Tailwind CSS v4
 - **Authentication**: NextAuth.js
 - **File Parsing**: PapaParse (CSV), native JSON parser
 - **PDF Generation**: jsPDF + jspdf-autotable
+- **Prayer Times**: Aladhan API integration
 - **Validation**: Zod
 - **Deployment**: Vercel-ready
 
@@ -38,36 +50,44 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
 
 ### Prerequisites
 
-- Node.js 18+ 
-- MongoDB instance (local or cloud)
+- Node.js 18+
+- PostgreSQL database (local or cloud)
 - pnpm (recommended) or npm
 
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd ramadan-clock
-   ```
+    ```bash
+    git clone <repository-url>
+    cd ramadan-clock
+    ```
 
 2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+    ```bash
+    pnpm install
+    ```
 
 3. **Set up environment variables**
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Edit `.env.local` with your configuration:
-   ```env
-   DATABASE_URL="mongodb://localhost:27017/ramadan-clock"
-   NEXTAUTH_SECRET="your-secret-key-here"
-   NEXTAUTH_URL="http://localhost:3000"
-   ADMIN_EMAIL="admin@example.com"
-   ADMIN_PASSWORD="admin123"
-   ```
+    ```bash
+    cp .env.example .env.local
+    ```
+    
+    Edit `.env.local` with your configuration:
+    ```env
+    DATABASE_URL="postgresql://user:password@localhost:5432/ramadan-clock"
+    NEXTAUTH_SECRET="your-secret-key-here"
+    NEXTAUTH_URL="http://localhost:3000"
+    ADMIN_EMAIL="admin@example.com"
+    ADMIN_PASSWORD="admin123"
+    
+    # Prayer Time Automation (Optional)
+    PRAYER_TIME_API_URL=https://api.aladhan.com/v1
+    PRAYER_TIME_API_METHOD=2
+    PRAYER_TIME_API_SCHOOL=0
+    PRAYER_TIME_SEHRI_ADJUSTMENT_MINUTES=0
+    PRAYER_TIME_IFTAR_ADJUSTMENT_MINUTES=0
+    CRON_SECRET_KEY=your-secure-secret-key-here
+    ```
 
 4. **Generate Prisma client**
    ```bash
@@ -125,24 +145,39 @@ ramadan-clock/
 ## 📊 Database Schema
 
 ### TimeEntry
-- `id`: ObjectId
+- `id`: UUID
 - `date`: String (YYYY-MM-DD)
 - `sehri`: String (HH:mm)
 - `iftar`: String (HH:mm)
 - `location`: String (nullable)
+- `createdAt`: DateTime
 - Unique index on `(date, location)`
 
 ### AdminUser
-- `id`: ObjectId
+- `id`: UUID
 - `email`: String (unique)
 - `password`: String (hashed)
+- `createdAt`: DateTime
 
 ### UploadLog
-- `id`: ObjectId
+- `id`: UUID
 - `fileName`: String
 - `rowCount`: Int
 - `status`: String (success/partial/failed)
 - `errors`: String (JSON)
+- `uploadedAt`: DateTime
+
+### CronExecutionLog
+- `id`: UUID
+- `executedAt`: DateTime
+- `success`: Boolean
+- `duration`: Int (milliseconds)
+- `locationsProcessed`: Int
+- `entriesProcessed`: Int
+- `entriesCreated`: Int
+- `entriesUpdated`: Int
+- `entriesFailed`: Int
+- `errors`: String (JSON, nullable)
 
 ## 📤 File Upload Format
 

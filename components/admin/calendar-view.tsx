@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AppModal } from "@/components/ui/app-modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { deleteTimeEntry, updateTimeEntry } from "@/actions/time-entries";
+import { deleteTimeEntry, updateTimeEntry, bulkDeleteTimeEntries } from "@/actions/time-entries";
 import { toast } from "sonner";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import {
@@ -21,6 +21,7 @@ import moment from 'moment';
 
 interface CalendarViewProps {
   entries: Array<TimeEntry & { sehri24?: string; iftar24?: string }>;
+  locations: string[];
 }
 
 // Get today's date in local timezone (YYYY-MM-DD format) using moment
@@ -28,32 +29,7 @@ const getTodayLocal = () => {
   return moment().format('YYYY-MM-DD');
 };
 
-const bangladeshDistricts = [
-  // Barisal Division
-  "Barguna", "Barisal", "Bhola", "Jhalokati", "Patuakhali", "Pirojpur",
-  // Chittagong Division
-  "Bandarban", "Brahmanbaria", "Chandpur", "Chittagong", "Comilla",
-  "Cox's Bazar", "Feni", "Khagrachari", "Lakshmipur", "Noakhali", "Rangamati",
-  // Dhaka Division
-  "Dhaka", "Faridpur", "Gazipur", "Gopalganj", "Kishoreganj", "Madaripur",
-  "Manikganj", "Munshiganj", "Narayanganj", "Narsingdi", "Rajbari",
-  "Shariatpur", "Tangail",
-  // Khulna Division
-  "Bagerhat", "Chuadanga", "Jessore", "Jhenaidah", "Khulna", "Kushtia",
-  "Magura", "Meherpur", "Narail", "Satkhira",
-  // Mymensingh Division
-  "Jamalpur", "Mymensingh", "Netrokona", "Sherpur",
-  // Rajshahi Division
-  "Bogra", "Chapainawabganj", "Joypurhat", "Naogaon", "Natore", "Pabna",
-  "Rajshahi", "Sirajganj",
-  // Rangpur Division
-  "Dinajpur", "Gaibandha", "Kurigram", "Lalmonirhat", "Nilphamari",
-  "Panchagarh", "Rangpur", "Thakurgaon",
-  // Sylhet Division
-  "Habiganj", "Moulvibazar", "Sunamganj", "Sylhet",
-];
-
-export function CalendarView({ entries }: CalendarViewProps) {
+export function CalendarView({ entries, locations }: CalendarViewProps) {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [formData, setFormData] = useState({ date: "", sehri: "", iftar: "", location: "" });
   const [isUpdating, setIsUpdating] = useState(false);
@@ -126,16 +102,15 @@ export function CalendarView({ entries }: CalendarViewProps) {
   const handleBulkDeleteConfirm = async () => {
     if (selectedIds.size === 0) return;
     setIsBulkDeleting(true);
-    let successCount = 0, failCount = 0;
-    for (const id of selectedIds) {
-      const result = await deleteTimeEntry(id);
-      result.success ? successCount++ : failCount++;
-    }
+    const result = await bulkDeleteTimeEntries(Array.from(selectedIds));
     setIsBulkDeleting(false);
     setSelectedIds(new Set());
     setShowBulkDeleteModal(false);
-    if (successCount > 0) toast.success(`Deleted ${successCount} entries`);
-    if (failCount > 0) toast.error(`Failed to delete ${failCount} entries`);
+    if (result.success && result.deletedCount) {
+      toast.success(`Deleted ${result.deletedCount} entries`);
+    } else {
+      toast.error(result.error || "Failed to delete entries");
+    }
   };
 
   const isAllSelected = entries.length > 0 && selectedIds.size === entries.length;
@@ -235,9 +210,9 @@ export function CalendarView({ entries }: CalendarViewProps) {
               <SelectTrigger id="edit-location" className="h-10 w-full rounded-xl border-border/60">
                 <SelectValue placeholder="Select a district" />
               </SelectTrigger>
-              <SelectContent className="max-h-[300px] overflow-y-auto" position="popper">
-                {bangladeshDistricts.map((district) => (
-                  <SelectItem key={district} value={district}>{district}</SelectItem>
+              <SelectContent className="max-h-20 overflow-y-auto" position="popper">
+                {locations.map((location) => (
+                  <SelectItem key={location} value={location}>{location}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -1,20 +1,14 @@
 import { getFullSchedule, getLocations, getTodayOrNextDaySchedule } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { Suspense } from "react";
 import CalendarSkeleton from "@/components/public/calendar-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
 import { SehriIftarCard } from "@/components/shared/sehri-iftar-card";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { ScheduleCard } from "@/components/shared/schedule-card";
+import { LocationSelector } from "@/components/shared/location-selector";
 import moment from 'moment-timezone';
 import { getCalendarMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -26,14 +20,13 @@ export const metadata = getCalendarMetadata();
 // Page-level caching with ISR
 // Revalidate every 15 minutes - calendar data changes rarely
 export const revalidate = 900;
-export const dynamic = 'force-static';
-export const fetchCache = 'force-cache';
 
 async function CalendarContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
-  const schedule = await getFullSchedule(location || null);
+  const selectedLocation = location || "Rangpur"; // Default to Rangpur
+  const schedule = await getFullSchedule(selectedLocation);
   const locations = await getLocations();
-  const todaySchedule = await getTodayOrNextDaySchedule(location || null);
+  const todaySchedule = await getTodayOrNextDaySchedule(selectedLocation);
   const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
 
   return (
@@ -55,20 +48,9 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
           <p className="text-muted-foreground text-sm mt-2">Complete Sehri & Iftar timetable</p>
         </div>
         <div className="flex items-center gap-2 shrink-0 relative z-10">
-          <Select defaultValue={location || "all"}>
-            <SelectTrigger className="w-[200px] bg-card/80 backdrop-blur border-border/60 shadow-sm">
-              <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="Select location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <LocationSelector locations={locations} currentLocation={location} />
           <DownloadButton
-            location={location}
+            location={selectedLocation}
             type="full"
             className="border-border/60 shadow-sm bg-card/80"
           />

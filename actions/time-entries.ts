@@ -253,7 +253,10 @@ async function getLocationsUncached(): Promise<string[]> {
       },
     });
 
-    return result.map((r) => r.location!).filter(Boolean);
+    return result
+      .map((r) => r.location!)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
   } catch (error) {
     console.error("Error fetching locations:", error);
     return [];
@@ -301,6 +304,42 @@ export async function deleteTimeEntry(id: string): Promise<{ success: boolean; e
   } catch (error) {
     console.error("Error deleting time entry:", error);
     return { success: false, error: "Failed to delete entry" };
+  }
+}
+
+/**
+ * Bulk delete time entries (admin only)
+ * Deletes multiple entries in a single database operation for better performance
+ * @param ids - Array of time entry IDs to delete
+ * @returns Success status and optional error message
+ */
+export async function bulkDeleteTimeEntries(ids: string[]): Promise<{ success: boolean; error?: string; deletedCount?: number }> {
+  try {
+    if (ids.length === 0) {
+      return { success: true, deletedCount: 0 };
+    }
+
+    // Delete all entries in a single operation
+    const result = await prisma.timeEntry.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+
+    // Invalidate caches
+    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+    revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
+    revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
+    revalidatePath("/");
+    revalidatePath("/calendar");
+    revalidatePath("/admin/dashboard");
+
+    return { success: true, deletedCount: result.count };
+  } catch (error) {
+    console.error("Error bulk deleting time entries:", error);
+    return { success: false, error: "Failed to delete entries" };
   }
 }
 

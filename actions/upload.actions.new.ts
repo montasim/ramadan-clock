@@ -9,7 +9,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { logger } from '@/lib/logger';
-import { UnauthorizedError, ForbiddenError, AppError } from '@/lib/errors';
+import { UnauthorizedError, AppError } from '@/lib/errors';
 import { batchTimeEntrySchema } from '@/lib/validations/api-schemas';
 import { CACHE_TAGS } from '@/lib/cache';
 
@@ -45,7 +45,6 @@ export interface ActionResult<T = any> {
 /**
  * Require admin session
  * @throws {UnauthorizedError} If not authenticated
- * @throws {ForbiddenError} If not admin
  */
 async function requireAdminSession() {
   const session = await getServerSession(authOptions);
@@ -54,11 +53,7 @@ async function requireAdminSession() {
     throw new UnauthorizedError('Authentication required');
   }
 
-  // @ts-ignore - session.user may have isAdmin property
-  if (!session.user?.isAdmin) {
-    throw new ForbiddenError('Admin access required');
-  }
-
+  // Since this is an admin-only application, any authenticated user is an admin
   return session;
 }
 

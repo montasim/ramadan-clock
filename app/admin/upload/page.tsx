@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { ScheduleCard } from "@/components/shared/schedule-card";
 import { DashboardGuard } from "@/lib/guards";
+import { CacheClearButton } from "@/components/admin/cache-clear-button";
 
 // Admin pages should never be cached - they need real-time data
 export const dynamic = 'force-dynamic';
@@ -117,7 +118,7 @@ export default function UploadPage() {
     <DashboardGuard>
       <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
       {/* ── Hero Banner ──────────────────────────────── */}
-      <div className="hero-section px-6 py-8 overflow-hidden">
+      <div className="hero-section px-6 py-8 overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div
           className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
           style={{ background: "var(--grad-primary)" }}
@@ -132,6 +133,9 @@ export default function UploadPage() {
           <p className="text-muted-foreground text-sm mt-2">
             Upload Sehri &amp; Iftar schedules via JSON or CSV
           </p>
+        </div>
+        <div className="relative z-10">
+          <CacheClearButton />
         </div>
       </div>
 

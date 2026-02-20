@@ -12,17 +12,22 @@ import { z } from 'zod/v4';
 const envSchema = z.object({
   // Application
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  
+
   // Database
   DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
-  
+
   // NextAuth
   NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
   NEXTAUTH_URL: z.string().url('NEXTAUTH_URL must be a valid URL').default('http://localhost:3000'),
-  
+
   // Admin
   ADMIN_EMAIL: z.string().email('ADMIN_EMAIL must be a valid email'),
   ADMIN_PASSWORD: z.string().min(6, 'ADMIN_PASSWORD must be at least 6 characters'),
+
+  // Developer Social Links
+  DEVELOPER_GITHUB: z.string().url('DEVELOPER_GITHUB must be a valid URL').default('https://github.com/your-username'),
+  DEVELOPER_LINKEDIN: z.string().url('DEVELOPER_LINKEDIN must be a valid URL').default('https://linkedin.com/in/your-username'),
+  DEVELOPER_EMAIL: z.string().email('DEVELOPER_EMAIL must be a valid email').default('developer@example.com'),
 });
 
 /**
@@ -111,4 +116,25 @@ export function getAdminCredentials() {
     email: env.ADMIN_EMAIL,
     password: env.ADMIN_PASSWORD,
   };
+}
+
+/**
+ * Get developer GitHub URL
+ */
+export function getDeveloperGithub(): string {
+  return env.DEVELOPER_GITHUB;
+}
+
+/**
+ * Get developer LinkedIn URL
+ */
+export function getDeveloperLinkedin(): string {
+  return env.DEVELOPER_LINKEDIN;
+}
+
+/**
+ * Get developer email
+ */
+export function getDeveloperEmail(): string {
+  return env.DEVELOPER_EMAIL;
 }
