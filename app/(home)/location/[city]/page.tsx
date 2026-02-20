@@ -19,6 +19,12 @@ interface LocationPageProps {
   params: Promise<{ city: string }>;
 }
 
+// Page-level caching with ISR
+// Revalidate every 30 minutes - location-specific data changes rarely
+export const revalidate = 1800;
+export const dynamic = 'force-static';
+export const fetchCache = 'force-cache';
+
 export async function generateMetadata({ params }: LocationPageProps) {
   const { city } = await params;
   const decodedCity = decodeURIComponent(city);

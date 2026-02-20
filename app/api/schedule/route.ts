@@ -21,6 +21,7 @@ import {
 import { scheduleQuerySchema, timeEntryCreateSchema } from '@/lib/validations/api-schemas';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
+import { CACHE_HEADERS } from '@/lib/cache';
 
 /**
  * Get schedule with optional filtering and pagination
@@ -84,7 +85,13 @@ async function getScheduleHandler(request: NextRequest): Promise<NextResponse> {
       total,
     });
 
-    return paginated(entries, pagination);
+    const response = paginated(entries, pagination);
+    
+    // Add cache headers
+    response.headers.set('Cache-Control', CACHE_HEADERS.SHORT);
+    response.headers.set('CDN-Cache-Control', CACHE_HEADERS.SHORT);
+    
+    return response;
   } catch (err) {
     logger.error('Failed to fetch schedule', {}, err as Error);
 

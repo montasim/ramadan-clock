@@ -19,6 +19,15 @@ import {
 } from '@/lib/api';
 import { pdfQuerySchema } from '@/lib/validations/api-schemas';
 import { logger } from '@/lib/logger';
+import { createHash } from 'crypto';
+
+/**
+ * Generate ETag for schedule data
+ */
+function generateETag(schedule: any[]): string {
+  const scheduleString = JSON.stringify(schedule);
+  return createHash('md5').update(scheduleString).digest('hex');
+}
 
 /**
  * Generate PDF for schedule
@@ -79,6 +88,14 @@ async function generatePdfHandler(request: NextRequest): Promise<NextResponse> {
         `No schedule found for the specified criteria`,
         { location: actualLocation, type }
       );
+    }
+
+    // Check for conditional request (If-None-Match)
+    const etag = generateETag(schedule);
+    const ifNoneMatch = request.headers.get('if-none-match');
+    
+    if (ifNoneMatch && ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304 });
     }
 
     // Generate PDF
@@ -151,6 +168,8 @@ async function generatePdfHandler(request: NextRequest): Promise<NextResponse> {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Content-Length': pdfBuffer.byteLength.toString(),
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1800',
+        'ETag': etag,
       },
     });
 

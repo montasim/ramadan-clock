@@ -5,12 +5,13 @@
 
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { logger } from '@/lib/logger';
 import { UnauthorizedError, ForbiddenError, AppError } from '@/lib/errors';
 import { batchTimeEntrySchema } from '@/lib/validations/api-schemas';
+import { CACHE_TAGS } from '@/lib/cache';
 
 // Import use cases
 import { UploadScheduleUseCase } from '@/features/schedule/use-cases/upload-schedule.use-case';
@@ -143,6 +144,13 @@ export async function uploadSchedule(
     const result = await uploadScheduleUseCase.upload(entries, fileName);
 
     if (result.success) {
+      // Invalidate caches
+      revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+      revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
+      revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
+      revalidateTag(CACHE_TAGS.PDF, CACHE_TAGS.PDF);
+      
+      // Revalidate paths for ISR
       revalidatePath('/');
       revalidatePath('/calendar');
       revalidatePath('/admin/dashboard');

@@ -10,6 +10,10 @@ import { getAdminMetadata } from "@/lib/seo/metadata";
 
 export const metadata = getAdminMetadata('Dashboard');
 
+// Admin pages should never be cached - they need real-time data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AdminDashboard() {
   const session = await withDashboardGuard();
 

@@ -14,6 +14,7 @@ import {
 import { hadithQuerySchema } from '@/lib/validations/api-schemas';
 import { fetchExternalJsonCached } from '@/lib/api';
 import { logger } from '@/lib/logger';
+import { CACHE_HEADERS } from '@/lib/cache';
 
 /**
  * Hadith response interface
@@ -66,7 +67,13 @@ async function getHadithHandler(request: NextRequest): Promise<NextResponse> {
       id: selectedId,
     });
 
-    return success(hadith);
+    const response = success(hadith);
+    
+    // Add cache headers - hadith data is static, cache for 1 hour
+    response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
+    
+    return response;
   } catch (err) {
     logger.error('Failed to fetch hadith', {}, err as Error);
 

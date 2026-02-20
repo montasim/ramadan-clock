@@ -22,6 +22,12 @@ import { createWebPageSchema, createBreadcrumbSchema, createCollectionPageSchema
 
 export const metadata = getCalendarMetadata();
 
+// Page-level caching with ISR
+// Revalidate every 15 minutes - calendar data changes rarely
+export const revalidate = 900;
+export const dynamic = 'force-static';
+export const fetchCache = 'force-cache';
+
 async function CalendarContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
   const schedule = await getFullSchedule(location || null);

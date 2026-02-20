@@ -15,6 +15,10 @@ import { ScheduleTable } from "@/components/shared/schedule-table";
 import { ScheduleCard } from "@/components/shared/schedule-card";
 import { DashboardGuard } from "@/lib/guards";
 
+// Admin pages should never be cached - they need real-time data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface ParsedEntry {
   date: string;
   sehri: string;

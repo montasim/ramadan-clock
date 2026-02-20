@@ -1,8 +1,10 @@
 "use server";
 
 import { prisma, type TimeEntry } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import moment from 'moment';
+import { unstable_cache } from 'next/cache';
+import { CACHE_CONFIG, CACHE_TAGS } from '@/lib/cache';
 
 // Extended type for formatted entries with both 12-hour and 24-hour formats
 type FormattedTimeEntry = TimeEntry & {
@@ -23,7 +25,8 @@ function formatTimeEntry(entry: TimeEntry): FormattedTimeEntry {
   };
 }
 
-export async function getTodaySchedule(location?: string | null): Promise<TimeEntry | null> {
+// Uncached version of getTodaySchedule for internal use
+async function getTodayScheduleUncached(location?: string | null): Promise<TimeEntry | null> {
   try {
     const today = moment().format('YYYY-MM-DD');
 
@@ -45,6 +48,16 @@ export async function getTodaySchedule(location?: string | null): Promise<TimeEn
     return null;
   }
 }
+
+// Cached version of getTodaySchedule
+export const getTodaySchedule = unstable_cache(
+  async (location?: string | null) => getTodayScheduleUncached(location),
+  ['today-schedule'],
+  {
+    revalidate: CACHE_CONFIG.todaySchedule.duration,
+    tags: [CACHE_TAGS.SCHEDULE],
+  }
+);
 
 /**
  * Check if iftar time has passed for today
@@ -77,7 +90,7 @@ function hasSehriPassed(todaySchedule: TimeEntry): boolean {
 /**
  * Get today's schedule or next day's schedule if iftar has passed
  */
-export async function getTodayOrNextDaySchedule(location?: string | null): Promise<TimeEntry | null> {
+async function getTodayOrNextDayScheduleUncached(location?: string | null): Promise<TimeEntry | null> {
   try {
     const today = moment().format('YYYY-MM-DD');
     const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
@@ -106,11 +119,21 @@ export async function getTodayOrNextDaySchedule(location?: string | null): Promi
   }
 }
 
+// Cached version of getTodayOrNextDaySchedule
+export const getTodayOrNextDaySchedule = unstable_cache(
+  async (location?: string | null) => getTodayOrNextDayScheduleUncached(location),
+  ['today-or-next-day-schedule'],
+  {
+    revalidate: CACHE_CONFIG.todaySchedule.duration,
+    tags: [CACHE_TAGS.SCHEDULE],
+  }
+);
+
 /**
  * Get schedule display data with time status information
  * Returns both today's and tomorrow's schedules along with time status flags
  */
-export async function getScheduleDisplayData(location?: string | null) {
+async function getScheduleDisplayDataUncached(location?: string | null) {
   try {
     const today = moment().format('YYYY-MM-DD');
     const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
@@ -155,7 +178,17 @@ export async function getScheduleDisplayData(location?: string | null) {
   }
 }
 
-export async function getFullSchedule(location?: string | null): Promise<FormattedTimeEntry[]> {
+// Cached version of getScheduleDisplayData
+export const getScheduleDisplayData = unstable_cache(
+  async (location?: string | null) => getScheduleDisplayDataUncached(location),
+  ['schedule-display-data'],
+  {
+    revalidate: CACHE_CONFIG.todaySchedule.duration,
+    tags: [CACHE_TAGS.SCHEDULE],
+  }
+);
+
+async function getFullScheduleUncached(location?: string | null): Promise<FormattedTimeEntry[]> {
   try {
     const where = location ? { location } : {};
 
@@ -170,6 +203,16 @@ export async function getFullSchedule(location?: string | null): Promise<Formatt
     return [];
   }
 }
+
+// Cached version of getFullSchedule
+export const getFullSchedule = unstable_cache(
+  async (location?: string | null) => getFullScheduleUncached(location),
+  ['full-schedule'],
+  {
+    revalidate: CACHE_CONFIG.schedule.duration,
+    tags: [CACHE_TAGS.SCHEDULE],
+  }
+);
 
 export async function getScheduleByDateRange(
   startDate: string,
@@ -200,7 +243,7 @@ export async function getScheduleByDateRange(
   }
 }
 
-export async function getLocations(): Promise<string[]> {
+async function getLocationsUncached(): Promise<string[]> {
   try {
     const result = await prisma.timeEntry.groupBy({
       by: ["location"],
@@ -215,6 +258,16 @@ export async function getLocations(): Promise<string[]> {
     return [];
   }
 }
+
+// Cached version of getLocations
+export const getLocations = unstable_cache(
+  async () => getLocationsUncached(),
+  ['locations'],
+  {
+    revalidate: CACHE_CONFIG.locations.duration,
+    tags: [CACHE_TAGS.LOCATIONS],
+  }
+);
 
 export async function getTimeEntryById(id: string): Promise<TimeEntry | null> {
   try {
@@ -235,6 +288,10 @@ export async function deleteTimeEntry(id: string): Promise<{ success: boolean; e
       where: { id },
     });
 
+    // Invalidate caches
+    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+    revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
+    revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
     revalidatePath("/");
     revalidatePath("/calendar");
     revalidatePath("/admin/dashboard");
@@ -256,6 +313,10 @@ export async function updateTimeEntry(
       data,
     });
 
+    // Invalidate caches
+    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+    revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
+    revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
     revalidatePath("/");
     revalidatePath("/calendar");
     revalidatePath("/admin/dashboard");
@@ -267,7 +328,7 @@ export async function updateTimeEntry(
   }
 }
 
-export async function getStats() {
+async function getStatsUncached() {
   try {
     const [totalEntries, locations, recentUploads] = await Promise.all([
       prisma.timeEntry.count(),
@@ -297,3 +358,13 @@ export async function getStats() {
     };
   }
 }
+
+// Cached version of getStats
+export const getStats = unstable_cache(
+  async () => getStatsUncached(),
+  ['stats'],
+  {
+    revalidate: CACHE_CONFIG.stats.duration,
+    tags: [CACHE_TAGS.STATS],
+  }
+);

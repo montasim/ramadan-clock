@@ -22,6 +22,12 @@ import { createWebPageSchema, createBreadcrumbSchema, createSoftwareApplicationS
 
 export const metadata = getHomeMetadata();
 
+// Page-level caching with ISR
+// Revalidate every 5 minutes to ensure fresh data while improving performance
+export const revalidate = 300;
+export const dynamic = 'force-static';
+export const fetchCache = 'force-cache';
+
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
   const scheduleData = await getScheduleDisplayData(location || null);
