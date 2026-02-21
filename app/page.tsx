@@ -220,12 +220,6 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
           <CardDescription>Navigate to other sections</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          <Button asChild className="btn-gradient rounded-full font-semibold">
-            <Link href="/calendar">
-              <CalendarDays className="h-4 w-4 mr-1.5" />
-              Full Calendar
-            </Link>
-          </Button>
           {locations.map((loc) => (
             <Button
               key={loc}

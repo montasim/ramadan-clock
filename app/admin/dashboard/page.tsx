@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Calendar, Clock, MapPin, Upload, LayoutDashboard } from "lucide-react";
 import { CalendarView } from "@/components/admin/calendar-view";
 import { ScheduleCard } from "@/components/shared/schedule-card";
-import { CronStatusWidget } from "@/components/admin/cron-status-widget";
 import { CacheClearButton } from "@/components/admin/cache-clear-button";
 import { NoScheduleCard } from "@/components/admin/no-schedule-card";
 import { getAdminMetadata } from "@/lib/seo/metadata";
@@ -87,7 +86,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── Stat Cards ──────────────────────── */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
           <Card key={title} className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
@@ -104,7 +103,6 @@ export default async function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
-        <CronStatusWidget />
       </div>
 
       {/* ── Calendar Card ───────────────────── */}

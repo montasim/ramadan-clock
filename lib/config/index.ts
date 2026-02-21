@@ -12,4 +12,3 @@ export * from './app.config';
 // Re-export from other config files
 export * from './locations.config';
 export * from './env.config';
-export * from './cron.config';

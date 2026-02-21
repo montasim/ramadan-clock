@@ -22,16 +22,6 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
 - **Sample Templates**: Download sample JSON/CSV templates
 - **Dashboard**: View statistics and recent uploads
 
-### 🆕 Automated Prayer Time Updates
-- **API Integration**: Automatic fetching from Aladhan API
-- **Monthly Updates**: Scheduled cron job updates all 64 Bangladesh districts
-- **Manual Trigger**: Admin can trigger updates anytime from dashboard
-- **64 Districts**: Complete coverage with precise coordinates
-- **Error Handling**: Comprehensive error handling with retry logic
-- **Health Monitoring**: Real-time health checks and status monitoring
-- **Configurable**: Adjustable calculation methods and time offsets
-
-See [Prayer Time Automation Setup Guide](docs/prayer-time-automation-setup-guide.md) for detailed setup instructions.
 
 ## 🛠️ Technology Stack
 
@@ -42,7 +32,6 @@ See [Prayer Time Automation Setup Guide](docs/prayer-time-automation-setup-guide
 - **Authentication**: NextAuth.js
 - **File Parsing**: PapaParse (CSV), native JSON parser
 - **PDF Generation**: jsPDF + jspdf-autotable
-- **Prayer Times**: Aladhan API integration
 - **Validation**: Zod
 - **Deployment**: Vercel-ready
 
@@ -79,14 +68,6 @@ See [Prayer Time Automation Setup Guide](docs/prayer-time-automation-setup-guide
     NEXTAUTH_URL="http://localhost:3000"
     ADMIN_EMAIL="admin@example.com"
     ADMIN_PASSWORD="admin123"
-    
-    # Prayer Time Automation (Optional)
-    PRAYER_TIME_API_URL=https://api.aladhan.com/v1
-    PRAYER_TIME_API_METHOD=2
-    PRAYER_TIME_API_SCHOOL=0
-    PRAYER_TIME_SEHRI_ADJUSTMENT_MINUTES=0
-    PRAYER_TIME_IFTAR_ADJUSTMENT_MINUTES=0
-    CRON_SECRET_KEY=your-secure-secret-key-here
     ```
 
 4. **Generate Prisma client**
@@ -166,18 +147,6 @@ ramadan-clock/
 - `status`: String (success/partial/failed)
 - `errors`: String (JSON)
 - `uploadedAt`: DateTime
-
-### CronExecutionLog
-- `id`: UUID
-- `executedAt`: DateTime
-- `success`: Boolean
-- `duration`: Int (milliseconds)
-- `locationsProcessed`: Int
-- `entriesProcessed`: Int
-- `entriesCreated`: Int
-- `entriesUpdated`: Int
-- `entriesFailed`: Int
-- `errors`: String (JSON, nullable)
 
 ## 📤 File Upload Format
 

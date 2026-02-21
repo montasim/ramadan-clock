@@ -35,18 +35,3 @@ model UploadLog {
   errors     String? // JSON stringified
   uploadedAt DateTime @default(now())
 }
-
-model CronExecutionLog {
-  id                  String   @id @default(uuid())
-  executedAt          DateTime
-  success             Boolean
-  duration            Int      // Duration in milliseconds
-  locationsProcessed  Int
-  entriesProcessed    Int
-  entriesCreated      Int
-  entriesUpdated      Int
-  entriesFailed       Int
-  errors              String?  // JSON stringified
-
-  @@index([executedAt])
-}
