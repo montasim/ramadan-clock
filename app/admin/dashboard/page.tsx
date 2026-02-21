@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── Stat Cards ──────────────────────── */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
         {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
           <Card key={title} className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
