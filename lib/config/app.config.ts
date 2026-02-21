@@ -35,3 +35,24 @@ export const UI_CONFIG = {
   maxRecentUploads: 5,
   maxErrorDisplay: 5,
 } as const;
+
+/**
+ * Ramadan Configuration
+ * Configure Ramadan start and end dates for filtering prayer times
+ * Format: YYYY-MM-DD
+ */
+export const RAMADAN_CONFIG = {
+  /**
+   * Ramadan start date (1st of Ramadan)
+   * Set this to the first day of Ramadan
+   * Example: "2025-03-01" for March 1, 2025
+   */
+  startDate: process.env.RAMADAN_START_DATE,
+
+  /**
+   * Ramadan end date (last day of Ramadan)
+   * Set this to the last day of Ramadan
+   * Example: "2025-03-30" for March 30, 2025
+   */
+  endDate: process.env.RAMADAN_END_DATE,
+} as const;

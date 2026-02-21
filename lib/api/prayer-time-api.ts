@@ -4,6 +4,7 @@
  */
 
 import { LOCATION_COORDINATES, type District } from '@/lib/config/locations.config';
+import { RAMADAN_CONFIG } from '@/lib/config/app.config';
 
 /**
  * Aladhan API response types
@@ -107,11 +108,16 @@ export class PrayerTimeAPIService {
       `${this.config.baseUrl}/calendar/${year}/${month}?latitude=${latitude}&longitude=${longitude}&method=${this.config.method}&school=${this.config.school}`
     );
 
-    // Process and cache the data
+    // Process the data
     const processedData = this.processAPIResponse(data, location);
-    this.cache.set(cacheKey, { data: processedData, timestamp: Date.now() });
 
-    return processedData;
+    // Filter to only include Ramadan days
+    const ramadanData = this.filterRamadanDays(processedData);
+
+    // Cache the filtered data
+    this.cache.set(cacheKey, { data: ramadanData, timestamp: Date.now() });
+
+    return ramadanData;
   }
 
   /**
@@ -226,6 +232,24 @@ export class PrayerTimeAPIService {
         location,
       };
     });
+  }
+
+  /**
+   * Filter prayer times to only include Ramadan days
+   * Uses RAMADAN_CONFIG to determine start and end dates
+   */
+  private filterRamadanDays(prayerTimes: PrayerTimeData[]): PrayerTimeData[] {
+    const ramadanStart = new Date(RAMADAN_CONFIG.startDate);
+    const ramadanEnd = new Date(RAMADAN_CONFIG.endDate);
+
+    const filtered = prayerTimes.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= ramadanStart && entryDate <= ramadanEnd;
+    });
+
+    console.log(`[API] Filtered ${prayerTimes.length} entries to ${filtered.length} Ramadan days (${RAMADAN_CONFIG.startDate} to ${RAMADAN_CONFIG.endDate})`);
+
+    return filtered;
   }
 
   /**
