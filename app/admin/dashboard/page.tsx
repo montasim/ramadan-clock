@@ -8,6 +8,7 @@ import { CalendarView } from "@/components/admin/calendar-view";
 import { ScheduleCard } from "@/components/shared/schedule-card";
 import { CronStatusWidget } from "@/components/admin/cron-status-widget";
 import { CacheClearButton } from "@/components/admin/cache-clear-button";
+import { NoScheduleCard } from "@/components/admin/no-schedule-card";
 import { getAdminMetadata } from "@/lib/seo/metadata";
 
 export const metadata = getAdminMetadata('Dashboard');
@@ -114,15 +115,7 @@ export default async function AdminDashboard() {
         {schedule.length > 0 ? (
           <CalendarView entries={schedule} locations={locations} />
         ) : (
-          <div className="text-center py-14 text-muted-foreground">
-            <p className="mb-4">No schedule entries yet.</p>
-            <Link href="/admin/upload">
-              <Button className="btn-gradient rounded-full gap-2 font-semibold">
-                <Upload className="h-4 w-4" />
-                Upload Schedule
-              </Button>
-            </Link>
-          </div>
+          <NoScheduleCard />
         )}
       </ScheduleCard>
     </div>

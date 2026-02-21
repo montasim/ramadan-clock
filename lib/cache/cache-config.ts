@@ -1,40 +1,34 @@
 /**
  * Cache Configuration
  * Centralized cache durations and tags for consistency across the application
+ *
+ * Note: Core constants are imported from lib/constants/cache.constants.ts
+ * This file extends them with application-specific cache configurations
  */
 
-/**
- * Cache durations in seconds
- */
-export const CACHE_DURATIONS = {
-  /** 1 minute - frequently changing data */
-  SHORT: 60,
-  /** 5 minutes - moderately changing data */
-  MEDIUM: 300,
-  /** 15 minutes - rarely changing data */
-  LONG: 900,
-  /** 30 minutes - very rarely changing data */
-  VERY_LONG: 1800,
-  /** 1 hour - static data */
-  HOUR: 3600,
-} as const;
+import {
+  CACHE_TTL,
+  CACHE_TAGS as CORE_CACHE_TAGS,
+  CACHE_HEADERS as CORE_CACHE_HEADERS,
+} from '@/lib/constants';
 
 /**
- * Cache tags for selective invalidation
- * Tags allow invalidating specific groups of cached data
+ * Re-export core cache constants for backward compatibility
+ * @deprecated Use CACHE_TTL from @/lib/constants instead
  */
-export const CACHE_TAGS = {
-  /** Schedule entries (today, tomorrow, full) */
-  SCHEDULE: 'schedule',
-  /** List of available locations */
-  LOCATIONS: 'locations',
-  /** Dashboard statistics */
-  STATS: 'stats',
-  /** Hadith data from external API */
-  HADITH: 'hadith',
-  /** Generated PDF files */
-  PDF: 'pdf',
-} as const;
+export const CACHE_DURATIONS = CACHE_TTL;
+
+/**
+ * Re-export core cache tags for backward compatibility
+ * @deprecated Use CACHE_TAGS from @/lib/constants instead
+ */
+export const CACHE_TAGS = CORE_CACHE_TAGS;
+
+/**
+ * Re-export core cache headers for backward compatibility
+ * @deprecated Use CACHE_HEADERS from @/lib/constants instead
+ */
+export const CACHE_HEADERS = CORE_CACHE_HEADERS;
 
 /**
  * Cache configuration for different data types
@@ -42,50 +36,34 @@ export const CACHE_TAGS = {
 export const CACHE_CONFIG = {
   /** Locations list - rarely changes, cache for 1 hour */
   locations: {
-    duration: CACHE_DURATIONS.HOUR,
-    tags: [CACHE_TAGS.LOCATIONS],
+    duration: CACHE_TTL.LONG,
+    tags: [CORE_CACHE_TAGS.LOCATIONS],
   },
-  /** Full schedule - changes on upload, cache for 5 minutes */
+  /** Full schedule - changes on upload, cache for 15 minutes */
   schedule: {
-    duration: CACHE_DURATIONS.MEDIUM,
-    tags: [CACHE_TAGS.SCHEDULE],
+    duration: CACHE_TTL.MEDIUM,
+    tags: [CORE_CACHE_TAGS.SCHEDULE],
   },
-  /** Today's schedule - changes daily, cache for 1 minute */
+  /** Today's schedule - changes daily, cache for 5 minutes */
   todaySchedule: {
-    duration: CACHE_DURATIONS.SHORT,
-    tags: [CACHE_TAGS.SCHEDULE],
+    duration: CACHE_TTL.SHORT,
+    tags: [CORE_CACHE_TAGS.SCHEDULE],
   },
-  /** Dashboard stats - changes on upload, cache for 1 minute */
+  /** Dashboard stats - changes on upload, cache for 15 minutes */
   stats: {
-    duration: CACHE_DURATIONS.SHORT,
-    tags: [CACHE_TAGS.STATS],
+    duration: CACHE_TTL.MEDIUM,
+    tags: [CORE_CACHE_TAGS.STATS],
   },
-  /** Hadith from external API - static, cache for 1 hour */
+  /** Hadith from external API - static, cache for 24 hours */
   hadith: {
-    duration: CACHE_DURATIONS.HOUR,
-    tags: [CACHE_TAGS.HADITH],
+    duration: CACHE_TTL.VERY_LONG,
+    tags: ['hadith'],
   },
   /** Generated PDF - changes on schedule update, cache for 10 minutes */
   pdf: {
     duration: 600,
-    tags: [CACHE_TAGS.PDF],
+    tags: [CORE_CACHE_TAGS.PDF],
   },
-} as const;
-
-/**
- * Cache-Control header values for different scenarios
- */
-export const CACHE_HEADERS = {
-  /** No caching - for dynamic/admin content */
-  NO_CACHE: 'no-store, no-cache, must-revalidate, proxy-revalidate',
-  /** Short cache - for frequently changing data */
-  SHORT: 'public, s-maxage=60, stale-while-revalidate=300',
-  /** Medium cache - for moderately changing data */
-  MEDIUM: 'public, s-maxage=300, stale-while-revalidate=900',
-  /** Long cache - for rarely changing data */
-  LONG: 'public, s-maxage=900, stale-while-revalidate=1800',
-  /** Static assets - immutable */
-  IMMUTABLE: 'public, max-age=31536000, immutable',
 } as const;
 
 /**

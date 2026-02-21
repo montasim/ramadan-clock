@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import { TimeEntry } from "@prisma/client";
-import { config } from '../config';
+import { config } from "@/lib/config";
 
 // Configured timezone for the application (from config)
 const APP_TIMEZONE = config.timezone;

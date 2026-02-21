@@ -239,11 +239,11 @@ export class PrayerTimeAPIService {
    * Uses RAMADAN_CONFIG to determine start and end dates
    */
   private filterRamadanDays(prayerTimes: PrayerTimeData[]): PrayerTimeData[] {
-    const ramadanStart = new Date(RAMADAN_CONFIG.startDate);
-    const ramadanEnd = new Date(RAMADAN_CONFIG.endDate);
+    const ramadanStart = new Date(RAMADAN_CONFIG.startDate || '2025-03-01');
+    const ramadanEnd = new Date(RAMADAN_CONFIG.endDate || '2025-03-30');
 
     const filtered = prayerTimes.filter((entry) => {
-      const entryDate = new Date(entry.date);
+      const entryDate = new Date(entry.date || '');
       return entryDate >= ramadanStart && entryDate <= ramadanEnd;
     });
 
