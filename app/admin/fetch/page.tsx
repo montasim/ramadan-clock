@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useProgress } from "@/hooks/use-progress";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,9 +96,35 @@ export default function ApiFetchPage() {
   const [fetchProgress, setFetchProgress] = useState<ProgressData | null>(null);
   const [fetchedData, setFetchedData] = useState<AladhanPrayerTimes[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [fetchOperationId, setFetchOperationId] = useState<string | null>(null);
+  const fetchProgressData = useProgress(fetchOperationId);
+  
+  // Debug: Log when fetch progress data arrives
+  if (fetchProgressData.progress) {
+    console.log('Fetch progress update:', {
+      current: fetchProgressData.progress.current,
+      total: fetchProgressData.progress.total,
+      percentage: fetchProgressData.progress.percentage,
+      status: fetchProgressData.progress.status,
+      isConnected: fetchProgressData.isConnected,
+    });
+  }
   
   // Upload state
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadOperationId, setUploadOperationId] = useState<string | null>(null);
+  const uploadProgressData = useProgress(uploadOperationId);
+  
+  // Debug: Log when upload progress data arrives
+  if (uploadProgressData.progress) {
+    console.log('Upload progress update:', {
+      current: uploadProgressData.progress.current,
+      total: uploadProgressData.progress.total,
+      percentage: uploadProgressData.progress.percentage,
+      status: uploadProgressData.progress.status,
+      isConnected: uploadProgressData.isConnected,
+    });
+  }
   const [uploadResult, setUploadResult] = useState<{ success: boolean; rowCount?: number; message?: string } | null>(null);
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
   
@@ -140,59 +167,34 @@ export default function ApiFetchPage() {
     setFetchError(null);
     setFetchedData([]);
 
-    // Calculate total entries for progress simulation
+    // Calculate total entries for progress tracking
     const totalEntries = estimatedEntries || dateRangeEntries * (selectedDistricts.length > 0 ? selectedDistricts.length : BANGLADESH_DISTRICTS.length);
-    
-    // Initialize progress
-    setFetchProgress({
-      current: 0,
-      total: totalEntries,
-      percentage: 0,
-      batch: 0,
-      totalBatches: Math.ceil(totalEntries / 50),
-      status: 'initializing',
-      currentDistrict: '',
-    });
-
-    // Simulate progress updates during fetch
-    // Note: Server actions don't support real-time callbacks, so we simulate progress
-    const progressInterval = setInterval(() => {
-      setFetchProgress(prev => {
-        if (!prev) return null;
-        const newCurrent = Math.min(prev.current + Math.ceil(prev.total / 30), prev.total);
-        const newPercentage = Math.round((newCurrent / prev.total) * 100);
-        const newBatch = Math.floor(newCurrent / 50) + 1;
-        
-        // Update status based on progress
-        let newStatus: ProgressData['status'] = 'fetching';
-        if (newPercentage >= 100) {
-          newStatus = 'completed';
-          clearInterval(progressInterval);
-        } else if (newPercentage > 70) {
-          newStatus = 'processing';
-        }
-
-        // Simulate current district
-        const districtIndex = Math.floor((newCurrent / 50) % (selectedDistricts.length || BANGLADESH_DISTRICTS.length));
-        const currentDistrict = selectedDistricts.length > 0 
-          ? selectedDistricts[districtIndex] 
-          : BANGLADESH_DISTRICTS[districtIndex];
-
-        return {
-          current: newCurrent,
-          total: prev.total,
-          percentage: newPercentage,
-          batch: newBatch,
-          totalBatches: prev.totalBatches,
-          status: newStatus,
-          currentDistrict,
-        };
-      });
-    }, 200);
 
     try {
+      // Step 1: Create progress operation BEFORE fetching
+      const createResponse = await fetch('/api/progress/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'fetch',
+          total: totalEntries,
+        }),
+      });
+
+      const createResult = await createResponse.json();
+      if (!createResult.id) {
+        throw new Error('Failed to create progress operation');
+      }
+
+      // Step 2: Start listening to progress updates immediately
+      setFetchOperationId(createResult.id);
+
+      // Step 3: Wait for SSE connection to establish (longer delay for production)
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const params = new URLSearchParams();
       params.append('mode', fetchMode);
+      params.append('operationId', createResult.id); // Pass operationId to API
       
       if (fetchMode === 'dateRange') {
         params.append('startDate', startDate);
@@ -238,26 +240,11 @@ export default function ApiFetchPage() {
         }),
       });
       
-      // Update progress to completed
-      setFetchProgress({
-        current: totalEntries,
-        total: totalEntries,
-        percentage: 100,
-        batch: Math.ceil(totalEntries / 50),
-        totalBatches: Math.ceil(totalEntries / 50),
-        status: 'completed',
-        currentDistrict: '',
-      });
-      
     } catch (error) {
       console.error('Fetch error:', error);
       setFetchError(error instanceof Error ? error.message : 'Failed to fetch prayer times');
       toast.error("Failed to fetch prayer times");
-      
-      // Update progress to failed
-      setFetchProgress(prev => prev ? { ...prev, status: 'failed' } : null);
     } finally {
-      clearInterval(progressInterval);
       setIsFetching(false);
     }
   };
@@ -265,9 +252,32 @@ export default function ApiFetchPage() {
   const handleUpload = async () => {
     setIsUploading(true);
     setShowUploadConfirm(false);
+    setUploadOperationId(null);
 
     try {
-      const response = await fetch('/api/schedule/batch', {
+      // Step 1: Create progress operation
+      const createResponse = await fetch('/api/progress/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'upload',
+          total: fetchedData.length,
+        }),
+      });
+
+      const createResult = await createResponse.json();
+      if (!createResult.id) {
+        throw new Error('Failed to create progress operation');
+      }
+
+      // Step 2: Start listening to progress updates
+      setUploadOperationId(createResult.id);
+
+      // Step 3: Wait for SSE connection to establish (longer delay for production)
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Step 4: Upload with operation ID
+      const uploadResponse = await fetch('/api/schedule/batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -278,22 +288,23 @@ export default function ApiFetchPage() {
             location: entry.location,
           })),
           fileName: `aladhan-fetch-${new Date().toISOString().split('T')[0]}.json`,
+          operationId: createResult.id,
         }),
       });
 
-      const result = await response.json();
+      const uploadResult = await uploadResponse.json();
       
-      if (!result.success) {
-        throw new Error(result.error?.message || 'Failed to upload');
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error?.message || 'Failed to upload');
       }
 
       setUploadResult({
         success: true,
-        rowCount: result.data?.rowCount,
-        message: result.data?.message,
+        rowCount: uploadResult.data?.rowCount,
+        message: uploadResult.data?.message,
       });
       
-      toast.success(`Successfully uploaded ${result.data?.rowCount?.toLocaleString()} entries`);
+      toast.success(`Successfully uploaded ${uploadResult.data?.rowCount?.toLocaleString()} entries`);
       
       setTimeout(() => {
         router.push('/admin/dashboard');
@@ -608,16 +619,37 @@ export default function ApiFetchPage() {
           </Button>
 
           {/* Fetch Progress */}
-          <ProgressBar 
-            progress={fetchProgress} 
-            statusMessages={{
-              initializing: 'Initializing fetch...',
-              fetching: 'Fetching prayer times...',
-              processing: 'Processing entries...',
-              completed: 'Fetch complete!',
-            }}
-            showCurrentDistrict={true}
-          />
+          {isFetching && (
+            <>
+              {fetchProgressData.progress ? (
+                <ProgressBar 
+                  progress={fetchProgressData.progress} 
+                  statusMessages={{
+                    initializing: 'Initializing fetch...',
+                    fetching: 'Fetching prayer times...',
+                    processing: 'Processing entries...',
+                    completed: 'Fetch complete!',
+                  }}
+                  showCurrentDistrict={true}
+                />
+              ) : (
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      Connecting to progress stream...
+                    </span>
+                    <span className="font-medium">0%</span>
+                  </div>
+                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary animate-pulse" style={{ width: '0%' }} />
+                  </div>
+                  <div className="text-xs text-muted-foreground text-center">
+                    Establishing connection to receive progress updates...
+                  </div>
+                </div>
+              )}
+            </>
+          )}
 
           {/* Fetch Error */}
           {fetchError && (
@@ -749,6 +781,47 @@ export default function ApiFetchPage() {
           onClick: () => setShowUploadConfirm(false),
         }}
       />
+
+      {/* ── Upload Progress ───────────────────────────── */}
+      {(isUploading || uploadProgressData.progress) && (
+        <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <Upload className="h-4 w-4 text-primary" />
+              Upload Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {uploadProgressData.progress ? (
+              <ProgressBar
+                progress={uploadProgressData.progress}
+                statusMessages={{
+                  initializing: 'Initializing upload...',
+                  fetching: 'Uploading entries...',
+                  processing: 'Processing entries...',
+                  completed: 'Upload complete!',
+                }}
+                showCurrentDistrict={false}
+              />
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    Connecting to progress stream...
+                  </span>
+                  <span className="font-medium">0%</span>
+                </div>
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-primary animate-pulse" style={{ width: '0%' }} />
+                </div>
+                <div className="text-xs text-muted-foreground text-center">
+                  Establishing connection to receive progress updates...
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Upload Result Modal ────────────────────── */}
       {uploadResult && (

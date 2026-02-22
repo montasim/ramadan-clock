@@ -11,6 +11,7 @@ import { BANGLADESH_DISTRICTS } from '@/lib/config/locations.config';
 import { logger } from '@/lib/logger';
 import { UnauthorizedError, AppError } from '@/lib/errors';
 import { RATE_LIMIT_PRESETS } from '@/lib/config/app.config';
+import { progressStore } from '@/lib/progress/progress-store';
 
 /**
  * GET /api/prayer-times/fetch
@@ -23,6 +24,8 @@ import { RATE_LIMIT_PRESETS } from '@/lib/config/app.config';
  * - districts: comma-separated district names (optional)
  */
 export async function GET(request: NextRequest) {
+  let progressOpId: string | null = null;
+  
   try {
     // Require authentication
     const session = await getServerSession(authOptions);
@@ -31,6 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
+    const operationId = searchParams.get('operationId');
 
     // Parse rate limit configuration
     let rateLimitConfig: RateLimitConfig | undefined;
@@ -267,14 +271,55 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch prayer times from Aladhan API
-    const entries = await aladhanWrapper.fetchPrayerTimes(fetchOptions);
+    // Calculate total entries for progress tracking
+    let totalEntries = 0;
+    if (fetchOptions.mode === 'dateRange') {
+      const startDate = (fetchOptions as DateRangeOptions).startDate;
+      const endDate = (fetchOptions as DateRangeOptions).endDate;
+      const daysCount = Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      totalEntries = daysCount * districts.length;
+    } else if (fetchOptions.mode === 'multiMonth') {
+      const year = (fetchOptions as any).year;
+      const months = (fetchOptions as any).months;
+      const daysCount = months.reduce((sum: number, month: number) => {
+        return sum + new Date(year, month, 0).getDate();
+      }, 0);
+      totalEntries = daysCount * districts.length;
+    } else if (fetchOptions.mode === 'hijriMonth') {
+      // For hijri month, we don't know exact days ahead of time, estimate 30 days
+      totalEntries = 30 * districts.length;
+    }
+
+    // Create or use existing progress operation
+    progressOpId = operationId;
+    if (!progressOpId) {
+      progressOpId = progressStore.create('fetch', totalEntries, 'initializing');
+    } else {
+      // Update existing operation
+      const existing = progressStore.get(progressOpId);
+      if (!existing || existing.type !== 'fetch') {
+        throw new Error('Invalid operation ID');
+      }
+    }
+
+    // Update status to fetching
+    progressStore.update(progressOpId, { status: 'fetching', message: 'Fetching prayer times from Aladhan API...' });
+
+    // Fetch prayer times from Aladhan API with progress callback
+    const entries = await aladhanWrapper.fetchPrayerTimes(fetchOptions, (progress: FetchProgress) => {
+      progressStore.update(progressOpId!, {
+        current: progress.current,
+        status: progress.status === 'completed' ? 'processing' : 'fetching',
+        currentDistrict: progress.currentDistrict,
+        message: `Fetching ${progress.currentDistrict}...`,
+      });
+    });
 
     // Calculate metadata - default to Dhaka only
     const selectedDistricts = districts.length > 0 ? districts : ['Dhaka'];
     const totalDistricts = selectedDistricts.length;
     const totalDays = entries.length / totalDistricts;
-    const totalEntries = entries.length;
+    const fetchedTotalEntries = entries.length;
 
     // Calculate date range for metadata
     let dateRange: { start: string; end: string } | undefined;
@@ -292,12 +337,16 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    // Mark progress as completed
+    progressStore.complete(progressOpId, `Successfully fetched ${entries.length} prayer times`);
+
     logger.info('Prayer times fetched successfully', {
       mode,
       totalDistricts,
       totalDays,
-      totalEntries,
+      totalEntries: fetchedTotalEntries,
       dateRange,
+      operationId: progressOpId,
     });
 
     return NextResponse.json(
@@ -308,16 +357,22 @@ export async function GET(request: NextRequest) {
           meta: {
             totalDistricts,
             totalDays,
-            totalEntries,
+            totalEntries: fetchedTotalEntries,
             fetchMode: mode,
             dateRange,
           },
+          operationId: progressOpId,
         },
       },
       { status: 200 }
     );
   } catch (error) {
     logger.error('Error fetching prayer times', { error }, error as Error);
+
+    // Mark progress as failed if we have an operation ID
+    if (progressOpId) {
+      progressStore.fail(progressOpId, error instanceof Error ? error.message : 'Failed to fetch prayer times');
+    }
 
     if (error instanceof AppError) {
       return NextResponse.json(

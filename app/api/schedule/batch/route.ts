@@ -1,7 +1,7 @@
 /**
  * Batch Schedule Upload API Endpoint
  * RESTful API for batch uploading schedule entries
- * 
+ *
  * POST   /api/schedule/batch - Upload multiple entries (admin only)
  */
 
@@ -18,6 +18,7 @@ import { batchTimeEntrySchema } from '@/lib/validations/api-schemas';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { CACHE_TAGS } from '@/lib/cache';
+import { progressStore } from '@/lib/progress/progress-store';
 
 /**
  * Batch upload time entries
@@ -31,10 +32,29 @@ import { CACHE_TAGS } from '@/lib/cache';
  * // Response: { success: true, data: { rowCount: 1, message: "..." } }
  */
 async function batchUploadScheduleHandler(request: NextRequest): Promise<NextResponse> {
+  let progressOpId: string | null = null;
+  
   try {
     const body = await request.json();
     const fileName = body.fileName || `batch-upload-${new Date().toISOString().split('T')[0]}.json`;
     const { entries } = batchTimeEntrySchema.parse(body);
+    const operationId = body.operationId as string | undefined;
+
+    // Create or use existing progress operation
+    if (operationId) {
+      progressOpId = operationId;
+      const existing = progressStore.get(operationId);
+      if (!existing || existing.type !== 'upload') {
+        throw new Error('Invalid operation ID');
+      }
+    } else {
+      progressOpId = progressStore.create('upload', entries.length, 'validating');
+    }
+
+    // Update status to validating
+    if (progressOpId) {
+      progressStore.update(progressOpId, { status: 'validating', message: 'Validating entries...' });
+    }
 
     let createdCount = 0;
     let skippedCount = 0;
@@ -44,8 +64,21 @@ async function batchUploadScheduleHandler(request: NextRequest): Promise<NextRes
     const BATCH_SIZE = 100;
     const BATCH_TIMEOUT = 10000; // 10 seconds
 
+    // Update status to uploading
+    if (progressOpId) {
+      progressStore.update(progressOpId, { status: 'uploading', message: 'Uploading entries...' });
+    }
+
     for (let i = 0; i < entries.length; i += BATCH_SIZE) {
       const batch = entries.slice(i, i + BATCH_SIZE);
+
+      // Update progress
+      if (progressOpId) {
+        progressStore.update(progressOpId, {
+          current: i,
+          message: `Processing batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(entries.length / BATCH_SIZE)}...`,
+        });
+      }
 
       const batchResult = await prisma.$transaction(async (tx) => {
         let batchCreated = 0;
@@ -104,6 +137,19 @@ async function batchUploadScheduleHandler(request: NextRequest): Promise<NextRes
 
       createdCount += batchResult.batchCreated;
       skippedCount += batchResult.batchSkipped;
+
+      // Update progress
+      if (progressOpId) {
+        progressStore.update(progressOpId, {
+          current: i + BATCH_SIZE,
+          message: `Processed ${i + BATCH_SIZE} of ${entries.length} entries...`,
+        });
+      }
+    }
+
+    // Mark progress as completed
+    if (progressOpId) {
+      progressStore.complete(progressOpId, `Successfully uploaded ${createdCount} entries`);
     }
 
     logger.info('Batch upload completed', {
@@ -123,9 +169,14 @@ async function batchUploadScheduleHandler(request: NextRequest): Promise<NextRes
       skippedCount,
       totalEntries: entries.length,
       errors: errors.length > 0 ? errors : undefined,
+      operationId: progressOpId,
       message: `Successfully uploaded ${createdCount} entries${skippedCount > 0 ? ` (skipped ${skippedCount} duplicates)` : ''}${errors.length > 0 ? ` with ${errors.length} errors` : ''}`,
     }, 201);
   } catch (err) {
+    // Mark progress as failed if we have an operation ID
+    if (progressOpId) {
+      progressStore.fail(progressOpId, err instanceof Error ? err.message : 'Failed to upload entries');
+    }
     // Handle Zod validation errors
     if (err instanceof z.ZodError) {
       const validationErrors = err.issues.map((e) => ({

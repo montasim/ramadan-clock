@@ -19,6 +19,7 @@ interface ProgressBarProps {
   progress: ProgressData | null;
   statusMessages?: {
     initializing?: string;
+    validating?: string;
     uploading?: string;
     fetching?: string;
     processing?: string;
