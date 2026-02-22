@@ -35,3 +35,14 @@ model UploadLog {
   errors     String? // JSON stringified
   uploadedAt DateTime @default(now())
 }
+
+model RamadanSettings {
+  id        String   @id @default(uuid())
+  startDate String   // YYYY-MM-DD format
+  endDate   String   // YYYY-MM-DD format
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([startDate])
+  @@index([endDate])
+}

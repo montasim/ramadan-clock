@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getScheduleStatus, getScheduleRowClass, ScheduleStatus } from "@/lib/utils/schedule.utils";
+import { getScheduleStatus, getScheduleRowClass, ScheduleStatus, RamadanDates } from "@/lib/utils/schedule.utils";
 import { Pencil, Trash2 } from "lucide-react";
 import moment from 'moment-timezone';
 import { config } from "@/lib/config";
@@ -44,6 +44,8 @@ export interface ScheduleTableProps {
   onEdit?: (entry: TimeEntry) => void;
   onDelete?: (entry: TimeEntry) => void;
   isAllSelected?: boolean;
+  // Ramadan dates for status determination
+  ramadanDates?: RamadanDates;
 }
 
 /**
@@ -123,6 +125,7 @@ export function ScheduleTable({
   onEdit,
   onDelete,
   isAllSelected = false,
+  ramadanDates,
 }: ScheduleTableProps) {
   // Use moment to get today's date in ISO format, using the user's browser timezone
   const userTimezone = getUserTimezone();
@@ -166,11 +169,11 @@ export function ScheduleTable({
           {entries.map((entry) => {
             const isToday = entry.date === today;
             const isSelected = selectedIds?.has(entry.id) ?? false;
-            const { status, rowClass } = getScheduleStatus(entry, entries);
+            const { status, rowClass } = getScheduleStatus(entry, entries, ramadanDates);
             
             // Use simple row class for location page
             const finalRowClass = rowClassVariant === "simple"
-              ? getScheduleRowClass(entry, entries)
+              ? getScheduleRowClass(entry, entries, ramadanDates)
               : rowClass;
 
             return (

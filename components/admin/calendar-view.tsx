@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScheduleTable } from "@/components/shared/schedule-table";
+import { RamadanDates } from "@/lib/utils/schedule.utils";
 import moment from 'moment';
 import { APP_CONFIG } from '@/lib/config/app.config';
 import { config } from "@/lib/config";
@@ -24,6 +25,7 @@ import { config } from "@/lib/config";
 interface CalendarViewProps {
   entries: Array<TimeEntry & { sehri24?: string; iftar24?: string }>;
   locations: string[];
+  ramadanDates?: RamadanDates;
 }
 
 // Get today's date in local timezone (YYYY-MM-DD format) using moment
@@ -32,7 +34,7 @@ const getTodayLocal = () => {
   return moment().tz(userTimezone).format('YYYY-MM-DD');
 };
 
-export function CalendarView({ entries, locations }: CalendarViewProps) {
+export function CalendarView({ entries, locations, ramadanDates }: CalendarViewProps) {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [formData, setFormData] = useState({ date: "", sehri: "", iftar: "", location: "" });
   const [isUpdating, setIsUpdating] = useState(false);
@@ -153,6 +155,7 @@ export function CalendarView({ entries, locations }: CalendarViewProps) {
         onEdit={handleEdit}
         onDelete={setDeletingEntry}
         isAllSelected={isAllSelected}
+        ramadanDates={ramadanDates}
       />
 
       {/* ── Edit Dialog ────────────────────────── */}

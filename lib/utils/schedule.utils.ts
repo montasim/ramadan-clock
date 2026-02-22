@@ -29,6 +29,11 @@ export interface ScheduleStatusResult {
   rowClass: string;
 }
 
+export interface RamadanDates {
+  startDate?: string; // YYYY-MM-DD format
+  endDate?: string;   // YYYY-MM-DD format
+}
+
 /**
  * Parse a time string (HH:MM or h:mm A) into hours and minutes
  */
@@ -54,7 +59,7 @@ export function isTimePast(hours: number, minutes: number): boolean {
 /**
  * Determine the status of a schedule entry based on date and time
  */
-export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = []): ScheduleStatusResult {
+export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = [], ramadanDates?: RamadanDates): ScheduleStatusResult {
   const userTimezone = getUserTimezone();
   const today = moment().tz(userTimezone);
   // Create entryDate with explicit timezone to ensure consistent comparisons
@@ -67,8 +72,18 @@ export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = []
   let statusText: string;
   let rowClass: string;
   
-  if (entryDate.isBefore(today, 'day')) {
-    // Past dates are always passed
+  // Check if Ramadan dates are configured
+  const ramadanStartDate = ramadanDates?.startDate 
+    ? moment.tz(ramadanDates.startDate, userTimezone) 
+    : null;
+  
+  if (ramadanStartDate && entryDate.isBefore(ramadanStartDate, 'day')) {
+    // Date is before Ramadan - mark as passed
+    status = "passed";
+    statusText = "Passed";
+    rowClass = "bg-red-500/15 border-l-4 border-l-red-500/60 border-b border-red-500/40";
+  } else if (entryDate.isBefore(today, 'day')) {
+    // Past dates (but during or after Ramadan) - mark as passed
     status = "passed";
     statusText = "Passed";
     rowClass = "bg-red-500/15 border-l-4 border-l-red-500/60 border-b border-red-500/40";
@@ -108,8 +123,8 @@ export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = []
 /**
  * Get the row class for a schedule entry (simplified version for location page)
  */
-export function getScheduleRowClass(entry: TimeEntry, allEntries: TimeEntry[] = []): string {
-  const { rowClass } = getScheduleStatus(entry, allEntries);
+export function getScheduleRowClass(entry: TimeEntry, allEntries: TimeEntry[] = [], ramadanDates?: RamadanDates): string {
+  const { rowClass } = getScheduleStatus(entry, allEntries, ramadanDates);
   // For location page, use simplified styling without border-l
   return rowClass.replace('border-l-4 border-l-red-500/60 ', '');
 }

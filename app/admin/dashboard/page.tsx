@@ -1,5 +1,6 @@
 import { withDashboardGuard } from "@/lib/guards/dashboard-guard";
 import { getStats, getFullSchedule, getLocations } from "@/actions/time-entries";
+import { getRamadanSettings } from "@/actions/ramadan-settings.actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import { CalendarView } from "@/components/admin/calendar-view";
 import { ScheduleCard } from "@/components/shared/schedule-card";
 import { CacheClearButton } from "@/components/admin/cache-clear-button";
 import { NoScheduleCard } from "@/components/admin/no-schedule-card";
+import { RamadanConfig } from "@/components/admin/ramadan-config";
 import { PageHero } from "@/components/shared/page-hero";
 import { getAdminMetadata } from "@/lib/seo/metadata";
 
@@ -23,6 +25,12 @@ export default async function AdminDashboard() {
   const stats = await getStats();
   const schedule = await getFullSchedule(null);
   const locations = await getLocations();
+  const ramadanSettings = await getRamadanSettings();
+
+  const ramadanDates = ramadanSettings.success ? {
+    startDate: ramadanSettings.startDate,
+    endDate: ramadanSettings.endDate,
+  } : undefined;
 
   const statCards = [
     {
@@ -101,6 +109,9 @@ export default async function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
+        
+        {/* Ramadan Configuration Card */}
+        <RamadanConfig />
       </div>
 
       {/* ── Calendar Card ───────────────────── */}
@@ -109,7 +120,7 @@ export default async function AdminDashboard() {
         description={`Manage all Sehri & Iftar entries (${schedule.length} total)`}
       >
         {schedule.length > 0 ? (
-          <CalendarView entries={schedule} locations={locations} />
+          <CalendarView entries={schedule} locations={locations} ramadanDates={ramadanDates} />
         ) : (
           <NoScheduleCard />
         )}
