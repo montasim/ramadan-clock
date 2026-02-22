@@ -1,0 +1,68 @@
+
+> ramadan-clock@0.1.0 build /home/r3tr0/Personal/ramadan-clock
+> prisma generate && next build
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+
+✔ Generated Prisma Client (7.4.0) to ./generated/prisma in 47ms
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.8s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+[2026-02-22T05:47:40.147Z] INFO: Periodic cache cleanup scheduled (interval: 3600000ms)
+[2026-02-22T05:47:40.149Z] INFO: Cache cleanup system initialized
+[2026-02-22T05:47:40.202Z] INFO: Periodic cache cleanup scheduled (interval: 3600000ms)
+[2026-02-22T05:47:40.204Z] INFO: Cache cleanup system initialized
+[2026-02-22T05:47:40.331Z] INFO: Periodic cache cleanup scheduled (interval: 3600000ms)
+[2026-02-22T05:47:40.334Z] INFO: Cache cleanup system initialized
+[2026-02-22T05:47:40.394Z] INFO: Periodic cache cleanup scheduled (interval: 3600000ms)
+[2026-02-22T05:47:40.396Z] INFO: Cache cleanup system initialized
+[2026-02-22T05:47:40.457Z] INFO: Periodic cache cleanup scheduled (interval: 3600000ms)
+[2026-02-22T05:47:40.459Z] INFO: Cache cleanup system initialized
+[2026-02-22T05:47:40.482Z] INFO: Periodic cache cleanup scheduled (interval: 3600000ms)
+[2026-02-22T05:47:40.483Z] INFO: Cache cleanup system initialized
+  Generating static pages using 7 workers (0/20) ...
+[2026-02-22T05:47:40.561Z] INFO: Periodic cache cleanup scheduled (interval: 3600000ms)
+[2026-02-22T05:47:40.561Z] INFO: Cache cleanup system initialized
+  Generating static pages using 7 workers (5/20) 
+  Generating static pages using 7 workers (10/20) 
+  Generating static pages using 7 workers (15/20) 
+✓ Generating static pages using 7 workers (20/20) in 519.3ms
+  Finalizing page optimization ...
+
+Route (app)                    Revalidate  Expire
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /admin/dashboard
+├ ƒ /admin/fetch
+├ ƒ /admin/import
+├ ƒ /admin/upload
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/cache/debug
+├ ƒ /api/hadith
+├ ƒ /api/health
+├ ƒ /api/pdf
+├ ƒ /api/prayer-times/fetch
+├ ƒ /api/prayer-times/preview
+├ ƒ /api/progress/[id]
+├ ƒ /api/progress/create
+├ ƒ /api/schedule
+├ ƒ /api/schedule/[id]
+├ ƒ /api/schedule/batch
+├ ƒ /auth/login
+├ ƒ /calendar
+├ ƒ /contact
+└ ○ /sitemap.xml                       1h      1y
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -4,7 +4,7 @@
  * Twitter Card tags, and canonical URLs.
  */
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { SEO_CONFIG } from './constants';
 
 interface OpenGraph {
@@ -91,6 +91,18 @@ export function generateTwitterCard(options: {
 }
 
 /**
+ * Generate base viewport configuration for all pages
+ */
+export function generateViewport(): Viewport {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    themeColor: SEO_CONFIG.themeColor,
+  };
+}
+
+/**
  * Generate base metadata for all pages
  */
 export function getBaseMetadata(): Metadata {
@@ -151,12 +163,6 @@ export function getBaseMetadata(): Metadata {
       apple: '/apple-touch-icon.png',
     },
     manifest: '/manifest.json',
-    themeColor: SEO_CONFIG.themeColor,
-    viewport: {
-      width: 'device-width',
-      initialScale: 1,
-      maximumScale: 5,
-    },
   };
 }
 

@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Toaster } from "@/components/ui/sonner";
-import { getBaseMetadata } from "@/lib/seo/metadata";
+import { getBaseMetadata, generateViewport } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebSiteSchema } from "@/lib/seo/schemas";
 import { Providers } from "./providers";
@@ -20,6 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = getBaseMetadata();
+
+export const viewport: Viewport = generateViewport();
 
 export default function RootLayout({
   children,
