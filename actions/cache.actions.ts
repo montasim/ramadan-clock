@@ -59,7 +59,7 @@ export async function clearAllCache(): Promise<ActionResult> {
     revalidatePath('/');
     revalidatePath('/calendar');
     revalidatePath('/admin/dashboard');
-    revalidatePath('/admin/upload');
+    revalidatePath('/admin/import');
 
     logger.info('All cache cleared by admin');
 

@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod/v4';
 import {
   withErrorHandler,
   withRateLimit,
@@ -16,6 +17,7 @@ import {
   paginated,
   error,
   notFound,
+  validationError,
   type PaginationMeta,
 } from '@/lib/api';
 import { scheduleQuerySchema, timeEntryCreateSchema } from '@/lib/validations/api-schemas';
@@ -93,6 +95,24 @@ async function getScheduleHandler(request: NextRequest): Promise<NextResponse> {
     
     return response;
   } catch (err) {
+    // Handle Zod validation errors
+    if (err instanceof z.ZodError) {
+      const errors = err.issues.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+      }));
+
+      logger.error('Validation failed for schedule query', { errors }, err as Error);
+
+      return error(
+        400,
+        'ValidationError',
+        'Invalid query parameters',
+        { errors }
+      );
+    }
+
+    // Handle other errors
     logger.error('Failed to fetch schedule', {}, err as Error);
 
     if (err instanceof Error) {
@@ -158,6 +178,24 @@ async function createScheduleHandler(request: NextRequest): Promise<NextResponse
 
     return success(entry, 201);
   } catch (err) {
+    // Handle Zod validation errors
+    if (err instanceof z.ZodError) {
+      const errors = err.issues.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+      }));
+
+      logger.error('Validation failed for time entry creation', { errors }, err as Error);
+
+      return error(
+        400,
+        'ValidationError',
+        'Invalid input: missing or invalid required fields',
+        { errors }
+      );
+    }
+
+    // Handle other errors
     logger.error('Failed to create time entry', {}, err as Error);
 
     if (err instanceof Error) {

@@ -78,6 +78,93 @@ export const BANGLADESH_DISTRICTS = [
   'Sylhet',
 ] as const;
 
+/**
+ * District with division information
+ */
+export interface DistrictWithDivision {
+  value: string;
+  name: string;
+  division: string;
+}
+
+/**
+ * All districts with their divisions
+ */
+export const BANGLADESH_DISTRICTS_WITH_DIVISION: DistrictWithDivision[] = [
+  // Barisal Division
+  { value: 'Barguna', name: 'Barguna', division: 'Barisal' },
+  { value: 'Barisal', name: 'Barisal', division: 'Barisal' },
+  { value: 'Bhola', name: 'Bhola', division: 'Barisal' },
+  { value: 'Jhalokati', name: 'Jhalokati', division: 'Barisal' },
+  { value: 'Patuakhali', name: 'Patuakhali', division: 'Barisal' },
+  { value: 'Pirojpur', name: 'Pirojpur', division: 'Barisal' },
+  // Chittagong Division
+  { value: 'Bandarban', name: 'Bandarban', division: 'Chittagong' },
+  { value: 'Brahmanbaria', name: 'Brahmanbaria', division: 'Chittagong' },
+  { value: 'Chandpur', name: 'Chandpur', division: 'Chittagong' },
+  { value: 'Chittagong', name: 'Chittagong', division: 'Chittagong' },
+  { value: 'Comilla', name: 'Comilla', division: 'Chittagong' },
+  { value: "Cox's Bazar", name: "Cox's Bazar", division: 'Chittagong' },
+  { value: 'Feni', name: 'Feni', division: 'Chittagong' },
+  { value: 'Khagrachari', name: 'Khagrachari', division: 'Chittagong' },
+  { value: 'Lakshmipur', name: 'Lakshmipur', division: 'Chittagong' },
+  { value: 'Noakhali', name: 'Noakhali', division: 'Chittagong' },
+  { value: 'Rangamati', name: 'Rangamati', division: 'Chittagong' },
+  // Dhaka Division
+  { value: 'Dhaka', name: 'Dhaka', division: 'Dhaka' },
+  { value: 'Faridpur', name: 'Faridpur', division: 'Dhaka' },
+  { value: 'Gazipur', name: 'Gazipur', division: 'Dhaka' },
+  { value: 'Gopalganj', name: 'Gopalganj', division: 'Dhaka' },
+  { value: 'Kishoreganj', name: 'Kishoreganj', division: 'Dhaka' },
+  { value: 'Madaripur', name: 'Madaripur', division: 'Dhaka' },
+  { value: 'Manikganj', name: 'Manikganj', division: 'Dhaka' },
+  { value: 'Munshiganj', name: 'Munshiganj', division: 'Dhaka' },
+  { value: 'Narayanganj', name: 'Narayanganj', division: 'Dhaka' },
+  { value: 'Narsingdi', name: 'Narsingdi', division: 'Dhaka' },
+  { value: 'Rajbari', name: 'Rajbari', division: 'Dhaka' },
+  { value: 'Shariatpur', name: 'Shariatpur', division: 'Dhaka' },
+  { value: 'Tangail', name: 'Tangail', division: 'Dhaka' },
+  // Khulna Division
+  { value: 'Bagerhat', name: 'Bagerhat', division: 'Khulna' },
+  { value: 'Chuadanga', name: 'Chuadanga', division: 'Khulna' },
+  { value: 'Jessore', name: 'Jessore', division: 'Khulna' },
+  { value: 'Jhenaidah', name: 'Jhenaidah', division: 'Khulna' },
+  { value: 'Khulna', name: 'Khulna', division: 'Khulna' },
+  { value: 'Kushtia', name: 'Kushtia', division: 'Khulna' },
+  { value: 'Magura', name: 'Magura', division: 'Khulna' },
+  { value: 'Meherpur', name: 'Meherpur', division: 'Khulna' },
+  { value: 'Narail', name: 'Narail', division: 'Khulna' },
+  { value: 'Satkhira', name: 'Satkhira', division: 'Khulna' },
+  // Mymensingh Division
+  { value: 'Jamalpur', name: 'Jamalpur', division: 'Mymensingh' },
+  { value: 'Mymensingh', name: 'Mymensingh', division: 'Mymensingh' },
+  { value: 'Netrokona', name: 'Netrokona', division: 'Mymensingh' },
+  { value: 'Sherpur', name: 'Sherpur', division: 'Mymensingh' },
+  // Rajshahi Division
+  { value: 'Bogra', name: 'Bogra', division: 'Rajshahi' },
+  { value: 'Chapainawabganj', name: 'Chapainawabganj', division: 'Rajshahi' },
+  { value: 'Joypurhat', name: 'Joypurhat', division: 'Rajshahi' },
+  { value: 'Naogaon', name: 'Naogaon', division: 'Rajshahi' },
+  { value: 'Natore', name: 'Natore', division: 'Rajshahi' },
+  { value: 'Pabna', name: 'Pabna', division: 'Rajshahi' },
+  { value: 'Rajshahi', name: 'Rajshahi', division: 'Rajshahi' },
+  { value: 'Sirajganj', name: 'Sirajganj', division: 'Rajshahi' },
+  // Rangpur Division
+  { value: 'Dinajpur', name: 'Dinajpur', division: 'Rangpur' },
+  { value: 'Gaibandha', name: 'Gaibandha', division: 'Rangpur' },
+  { value: 'Kurigram', name: 'Kurigram', division: 'Rangpur' },
+  { value: 'Lalmonirhat', name: 'Lalmonirhat', division: 'Rangpur' },
+  { value: 'Nilphamari', name: 'Nilphamari', division: 'Rangpur' },
+  { value: 'Panchagarh', name: 'Panchagarh', division: 'Rangpur' },
+  { value: 'Rangpur', name: 'Rangpur', division: 'Rangpur' },
+  { value: 'Thakurgaon', name: 'Thakurgaon', division: 'Rangpur' },
+  // Sylhet Division
+  { value: 'Habiganj', name: 'Habiganj', division: 'Sylhet' },
+  { value: 'Moulvibazar', name: 'Moulvibazar', division: 'Sylhet' },
+  { value: 'Sunamganj', name: 'Sunamganj', division: 'Sylhet' },
+  { value: 'Sylhet', name: 'Sylhet', division: 'Sylhet' },
+] as const;
+
 export type District = typeof BANGLADESH_DISTRICTS[number];
 
 export function isValidDistrict(value: string): value is District {

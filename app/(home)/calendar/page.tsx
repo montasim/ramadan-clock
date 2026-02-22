@@ -2,6 +2,7 @@ import { getFullSchedule, getLocations, getTodayOrNextDaySchedule } from "@/acti
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
+import { PageHero } from "@/components/shared/page-hero";
 import { Suspense } from "react";
 import CalendarSkeleton from "@/components/public/calendar-skeleton";
 import { DownloadButton } from "@/components/shared/download-button";
@@ -33,30 +34,38 @@ async function CalendarContent({ searchParams }: { searchParams: Promise<{ locat
   return (
     <div className="space-y-7">
       {/* Hero */}
-      <div className="hero-section px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 overflow-hidden">
-        <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
-          style={{ background: "var(--grad-primary)" }}
-        />
-        <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-2">
+      <PageHero
+        subtitle={
+          <>
             <CalendarDays className="inline h-3.5 w-3.5 mr-1" />
             Full Schedule
-          </p>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
-            Ramadan <span className="gradient-text">Calendar</span>
-          </h1>
-          <p className="text-muted-foreground text-sm mt-2">Complete Sehri & Iftar timetable</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0 relative z-10">
-          <LocationSelector locations={locations} currentLocation={location} />
-          <DownloadButton
-            location={selectedLocation}
-            type="full"
-            className="border-border/60 shadow-sm bg-card/80"
-          />
-        </div>
-      </div>
+          </>
+        }
+        title={
+          location ? (
+            <span className="gradient-text">{selectedLocation}</span>
+          ) : (
+            <>
+              Ramadan <span className="gradient-text">Calendar</span>
+            </>
+          )
+        }
+        description={
+          location
+            ? `Sehri & Iftar schedule for ${selectedLocation}`
+            : "Complete Sehri & Iftar timetable"
+        }
+        actions={
+          <>
+            <LocationSelector locations={locations} currentLocation={location} />
+            <DownloadButton
+              location={selectedLocation}
+              type="full"
+              className="border-border/60 shadow-sm bg-card/80"
+            />
+          </>
+        }
+      />
 
       {/* Add next day info card if iftar has passed */}
       {todaySchedule && todaySchedule.date !== today && (

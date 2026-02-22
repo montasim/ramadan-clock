@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Clock, Moon, Sun, MapPin, CalendarDays, Quote } from "lucide-react";
 import { LocationSelector } from "@/components/shared/location-selector";
+import { PageHero } from "@/components/shared/page-hero";
 import Link from "next/link";
 import { Suspense } from "react";
 import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
@@ -35,32 +36,27 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
   return (
     <div className="space-y-7">
       {/* ── Hero Banner ─────────────────────── */}
-      <div className="hero-section px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-        {/* Decorative mini orbs inside hero */}
-        <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-20 blur-3xl pointer-events-none"
-          style={{ background: "var(--grad-primary)" }}
-          aria-hidden="true"
-        />
-        <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-2">
-            ✦ Ramadan 1446 AH
-          </p>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+      <PageHero
+        subtitle="✦ Ramadan 1446 AH"
+        title={
+          <>
             {scheduleData.iftarPassed ? "Tomorrow's" : "Today's"}{" "}
             <span className="gradient-text">Schedule</span>
-          </h1>
-          <p className="text-muted-foreground text-sm mt-2">{todayDisplay}</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0 relative z-10">
-          <LocationSelector locations={locations} currentLocation={location} />
-          <DownloadButton
-            location={selectedLocation}
-            type="today"
-            className="border-border/60 shadow-sm bg-card/80"
-          />
-        </div>
-      </div>
+          </>
+        }
+        description={todayDisplay}
+        actions={
+          <>
+            <LocationSelector locations={locations} currentLocation={location} />
+            <DownloadButton
+              location={selectedLocation}
+              type="today"
+              className="border-border/60 shadow-sm bg-card/80"
+            />
+          </>
+        }
+        orbOpacity={20}
+      />
       
       {/* ── Sehri / Iftar Cards ─────────────── */}
       {(() => {
@@ -227,7 +223,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               asChild
               className="rounded-full border-border/60 text-sm hover:border-primary/50 hover:text-primary transition-colors"
             >
-              <Link href={`/location/${encodeURIComponent(loc)}`}>
+              <Link href={`/calendar?location=${encodeURIComponent(loc)}`}>
                 <MapPin className="h-3.5 w-3.5 mr-1.5" />
                 {loc}
               </Link>

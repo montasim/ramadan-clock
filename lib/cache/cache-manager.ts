@@ -11,6 +11,11 @@ import { CACHE_CONFIG, CACHE_TAGS } from '@/lib/cache';
 import { CACHE_TTL } from '@/lib/constants';
 
 /**
+ * Check if running in development mode
+ */
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+/**
  * Cache entry metadata
  */
 interface CacheEntry<T> {
@@ -22,6 +27,7 @@ interface CacheEntry<T> {
 /**
  * Cache Manager
  * Provides unified caching interface with automatic TTL management
+ * In development mode, caching is disabled for better hot reload experience
  */
 export class CacheManager {
   private static instance: CacheManager;
@@ -29,8 +35,10 @@ export class CacheManager {
 
   private constructor() {
     this.inMemoryCache = new Map();
-    // Start periodic cleanup
-    this.startCleanupInterval();
+    // Only start periodic cleanup in production
+    if (!isDevelopment) {
+      this.startCleanupInterval();
+    }
   }
 
   /**
@@ -49,6 +57,11 @@ export class CacheManager {
    * @returns Cached value or null if not found/expired
    */
   async get<T>(key: string): Promise<T | null> {
+    // In development, bypass cache to see changes immediately
+    if (isDevelopment) {
+      return null;
+    }
+
     try {
       const entry = this.inMemoryCache.get(key);
       
@@ -78,6 +91,11 @@ export class CacheManager {
    * @param ttl - Time to live in milliseconds (optional)
    */
   async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+    // In development, skip caching
+    if (isDevelopment) {
+      return;
+    }
+
     try {
       const entry: CacheEntry<T> = {
         data: value,
@@ -185,6 +203,7 @@ export class CacheManager {
 
   /**
    * Create a cached version of a function
+   * In development, returns the function without caching
    * @param fn - Function to cache
    * @param keyPrefix - Prefix for cache keys
    * @param config - Cache configuration
@@ -195,6 +214,11 @@ export class CacheManager {
     keyPrefix: string,
     config: { duration: number; tags: string[] }
   ): T {
+    // In development, return function without caching
+    if (isDevelopment) {
+      return fn;
+    }
+
     return (async (...args: any[]) => {
       const key = `${keyPrefix}:${JSON.stringify(args)}`;
 

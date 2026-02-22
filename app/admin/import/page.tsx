@@ -4,12 +4,13 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
-import { uploadSchedule, validateScheduleFile, type ActionResult, type UploadProgress } from "@/actions/upload.actions.new";
+import { uploadSchedule, validateScheduleFile, type ActionResult } from "@/actions/upload.actions.new";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AppModal } from "@/components/ui/app-modal";
+import { ProgressBar, type ProgressData } from "@/components/ui/progress-bar";
 import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2, CloudUpload, RefreshCw, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScheduleTable } from "@/components/shared/schedule-table";
@@ -40,7 +41,7 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [uploadResult, setUploadResult] = useState<ActionResult | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<ProgressData | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -121,7 +122,7 @@ export default function UploadPage() {
         const newBatch = Math.floor(newCurrent / 50) + 1;
         
         // Update status based on progress
-        let newStatus: UploadProgress['status'] = 'uploading';
+        let newStatus: ProgressData['status'] = 'uploading';
         if (newPercentage >= 100) {
           newStatus = 'completed';
           clearInterval(progressInterval);
@@ -192,7 +193,7 @@ export default function UploadPage() {
             Upload <span className="gradient-text">Schedule</span>
           </>
         }
-        description="Upload Sehri &amp; Iftar schedules via JSON or CSV"
+        description="Upload Sehri & Iftar schedules via JSON or CSV"
         actions={<CacheClearButton />}
       />
 
@@ -355,40 +356,7 @@ export default function UploadPage() {
                 </Button>
 
                 {/* Progress Indicator */}
-                {isUploading && uploadProgress && (
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        {uploadProgress.status === 'validating' && 'Validating entries...'}
-                        {uploadProgress.status === 'uploading' && 'Uploading entries...'}
-                        {uploadProgress.status === 'retrying' && 'Retrying failed entries...'}
-                        {uploadProgress.status === 'completed' && 'Upload complete!'}
-                        {uploadProgress.status === 'failed' && 'Upload failed'}
-                      </span>
-                      <span className="font-medium">{uploadProgress.percentage}%</span>
-                    </div>
-                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-300 ${
-                          uploadProgress.status === 'retrying'
-                            ? 'bg-amber-500'
-                            : uploadProgress.status === 'failed'
-                            ? 'bg-red-500'
-                            : 'bg-primary'
-                        }`}
-                        style={{ width: `${uploadProgress.percentage}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>
-                        {uploadProgress.current} / {uploadProgress.total} entries
-                      </span>
-                      <span>
-                        Batch {uploadProgress.batch} of {uploadProgress.totalBatches}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <ProgressBar progress={uploadProgress} />
               </div>
             )}
           </CardContent>

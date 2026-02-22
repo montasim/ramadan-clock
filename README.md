@@ -90,11 +90,29 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
    - Sample time entries for testing
 
 7. **Run the development server**
-   ```bash
-   pnpm dev
-   ```
+    ```bash
+    pnpm dev
+    ```
 
-   Open [http://localhost:3000](http://localhost:3000) to see the app.
+    Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+### Development Tips
+
+#### Caching Issues?
+
+If you don't see UI changes appearing immediately, use the clean development command:
+
+```bash
+pnpm dev:clean
+```
+
+For comprehensive cache clearing:
+
+```bash
+pnpm clean:all
+```
+
+📖 **See the [Cache Troubleshooting Guide](docs/cache-troubleshooting-guide.md) for detailed instructions.**
 
 ## 📁 Project Structure
 
@@ -195,7 +213,8 @@ Access admin dashboard at: `/admin/dashboard`
 ### Admin Routes (Protected)
 - `/auth/login` - Admin login
 - `/admin/dashboard` - Dashboard overview
-- `/admin/upload` - Upload schedules
+- `/admin/import` - Import schedules from files
+- `/admin/fetch` - Fetch schedules from Aladhan API
 
 ### API Routes
 - `/api/auth/[...nextauth]` - Authentication
