@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Minification & Optimization
+  reactStrictMode: true,
+  productionBrowserSourceMaps: false,
+  
+  // Output optimization
+  output: 'standalone',
+  
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+    reactRemoveProperties: process.env.NODE_ENV === 'production',
+  },
+  
   // SEO-friendly settings
   compress: true,
   poweredByHeader: false,
