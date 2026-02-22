@@ -18,11 +18,11 @@ interface RateLimitConfigProps {
 
 export function RateLimitConfig({ config, onChange, estimatedRequests = 300 }: RateLimitConfigProps) {
   const [preset, setPreset] = useState<'conservative' | 'balanced' | 'aggressive' | 'fast' | 'turbo' | 'custom'>('fast');
-  const [showCustom, setShowCustom] = useState(false);
+  const [_showCustom, _setShowCustom] = useState(false);
 
   // Calculate estimated fetch time based on configuration
   const estimatedTime = useMemo(() => {
-    const { interRequestDelay, interDistrictDelay, tokenBucket, maxConcurrentDistricts = 5 } = config;
+    const { interRequestDelay, tokenBucket, maxConcurrentDistricts = 5 } = config;
     const requestsPerSecond = tokenBucket.refillRate;
     const concurrency = maxConcurrentDistricts;
     
@@ -44,9 +44,9 @@ export function RateLimitConfig({ config, onChange, estimatedRequests = 300 }: R
     
     if (newPreset !== 'custom' && RATE_LIMIT_PRESETS[newPreset as keyof typeof RATE_LIMIT_PRESETS]) {
       onChange(RATE_LIMIT_PRESETS[newPreset as keyof typeof RATE_LIMIT_PRESETS]);
-      setShowCustom(false);
+      _setShowCustom(false);
     } else {
-      setShowCustom(true);
+      _setShowCustom(true);
     }
   };
 

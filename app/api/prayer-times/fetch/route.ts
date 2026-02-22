@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
-import { getGlobalAladhanWrapper, type FetchOptions, type FetchProgress, type AladhanPrayerTimes, type DateRangeOptions, type MultiMonthOptions, type RateLimitConfig } from '@/lib/api/aladhan-api-wrapper';
+import { getGlobalAladhanWrapper, type FetchOptions, type FetchProgress, type DateRangeOptions, type RateLimitConfig } from '@/lib/api/aladhan-api-wrapper';
 import { BANGLADESH_DISTRICTS } from '@/lib/config/locations.config';
 import { logger } from '@/lib/logger';
 import { UnauthorizedError, AppError } from '@/lib/errors';

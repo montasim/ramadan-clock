@@ -3,8 +3,8 @@
  * Fetches prayer times from Aladhan API for Bangladesh districts
  */
 
-import { ExternalApiClient, fetchExternalJson } from '@/lib/api/external-api-client';
-import { BANGLADESH_DISTRICTS, LOCATION_COORDINATES, getLocationCoordinates } from '@/lib/config/locations.config';
+import { fetchExternalJson } from '@/lib/api/external-api-client';
+import { BANGLADESH_DISTRICTS } from '@/lib/config/locations.config';
 import { logger } from '@/lib/logger';
 import { ALADHAN_CONFIG } from '@/lib/config/app.config';
 import { TokenBucketRateLimiter, getGlobalTokenBucketLimiter, type TokenBucketConfig } from '@/lib/api/token-bucket-rate-limiter';
@@ -158,14 +158,11 @@ export type ProgressCallback = (progress: FetchProgress) => void;
  * Aladhan API Wrapper Service
  */
 export class AladhanApiWrapper {
-  private apiClient: ExternalApiClient;
   private cache: Map<string, AladhanPrayerTimes[]> = new Map();
   private rateLimiter: TokenBucketRateLimiter;
   private rateLimitConfig: RateLimitConfig;
 
   constructor(rateLimitConfig?: RateLimitConfig) {
-    this.apiClient = new ExternalApiClient();
-    
     // Use provided config or default from ALADHAN_CONFIG
     this.rateLimitConfig = rateLimitConfig || {
       batchSize: ALADHAN_CONFIG.batchSize,
@@ -238,7 +235,7 @@ export class AladhanApiWrapper {
       );
 
       // Add all entries from this batch
-      for (const { district, entries } of batchResults) {
+      for (const { entries } of batchResults) {
         allEntries.push(...entries);
       }
 
@@ -301,7 +298,7 @@ export class AladhanApiWrapper {
       );
 
       // Add all entries from this batch
-      for (const { district, entries } of batchResults) {
+      for (const { entries } of batchResults) {
         allEntries.push(...entries);
       }
 
@@ -375,7 +372,7 @@ export class AladhanApiWrapper {
       );
 
       // Add all entries from this batch
-      for (const { district, entries } of batchResults) {
+      for (const { entries } of batchResults) {
         allEntries.push(...entries);
       }
 

@@ -5,7 +5,7 @@
 
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { DatabaseError, NotFoundError } from '@/lib/errors';
+import { DatabaseError } from '@/lib/errors';
 import type { TimeEntryDTO } from '../domain/entities/time-entry.entity';
 
 /**

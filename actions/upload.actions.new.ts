@@ -17,14 +17,12 @@ import { CACHE_TAGS } from '@/lib/cache';
 import { UploadScheduleUseCase } from '@/features/schedule/use-cases/upload-schedule.use-case';
 
 // Import repositories and services for initialization
-import { TimeEntryRepository } from '@/features/schedule/repositories/time-entry.repository';
 import { UploadLogRepository } from '@/features/schedule/repositories/upload-log.repository';
 import { UploadService } from '@/features/schedule/services/upload.service';
 
 // Initialize dependencies
-const timeEntryRepository = new TimeEntryRepository();
 const uploadLogRepository = new UploadLogRepository();
-const uploadService = new UploadService(timeEntryRepository, uploadLogRepository);
+const uploadService = new UploadService(uploadLogRepository);
 
 // Initialize use case
 const uploadScheduleUseCase = new UploadScheduleUseCase(uploadService);

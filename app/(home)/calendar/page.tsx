@@ -1,6 +1,5 @@
 import { getFullSchedule, getLocations, getTodayOrNextDaySchedule } from "@/actions/time-entries";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays } from "lucide-react";
 import { PageHero } from "@/components/shared/page-hero";
 import { Suspense } from "react";
@@ -14,7 +13,6 @@ import moment from 'moment-timezone';
 import { getCalendarMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createCollectionPageSchema } from "@/lib/seo/schemas";
-import { APP_CONFIG } from "@/lib/config/index";
 import { config } from "@/lib/config";
 
 export const metadata = getCalendarMetadata();

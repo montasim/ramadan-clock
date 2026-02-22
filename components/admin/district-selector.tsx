@@ -41,7 +41,6 @@ export function DistrictSelector({
   onSelectAll,
   onDeselectAll,
   disabled = false,
-  showStatistics = true,
   maxDisplayHeight = "300px",
 }: DistrictSelectorProps) {
   const [isAllSelected, setIsAllSelected] = useState(false);

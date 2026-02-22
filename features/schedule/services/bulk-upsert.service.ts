@@ -441,7 +441,7 @@ export class BulkUpsertService {
   private async bulkInsert(
     tx: any,
     entries: TimeEntry[],
-    options: UpsertOptions
+    _options: UpsertOptions
   ): Promise<{
     created: number;
     failed: number;

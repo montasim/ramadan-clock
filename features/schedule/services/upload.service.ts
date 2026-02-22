@@ -4,7 +4,6 @@
  */
 
 import { prisma } from '@/lib/db';
-import { TimeEntryRepository } from '../repositories/time-entry.repository';
 import { UploadLogRepository } from '../repositories/upload-log.repository';
 import { logger } from '@/lib/logger';
 import { UPLOAD_CONFIG } from '@/lib/config/index';
@@ -66,7 +65,6 @@ export class UploadService {
   };
 
   constructor(
-    private readonly timeEntryRepository: TimeEntryRepository,
     private readonly uploadLogRepository: UploadLogRepository
   ) {}
 

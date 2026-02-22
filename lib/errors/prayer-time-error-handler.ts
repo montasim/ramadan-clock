@@ -3,8 +3,6 @@
  * Handles errors related to prayer time API operations
  */
 
-import { prisma } from '@/lib/db';
-
 /**
  * Error types for prayer time operations
  */
@@ -170,7 +168,7 @@ export class PrayerTimeErrorHandler {
   /**
    * Get error statistics
    */
-  async getErrorStats(days: number = 7): Promise<{
+  async getErrorStats(_days: number = 7): Promise<{
     total: number;
     byType: Record<PrayerTimeErrorType, number>;
     byLocation: Record<string, number>;

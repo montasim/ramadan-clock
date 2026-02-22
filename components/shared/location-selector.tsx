@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Select,

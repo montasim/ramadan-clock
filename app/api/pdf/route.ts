@@ -321,6 +321,6 @@ export const GET = withErrorHandler(
 /**
  * OPTIONS handler for CORS preflight
  */
-export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
+export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse(null, { status: 204 });
 }

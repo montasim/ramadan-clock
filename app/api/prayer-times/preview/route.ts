@@ -219,13 +219,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate each entry
-    const entrySchema = {
-      date: 'string',
-      sehri: 'string',
-      iftar: 'string',
-      location: 'string',
-    };
-
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       if (!entry.date || !entry.sehri || !entry.iftar || !entry.location) {

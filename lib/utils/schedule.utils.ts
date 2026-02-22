@@ -59,7 +59,7 @@ export function isTimePast(hours: number, minutes: number): boolean {
 /**
  * Determine the status of a schedule entry based on date and time
  */
-export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = [], ramadanDates?: RamadanDates): ScheduleStatusResult {
+export function getScheduleStatus(entry: TimeEntry, _allEntries: TimeEntry[] = [], ramadanDates?: RamadanDates): ScheduleStatusResult {
   const userTimezone = getUserTimezone();
   const today = moment().tz(userTimezone);
   // Create entryDate with explicit timezone to ensure consistent comparisons

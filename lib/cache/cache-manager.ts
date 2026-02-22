@@ -7,7 +7,7 @@
 import { unstable_cache } from 'next/cache';
 import { revalidateTag } from 'next/cache';
 import { logger } from '@/lib/logger';
-import { CACHE_CONFIG, CACHE_TAGS } from '@/lib/cache';
+import { CACHE_TAGS } from '@/lib/cache';
 import { CACHE_TTL } from '@/lib/constants';
 
 /**

@@ -1,7 +1,7 @@
 import { withDashboardGuard } from "@/lib/guards/dashboard-guard";
 import { getStats, getFullSchedule, getLocations } from "@/actions/time-entries";
 import { getRamadanSettings } from "@/actions/ramadan-settings.actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Calendar, Clock, MapPin, Upload, LayoutDashboard } from "lucide-react";
@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function AdminDashboard() {
-  const session = await withDashboardGuard();
+  await withDashboardGuard();
 
   const stats = await getStats();
   const schedule = await getFullSchedule(null);
@@ -93,7 +93,7 @@ export default async function AdminDashboard() {
 
       {/* ── Stat Cards ──────────────────────── */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
-        {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
+        {statCards.map(({ title, value, description, icon: Icon, iconColor, iconBg }) => (
           <Card key={title} className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
               <CardTitle className="text-xs font-bold uppercase tracking-wide text-muted-foreground">

@@ -5,7 +5,6 @@
 
 import React from 'react';
 import { getStatusBadgeRegistry } from './status-badge/status-badge-registry';
-import type { IStatusBadgeStrategy } from './status-badge/status-badge-strategy';
 
 /**
  * Status Badge Component Props

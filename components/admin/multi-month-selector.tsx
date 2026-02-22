@@ -70,7 +70,6 @@ export function MultiMonthSelector({
       showStatistics={true}
       yearLabel="Year"
       yearPlaceholder="Select year"
-      totalDistricts={64}
     />
   );
 }

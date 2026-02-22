@@ -3,11 +3,11 @@
  * Reusable middleware functions for API routes
  */
 
-import { NextRequest, NextResponse, NextFetchEvent } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
-import { AppError, ValidationError, UnauthorizedError, ForbiddenError } from '@/lib/errors';
+import { AppError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { generateRequestId, error, rateLimitExceeded } from './api-response';
 import { RateLimiter } from './rate-limiter';
@@ -186,8 +186,6 @@ export function withValidation<T>(
 ): NextHandler {
   return async (request: NextRequest, context) => {
     try {
-      const requestId = request.headers.get('x-request-id');
-
       if (source === 'query' || source === 'both') {
         const queryParams = Object.fromEntries(request.nextUrl.searchParams.entries());
         schema.parse(queryParams);

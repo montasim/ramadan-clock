@@ -176,7 +176,7 @@ export function createLocalBusinessSchema(options: {
   city: string;
   description?: string;
 }) {
-  const { name, city, description } = options;
+  const { city, description } = options;
 
   return {
     '@context': 'https://schema.org',

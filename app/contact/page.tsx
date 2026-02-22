@@ -1,8 +1,8 @@
 import { config } from "@/lib/config";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Github, Linkedin, Mail, ExternalLink, User, Code2 } from "lucide-react";
+import { Github, Linkedin, Mail, ExternalLink, User } from "lucide-react";
 import { PageHero } from "@/components/shared/page-hero";
 import { getContactMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";

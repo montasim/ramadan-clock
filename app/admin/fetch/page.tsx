@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useProgress } from "@/hooks/use-progress";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AppModal } from "@/components/ui/app-modal";
-import { ProgressBar, type ProgressData } from "@/components/ui/progress-bar";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { ScheduleCard } from "@/components/shared/schedule-card";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { MultiMonthSelector } from "@/components/admin/multi-month-selector";
@@ -24,13 +21,12 @@ import { RateLimitConfig } from "@/components/admin/rate-limit-config";
 import { CacheClearButton } from "@/components/admin/cache-clear-button";
 import { PageHero } from "@/components/shared/page-hero";
 import { DashboardGuard } from "@/lib/guards";
-import { Cloud, Calendar, CalendarDays, Moon, RefreshCw, AlertCircle, CheckCircle2, Upload, Download } from "lucide-react";
+import { Cloud, Calendar, CalendarDays, Moon, RefreshCw, AlertCircle, Upload } from "lucide-react";
 import type { RateLimitConfig as RateLimitConfigType } from "@/lib/api/aladhan-api-wrapper";
 import { toast } from "sonner";
 import { BANGLADESH_DISTRICTS, BANGLADESH_DISTRICTS_WITH_DIVISION } from "@/lib/config/locations.config";
 import type { AladhanPrayerTimes } from "@/lib/api/aladhan-api-wrapper";
 import { RATE_LIMIT_PRESETS } from "@/lib/config/app.config";
-import { cn } from "@/lib/utils";
 
 // Admin pages should never be cached - they need real-time data
 export const dynamic = 'force-dynamic';
@@ -93,7 +89,6 @@ export default function ApiFetchPage() {
   
   // Fetch state
   const [isFetching, setIsFetching] = useState(false);
-  const [fetchProgress, setFetchProgress] = useState<ProgressData | null>(null);
   const [fetchedData, setFetchedData] = useState<AladhanPrayerTimes[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fetchOperationId, setFetchOperationId] = useState<string | null>(null);
@@ -130,7 +125,6 @@ export default function ApiFetchPage() {
   
   // Preview state
   const [selectedPreviewDistrict, setSelectedPreviewDistrict] = useState<string>('all');
-  const [previewPage, setPreviewPage] = useState(1);
   
   // Rate limit configuration state
   const [rateLimitConfig, setRateLimitConfig] = useState<RateLimitConfigType>(
@@ -324,11 +318,9 @@ export default function ApiFetchPage() {
 
   const handleClearData = () => {
     setFetchedData([]);
-    setFetchProgress(null);
     setFetchError(null);
     setUploadResult(null);
     setSelectedPreviewDistrict('all');
-    setPreviewPage(1);
     
     // Clear preview cache
     fetch('/api/prayer-times/preview/cache', { method: 'DELETE' })

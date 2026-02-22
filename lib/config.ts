@@ -1,4 +1,3 @@
-import { time } from "console";
 import { z } from "zod";
 
 // Configuration schema for validation

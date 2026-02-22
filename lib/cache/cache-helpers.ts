@@ -5,7 +5,7 @@
 
 import { unstable_cache } from 'next/cache';
 import { revalidateTag, revalidatePath } from 'next/cache';
-import { CACHE_CONFIG, CACHE_TAGS } from './cache-config';
+import { CACHE_TAGS } from './cache-config';
 
 /**
  * Create a cached version of an async function with tags

@@ -67,24 +67,11 @@ export interface AppModalProps {
 
   // Close Button
   showCloseButton?: boolean;
-}
+  }
 
 // ============================================================================
 // Utilities
 // ============================================================================
-
-const getGradientColor = (color: GradientColor): string => {
-  switch (color) {
-    case "primary":
-      return "var(--grad-primary)";
-    case "success":
-      return "linear-gradient(135deg,#10b981,#059669)";
-    case "danger":
-      return "linear-gradient(135deg,#ef4444,#dc2626)";
-    default:
-      return "var(--grad-primary)";
-  }
-};
 
 const getMaxWidthClass = (maxWidth?: "sm" | "md" | "lg" | "xl"): string => {
   switch (maxWidth) {

@@ -231,8 +231,8 @@ export function withCacheMonitoring<T extends (...args: any[]) => Promise<any>>(
  */
 export function withCacheMonitor(cacheKey: string) {
   return function (
-    target: any,
-    propertyKey: string,
+    _target: any,
+    _propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;

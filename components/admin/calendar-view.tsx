@@ -19,7 +19,6 @@ import {
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { RamadanDates } from "@/lib/utils/schedule.utils";
 import moment from 'moment';
-import { APP_CONFIG } from '@/lib/config/app.config';
 import { config } from "@/lib/config";
 
 interface CalendarViewProps {
@@ -27,12 +26,6 @@ interface CalendarViewProps {
   locations: string[];
   ramadanDates?: RamadanDates;
 }
-
-// Get today's date in local timezone (YYYY-MM-DD format) using moment
-const getTodayLocal = () => {
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || config.timezone;
-  return moment().tz(userTimezone).format('YYYY-MM-DD');
-};
 
 export function CalendarView({ entries, locations, ramadanDates }: CalendarViewProps) {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);

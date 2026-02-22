@@ -28,8 +28,6 @@ export async function GET(
     );
   }
 
-  const encoder = new TextEncoder();
-
   // Create a readable stream for SSE
   const stream = new ReadableStream({
     start(controller) {

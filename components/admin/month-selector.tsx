@@ -41,7 +41,6 @@ interface MonthSelectorProps {
   showStatistics?: boolean;
   yearLabel?: string;
   yearPlaceholder?: string;
-  totalDistricts?: number;
 }
 
 export function MonthSelector({
@@ -56,23 +55,10 @@ export function MonthSelector({
   onSelectAll,
   onDeselectAll,
   disabled = false,
-  showStatistics = true,
   yearLabel = "Year",
   yearPlaceholder = "Select year",
-  totalDistricts = 64,
 }: MonthSelectorProps) {
   const [isAllSelected, setIsAllSelected] = useState(false);
-
-  // Calculate total days for selected months (only if days property exists)
-  const totalDays = useMemo(() => {
-    return selectedMonths.reduce((sum, month) => {
-      const monthData = months.find(m => m.value === month);
-      return sum + (monthData?.days || 0);
-    }, 0);
-  }, [selectedMonths, months]);
-
-  // Calculate estimated entries (days × districts)
-  const estimatedEntries = totalDays * totalDistricts;
 
   // Check if all months are selected
   useMemo(() => {

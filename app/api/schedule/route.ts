@@ -12,12 +12,9 @@ import {
   withErrorHandler,
   withRateLimit,
   withAuth,
-  withValidation,
   success,
   paginated,
   error,
-  notFound,
-  validationError,
   type PaginationMeta,
 } from '@/lib/api';
 import { scheduleQuerySchema, timeEntryCreateSchema } from '@/lib/validations/api-schemas';
@@ -235,6 +232,6 @@ export const POST = withErrorHandler(
 /**
  * OPTIONS handler for CORS preflight
  */
-export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
+export async function OPTIONS(_request: NextRequest): Promise<NextResponse> {
   return new NextResponse(null, { status: 204 });
 }

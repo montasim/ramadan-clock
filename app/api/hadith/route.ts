@@ -14,7 +14,6 @@ import {
 import { hadithQuerySchema } from '@/lib/validations/api-schemas';
 import { fetchExternalJsonCached } from '@/lib/api';
 import { logger } from '@/lib/logger';
-import { CACHE_HEADERS } from '@/lib/cache';
 
 /**
  * Hadith response interface
@@ -107,6 +106,6 @@ export const GET = withErrorHandler(
 /**
  * OPTIONS handler for CORS preflight
  */
-export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
+export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse(null, { status: 204 });
 }

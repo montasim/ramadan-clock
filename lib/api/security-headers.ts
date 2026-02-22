@@ -107,7 +107,7 @@ export function setCorsHeaders(
  * Handle CORS preflight request
  */
 export function handleCorsPreflight(
-  request: Request,
+  _request: Request,
   options: CorsOptions = defaultCorsOptions
 ): NextResponse {
   const response = new NextResponse(null, { status: 204 });

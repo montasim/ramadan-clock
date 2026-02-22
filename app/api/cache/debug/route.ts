@@ -3,7 +3,7 @@
  * GET /api/cache/debug - Get cache statistics (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import {
   withErrorHandler,
   withAuth,
@@ -26,7 +26,7 @@ import { getGlobalApiClient } from '@/lib/api';
  * @throws {UnauthorizedError} When user is not authenticated
  * @throws {ForbiddenError} When user is not admin
  */
-async function getCacheDebugHandler(request: NextRequest): Promise<NextResponse> {
+async function getCacheDebugHandler(): Promise<NextResponse> {
   try {
     // Get application cache statistics
     const applicationCache = CacheMonitor.getStats();
@@ -64,6 +64,6 @@ export const GET = withErrorHandler(
 /**
  * OPTIONS handler for CORS preflight
  */
-export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
+export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse(null, { status: 204 });
 }

@@ -1,7 +1,7 @@
 import { getScheduleDisplayData, getLocations } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Moon, Sun, MapPin, CalendarDays, Quote } from "lucide-react";
+import { Clock, Moon, Sun, MapPin, Quote } from "lucide-react";
 import { LocationSelector } from "@/components/shared/location-selector";
 import { PageHero } from "@/components/shared/page-hero";
 import Link from "next/link";
@@ -14,7 +14,6 @@ import moment from 'moment-timezone';
 import { getHomeMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createSoftwareApplicationSchema } from "@/lib/seo/schemas";
-import { APP_CONFIG } from "@/lib/config/index";
 import { config } from "@/lib/config";
 
 export const metadata = getHomeMetadata();
@@ -30,7 +29,6 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
   const locations = await getLocations();
   const hadith = await getRandomHadith();
   const timezone = config.timezone;
-  const today = moment().tz(timezone).format('YYYY-MM-DD');
   const todayDisplay = moment().tz(timezone).format("dddd, MMMM D, YYYY");
 
   return (

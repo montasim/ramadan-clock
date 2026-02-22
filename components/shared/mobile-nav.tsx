@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Clock, CalendarDays, Mail, LayoutDashboard, LogOut, LogIn, Sun, Moon } from "lucide-react";
+import { Menu, X, Clock, CalendarDays, Mail, LayoutDashboard, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { LogoutButton } from "./logout-button";

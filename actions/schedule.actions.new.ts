@@ -9,7 +9,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { logger } from '@/lib/logger';
-import { UnauthorizedError, ValidationError, AppError } from '@/lib/errors';
+import { UnauthorizedError, AppError } from '@/lib/errors';
 import { timeEntryUpdateSchema, scheduleIdSchema } from '@/lib/validations/api-schemas';
 import { CACHE_TAGS } from '@/lib/cache/cache-config';
 
@@ -22,7 +22,6 @@ import { UpdateEntryUseCase } from '@/features/schedule/use-cases/update-entry.u
 import { DeleteEntryUseCase } from '@/features/schedule/use-cases/delete-entry.use-case';
 
 // Import TimeEntry type
-import type { TimeEntry } from '@/features/schedule/domain/entities/time-entry.entity';
 import type { TimeEntryDTO } from '@/features/schedule/domain/entities/time-entry.entity';
 
 // Import repositories and services for initialization

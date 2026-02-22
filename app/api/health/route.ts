@@ -3,7 +3,7 @@
  * GET /api/health - System health status
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { success, error } from '@/lib/api';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
@@ -38,7 +38,7 @@ interface HealthCheckResponse {
  * // GET /api/health
  * // Response: { status: 'ok', timestamp: '...', version: '1.0.0', checks: {...} }
  */
-async function getHealthHandler(request: NextRequest): Promise<NextResponse> {
+async function getHealthHandler(): Promise<NextResponse> {
   const startTime = Date.now();
   const checks: HealthCheckResponse['checks'] = {
     database: { status: 'ok' },
@@ -116,6 +116,6 @@ export const GET = getHealthHandler;
 /**
  * OPTIONS handler for CORS preflight
  */
-export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
+export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse(null, { status: 204 });
 }
