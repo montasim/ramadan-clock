@@ -1,6 +1,6 @@
 # 🌙 Ramadan Clock - Sehri & Iftar Time Viewer
 
-A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, PostgreSQL, and shadcn/ui.
+A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, PostgreSQL, and shadcn/ui. Features Aladhan API integration for fetching prayer times and support for all 64 districts of Bangladesh.
 
 ## ✨ Features
 
@@ -30,9 +30,14 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
 - **Database**: PostgreSQL (via Prisma ORM)
 - **UI Components**: shadcn/ui + Tailwind CSS v4
 - **Authentication**: NextAuth.js
+- **API Integration**: Aladhan API for prayer times
+- **Hadith Integration**: hadithapi.pages.dev for random hadiths
 - **File Parsing**: PapaParse (CSV), native JSON parser
 - **PDF Generation**: jsPDF + jspdf-autotable
 - **Validation**: Zod
+- **Rate Limiting**: Token bucket algorithm
+- **Caching**: Multi-layered caching strategy
+- **Time Handling**: moment.js + moment-timezone
 - **Deployment**: Vercel-ready
 
 ## 🚀 Getting Started
@@ -61,14 +66,7 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
     cp .env.example .env.local
     ```
     
-    Edit `.env.local` with your configuration:
-    ```env
-    DATABASE_URL="postgresql://user:password@localhost:5432/ramadan-clock"
-    NEXTAUTH_SECRET="your-secret-key-here"
-    NEXTAUTH_URL="http://localhost:3000"
-    ADMIN_EMAIL="admin@example.com"
-    ADMIN_PASSWORD="admin123"
-    ```
+    Edit `.env.local` with your configuration. See [Environment Variables](#-environment-variables) section for all available options.
 
 4. **Generate Prisma client**
    ```bash
@@ -121,24 +119,53 @@ ramadan-clock/
 ├── app/
 │   ├── (home)/              # Public pages
 │   │   ├── calendar/        # Full schedule calendar
-│   │   └── location/        # Location-specific pages
-│   ├── admin/               # Admin dashboard & upload
-│   ├── api/                 # API routes (auth, PDF)
+│   │   └── contact/         # Contact page
+│   ├── admin/               # Admin dashboard
+│   │   ├── dashboard/       # Dashboard overview
+│   │   ├── fetch/           # Fetch from Aladhan API
+│   │   ├── import/          # Import from files
+│   │   └── upload/          # Upload schedules
+│   ├── api/                 # API routes
+│   │   ├── auth/            # NextAuth authentication
+│   │   ├── cache/           # Cache debugging
+│   │   ├── hadith/          # Hadith API
+│   │   ├── health/          # Health check
+│   │   ├── pdf/             # PDF generation
+│   │   ├── prayer-times/    # Prayer times API
+│   │   ├── progress/        # Progress tracking
+│   │   └── schedule/        # Schedule CRUD
 │   ├── auth/                # Login page
 │   └── layout.tsx           # Root layout
 ├── actions/                 # Server actions
 ├── components/
-│   ├── ui/                  # shadcn/ui components
-│   ├── shared/              # Shared components (header, footer)
-│   └── public/              # Public page components
+│   ├── admin/               # Admin-specific components
+│   ├── public/              # Public page components
+│   ├── seo/                 # SEO components
+│   ├── shared/              # Shared components
+│   └── ui/                  # shadcn/ui components
+├── features/                # Feature-based architecture (DDD)
+│   └── schedule/            # Schedule domain logic
+│       ├── domain/          # Domain entities & value objects
+│       ├── repositories/    # Data access layer
+│       ├── services/        # Business logic
+│       └── use-cases/      # Application use cases
+├── hooks/                   # Custom React hooks
 ├── lib/
-│   ├── db.ts                # Prisma client singleton
-│   ├── auth.ts              # Auth utilities
-│   └── validations/         # Zod schemas
+│   ├── api/                 # API utilities & middleware
+│   ├── cache/               # Caching system
+│   ├── config/              # Configuration modules
+│   ├── errors/              # Error handling
+│   ├── guards/              # Authorization guards
+│   ├── logger/              # Logging system
+│   ├── parsers/             # File parsers
+│   ├── progress/            # Progress tracking
+│   └── utils.ts             # Utility functions
 ├── prisma/
 │   ├── schema.prisma        # Database schema
 │   └── seed.ts              # Seed script
-└── middleware.ts            # Auth middleware
+└── docs/                    # Documentation
+    ├── api/                 # API documentation
+    └── *.md                 # Feature guides
 ```
 
 ## 📊 Database Schema
@@ -165,6 +192,13 @@ ramadan-clock/
 - `status`: String (success/partial/failed)
 - `errors`: String (JSON)
 - `uploadedAt`: DateTime
+
+### RamadanSettings
+- `id`: UUID
+- `startDate`: String (YYYY-MM-DD format)
+- `endDate`: String (YYYY-MM-DD format)
+- `createdAt`: DateTime
+- `updatedAt`: DateTime
 
 ## 📤 File Upload Format
 
@@ -215,10 +249,21 @@ Access admin dashboard at: `/admin/dashboard`
 - `/admin/dashboard` - Dashboard overview
 - `/admin/import` - Import schedules from files
 - `/admin/fetch` - Fetch schedules from Aladhan API
+- `/admin/upload` - Upload schedules with preview
 
 ### API Routes
 - `/api/auth/[...nextauth]` - Authentication
+- `/api/hadith` - Get random hadith
+- `/api/health` - Health check endpoint
 - `/api/pdf` - PDF generation
+- `/api/prayer-times/fetch` - Fetch prayer times from Aladhan API
+- `/api/prayer-times/preview` - Preview prayer times before import
+- `/api/schedule` - Schedule CRUD operations
+- `/api/schedule/[id]` - Single schedule operations
+- `/api/schedule/batch` - Batch operations
+- `/api/progress/[id]` - Progress tracking for long operations
+- `/api/progress/create` - Create new progress operation
+- `/api/cache/debug` - Cache debugging and statistics
 
 ## 📱 Features Breakdown
 
@@ -248,6 +293,7 @@ Access admin dashboard at: `/admin/dashboard`
 - Recent uploads table
 - Status badges (Success/Partial/Failed)
 - Quick upload button
+- Ramadan settings management
 
 ### Upload System
 - Drag & drop interface
@@ -266,6 +312,36 @@ Access admin dashboard at: `/admin/dashboard`
 - Page numbers
 - Generation timestamp footer
 - Custom filename
+- Location-specific exports
+
+### Aladhan API Integration
+- Fetch prayer times for all 64 Bangladesh districts
+- Multiple fetch modes:
+  - **Date Range**: Fetch for specific date range
+  - **Multi-Month**: Fetch for multiple months
+  - **Hijri Month**: Fetch for specific Hijri month
+- Configurable rate limiting with presets:
+  - Conservative: 6 req/min
+  - Balanced: 12 req/min
+  - Aggressive: 20 req/min
+  - Fast: 300 req/min
+  - Turbo: 600 req/min
+- Progress tracking for large operations
+- Automatic retry with exponential backoff
+- Token bucket rate limiting
+- Parallel district processing with controlled concurrency
+
+### Hadith Integration
+- Random hadith from multiple collections:
+  - Sahih Bukhari
+  - Sahih Muslim
+  - Abu Dawud
+  - Tirmidhi
+  - Nasai
+  - Ibn Majah
+- Cached responses (1 hour TTL)
+- Rate limited (10 req/min)
+- English translations with source references
 
 ## ⏰ Schedule Display Logic
 
@@ -426,7 +502,7 @@ Server Component (page.tsx)
     ↓
 Server Action (time-entries.ts)
     ↓
-Prisma Query (MongoDB)
+Prisma Query (PostgreSQL)
     ↓
 Time Formatting & Status Calculation
     ↓
@@ -434,6 +510,27 @@ Client Component (countdown timer, UI)
     ↓
 Display to User
 ```
+
+## 🌍 Bangladesh Districts Support
+
+The application supports all 64 districts of Bangladesh across 8 divisions:
+
+### Divisions
+- **Barisal**: Barguna, Barisal, Bhola, Jhalokati, Patuakhali, Pirojpur
+- **Chittagong**: Bandarban, Brahmanbaria, Chandpur, Chittagong, Comilla, Cox's Bazar, Feni, Khagrachari, Lakshmipur, Noakhali, Rangamati
+- **Dhaka**: Dhaka, Faridpur, Gazipur, Gopalganj, Kishoreganj, Madaripur, Manikganj, Munshiganj, Narayanganj, Narsingdi, Rajbari, Shariatpur, Tangail
+- **Khulna**: Bagerhat, Chuadanga, Jessore, Jhenaidah, Khulna, Kushtia, Magura, Meherpur, Narail, Satkhira
+- **Mymensingh**: Jamalpur, Mymensingh, Netrokona, Sherpur
+- **Rajshahi**: Bogra, Chapainawabganj, Joypurhat, Naogaon, Natore, Pabna, Rajshahi, Sirajganj
+- **Rangpur**: Dinajpur, Gaibandha, Kurigram, Lalmonirhat, Nilphamari, Panchagarh, Rangpur, Thakurgaon
+- **Sylhet**: Habiganj, Moulvibazar, Sunamganj, Sylhet
+
+### Location Features
+- Geographic coordinates for accurate prayer times
+- Division-based organization
+- Location-specific schedules
+- Dynamic location pages with SEO metadata
+- Location filtering across all pages
 
 ## 🏗️ Advanced Architecture & Complex Logic Features
 
@@ -984,7 +1081,11 @@ Built with shadcn/ui:
 - Server-side validation
 - File type restrictions
 - File size limits
-- Rate limiting ready (add middleware as needed)
+- Rate limiting with token bucket algorithm
+- Request ID tracking
+- Security headers (CSP, CORS, XSS protection)
+- Input sanitization
+- IP-based rate limiting
 
 ## 🚀 Deployment
 
@@ -992,18 +1093,27 @@ Built with shadcn/ui:
 
 1. Push code to GitHub
 2. Import project in Vercel
-3. Set environment variables:
-   - `DATABASE_URL` (MongoDB Atlas recommended)
-   - `NEXTAUTH_SECRET` (generate with `openssl rand -base64 32`)
-   - `NEXTAUTH_URL` (your production URL)
+3. Set environment variables (see [Environment Variables](#-environment-variables) section)
 4. Deploy
 
 ### Environment Variables for Production
 ```env
-DATABASE_URL="mongodb+srv://<user>:<password>@cluster.mongodb.net/ramadan-clock"
-NEXTAUTH_SECRET="<generate-secret>"
+DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<database>"
+NEXTAUTH_SECRET="<generate-with-openssl-rand-base64-32>"
 NEXTAUTH_URL="https://your-domain.com"
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="secure-password"
+TIMEZONE="Asia/Dhaka"
+RAMADAN_START_DATE="2026-02-19"
+RAMADAN_END_DATE="2026-03-20"
+ALLOWED_ORIGINS="https://your-domain.com"
 ```
+
+### Recommended Database Providers
+- **Supabase**: https://supabase.com (Free tier available)
+- **Neon**: https://neon.tech (Free tier available)
+- **Railway**: https://railway.app (PostgreSQL included)
+- **Prisma Cloud**: https://www.prisma.io/data-platform
 
 ## 📝 Scripts
 
@@ -1016,6 +1126,61 @@ pnpm db:generate  # Generate Prisma client
 pnpm db:push      # Push schema to database
 pnpm db:seed      # Seed initial data
 ```
+
+## 🔧 Environment Variables
+
+### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/ramadan-clock` |
+| `NEXTAUTH_SECRET` | Secret for session encryption | Generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Application URL | `http://localhost:3000` |
+| `ADMIN_EMAIL` | Admin login email | `admin@example.com` |
+| `ADMIN_PASSWORD` | Admin login password | `secure-password` |
+
+### Optional Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NODE_ENV` | Environment mode | `development` |
+| `TIMEZONE` | Application timezone | `Asia/Dhaka` |
+| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:3000` |
+| `RAMADAN_START_DATE` | Ramadan start date (YYYY-MM-DD) | - |
+| `RAMADAN_END_DATE` | Ramadan end date (YYYY-MM-DD) | - |
+| `PROJECT_REPO_URL` | Project repository URL | - |
+| `DEVELOPER_NAME` | Developer name | - |
+| `DEVELOPER_BIO` | Developer bio | - |
+| `DEVELOPER_GITHUB` | GitHub profile URL | - |
+| `DEVELOPER_LINKEDIN` | LinkedIn profile URL | - |
+| `DEVELOPER_EMAIL` | Contact email | - |
+
+**Note:** Aladhan API configuration is hardcoded in [`lib/config/app.config.ts`](lib/config/app.config.ts:43) and includes:
+- Base URL: `https://api.aladhan.com/v1`
+- Method: ISNA (Islamic Society of North America)
+- Country: Bangladesh
+- Timezone: Asia/Dhaka
+- Rate limiting: Token bucket with 50 capacity, 5 tokens/second
+
+To modify these settings, edit the `ALADHAN_CONFIG` object in the configuration file directly.
+
+### See Also
+- Copy [`.env.example`](.env.example) for all available variables
+- See [lib/config/env.config.ts](lib/config/env.config.ts) for validation rules
+
+## 📚 Documentation
+
+### Feature Guides
+- [Aladhan API Implementation](docs/aladhan-api-implementation-summary.md) - Prayer times integration
+- [API Keys Setup Guide](docs/api-keys-setup-guide.md) - External API configuration
+- [Cache Troubleshooting Guide](docs/cache-troubleshooting-guide.md) - Caching issues
+- [Caching Implementation Guide](docs/caching-implementation-guide.md) - Cache system overview
+- [Rate Limiting Guide](docs/rate-limiting-guide.md) - Rate limiting configuration
+- [SEO Implementation Summary](docs/seo-implementation-summary.md) - SEO features
+
+### API Documentation
+- [OpenAPI Specification](docs/api/openapi.yaml) - Full API documentation
+- [API Usage Guide](docs/api/usage-guide.md) - API usage examples
 
 ## 🤝 Contributing
 
