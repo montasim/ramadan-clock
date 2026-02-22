@@ -1,6 +1,6 @@
 # 🌙 Ramadan Clock - Sehri & Iftar Time Viewer
 
-A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, MongoDB, and shadcn/ui.
+A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, PostgreSQL, and shadcn/ui.
 
 ## ✨ Features
 
@@ -22,11 +22,12 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
 - **Sample Templates**: Download sample JSON/CSV templates
 - **Dashboard**: View statistics and recent uploads
 
+
 ## 🛠️ Technology Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
-- **Database**: MongoDB (via Prisma ORM)
+- **Database**: PostgreSQL (via Prisma ORM)
 - **UI Components**: shadcn/ui + Tailwind CSS v4
 - **Authentication**: NextAuth.js
 - **File Parsing**: PapaParse (CSV), native JSON parser
@@ -38,36 +39,36 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
 
 ### Prerequisites
 
-- Node.js 18+ 
-- MongoDB instance (local or cloud)
+- Node.js 18+
+- PostgreSQL database (local or cloud)
 - pnpm (recommended) or npm
 
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd ramadan-clock
-   ```
+    ```bash
+    git clone <repository-url>
+    cd ramadan-clock
+    ```
 
 2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+    ```bash
+    pnpm install
+    ```
 
 3. **Set up environment variables**
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Edit `.env.local` with your configuration:
-   ```env
-   DATABASE_URL="mongodb://localhost:27017/ramadan-clock"
-   NEXTAUTH_SECRET="your-secret-key-here"
-   NEXTAUTH_URL="http://localhost:3000"
-   ADMIN_EMAIL="admin@example.com"
-   ADMIN_PASSWORD="admin123"
-   ```
+    ```bash
+    cp .env.example .env.local
+    ```
+    
+    Edit `.env.local` with your configuration:
+    ```env
+    DATABASE_URL="postgresql://user:password@localhost:5432/ramadan-clock"
+    NEXTAUTH_SECRET="your-secret-key-here"
+    NEXTAUTH_URL="http://localhost:3000"
+    ADMIN_EMAIL="admin@example.com"
+    ADMIN_PASSWORD="admin123"
+    ```
 
 4. **Generate Prisma client**
    ```bash
@@ -89,11 +90,29 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
    - Sample time entries for testing
 
 7. **Run the development server**
-   ```bash
-   pnpm dev
-   ```
+    ```bash
+    pnpm dev
+    ```
 
-   Open [http://localhost:3000](http://localhost:3000) to see the app.
+    Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+### Development Tips
+
+#### Caching Issues?
+
+If you don't see UI changes appearing immediately, use the clean development command:
+
+```bash
+pnpm dev:clean
+```
+
+For comprehensive cache clearing:
+
+```bash
+pnpm clean:all
+```
+
+📖 **See the [Cache Troubleshooting Guide](docs/cache-troubleshooting-guide.md) for detailed instructions.**
 
 ## 📁 Project Structure
 
@@ -125,24 +144,27 @@ ramadan-clock/
 ## 📊 Database Schema
 
 ### TimeEntry
-- `id`: ObjectId
+- `id`: UUID
 - `date`: String (YYYY-MM-DD)
 - `sehri`: String (HH:mm)
 - `iftar`: String (HH:mm)
 - `location`: String (nullable)
+- `createdAt`: DateTime
 - Unique index on `(date, location)`
 
 ### AdminUser
-- `id`: ObjectId
+- `id`: UUID
 - `email`: String (unique)
 - `password`: String (hashed)
+- `createdAt`: DateTime
 
 ### UploadLog
-- `id`: ObjectId
+- `id`: UUID
 - `fileName`: String
 - `rowCount`: Int
 - `status`: String (success/partial/failed)
 - `errors`: String (JSON)
+- `uploadedAt`: DateTime
 
 ## 📤 File Upload Format
 
@@ -191,7 +213,8 @@ Access admin dashboard at: `/admin/dashboard`
 ### Admin Routes (Protected)
 - `/auth/login` - Admin login
 - `/admin/dashboard` - Dashboard overview
-- `/admin/upload` - Upload schedules
+- `/admin/import` - Import schedules from files
+- `/admin/fetch` - Fetch schedules from Aladhan API
 
 ### API Routes
 - `/api/auth/[...nextauth]` - Authentication

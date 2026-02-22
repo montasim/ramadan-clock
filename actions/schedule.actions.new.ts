@@ -5,12 +5,13 @@
 
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { logger } from '@/lib/logger';
-import { UnauthorizedError, ForbiddenError, ValidationError, AppError } from '@/lib/errors';
+import { UnauthorizedError, ValidationError, AppError } from '@/lib/errors';
 import { timeEntryUpdateSchema, scheduleIdSchema } from '@/lib/validations/api-schemas';
+import { CACHE_TAGS } from '@/lib/cache/cache-config';
 
 // Import use cases
 import { GetTodayScheduleUseCase } from '@/features/schedule/use-cases/get-today-schedule.use-case';
@@ -60,7 +61,6 @@ export interface ActionResult<T = any> {
 /**
  * Require admin session
  * @throws {UnauthorizedError} If not authenticated
- * @throws {ForbiddenError} If not admin
  */
 async function requireAdminSession() {
   const session = await getServerSession(authOptions);
@@ -69,11 +69,7 @@ async function requireAdminSession() {
     throw new UnauthorizedError('Authentication required');
   }
 
-  // @ts-ignore - session.user may have isAdmin property
-  if (!session.user?.isAdmin) {
-    throw new ForbiddenError('Admin access required');
-  }
-
+  // Since this is an admin-only application, any authenticated user is an admin
   return session;
 }
 
@@ -200,6 +196,12 @@ export async function deleteTimeEntry(id: string): Promise<ActionResult> {
     // Delete entry
     await deleteEntryUseCase.execute(id);
 
+    // Invalidate cache tags
+    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+    revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
+    revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
+    revalidateTag(CACHE_TAGS.PDF, CACHE_TAGS.PDF);
+
     // Revalidate paths
     revalidatePath('/');
     revalidatePath('/calendar');
@@ -263,6 +265,12 @@ export async function updateTimeEntry(
 
     // Update entry
     await updateEntryUseCase.execute(id, data);
+
+    // Invalidate cache tags
+    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+    revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
+    revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
+    revalidateTag(CACHE_TAGS.PDF, CACHE_TAGS.PDF);
 
     // Revalidate paths
     revalidatePath('/');

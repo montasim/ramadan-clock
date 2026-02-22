@@ -47,6 +47,15 @@ export {
   type RateLimitResult,
 } from './rate-limiter';
 
+// Token bucket rate limiter
+export {
+  TokenBucketRateLimiter,
+  getGlobalTokenBucketLimiter,
+  resetGlobalTokenBucketLimiter,
+  type TokenBucketConfig,
+  type TokenBucketStats,
+} from './token-bucket-rate-limiter';
+
 // External API client
 export {
   ExternalApiClient,

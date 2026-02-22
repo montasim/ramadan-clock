@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { TimeEntry } from "@prisma/client";
 import {
   Table,
@@ -12,9 +13,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getScheduleStatus, getScheduleRowClass, ScheduleStatus } from "@/lib/utils/schedule.utils";
+import { getScheduleStatus, getScheduleRowClass, ScheduleStatus, RamadanDates } from "@/lib/utils/schedule.utils";
 import { Pencil, Trash2 } from "lucide-react";
-import moment from 'moment';
+import moment from 'moment-timezone';
+import { config } from "@/lib/config";
+
+// Configured timezone for the application (from config)
+const APP_TIMEZONE = config.timezone;
+
+// Get user's local timezone from browser, fallback to app timezone
+const getUserTimezone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || APP_TIMEZONE;
+  } catch {
+    return APP_TIMEZONE;
+  }
+};
 
 export interface ScheduleTableProps {
   entries: TimeEntry[];
@@ -30,6 +44,8 @@ export interface ScheduleTableProps {
   onEdit?: (entry: TimeEntry) => void;
   onDelete?: (entry: TimeEntry) => void;
   isAllSelected?: boolean;
+  // Ramadan dates for status determination
+  ramadanDates?: RamadanDates;
 }
 
 /**
@@ -109,9 +125,16 @@ export function ScheduleTable({
   onEdit,
   onDelete,
   isAllSelected = false,
+  ramadanDates,
 }: ScheduleTableProps) {
-  // Use moment to get today's date in ISO format
-  const today = moment().format('YYYY-MM-DD');
+  // Use moment to get today's date in ISO format, using the user's browser timezone
+  const userTimezone = getUserTimezone();
+  const today = moment().tz(userTimezone).format('YYYY-MM-DD');
+  
+  // Cache the timezone to ensure consistency across the component lifecycle
+  React.useMemo(() => {
+    getUserTimezone(); // Ensure timezone is cached
+  }, []);
 
   return (
     <div className="relative overflow-x-auto rounded-xl border border-border/40 bg-primary/5">
@@ -146,11 +169,11 @@ export function ScheduleTable({
           {entries.map((entry) => {
             const isToday = entry.date === today;
             const isSelected = selectedIds?.has(entry.id) ?? false;
-            const { status, rowClass } = getScheduleStatus(entry, entries);
+            const { status, rowClass } = getScheduleStatus(entry, entries, ramadanDates);
             
             // Use simple row class for location page
             const finalRowClass = rowClassVariant === "simple"
-              ? getScheduleRowClass(entry, entries)
+              ? getScheduleRowClass(entry, entries, ramadanDates)
               : rowClass;
 
             return (
@@ -171,7 +194,7 @@ export function ScheduleTable({
                 <TableCell className="font-medium pl-4 sm:pl-6 py-3 whitespace-nowrap">
                   <div className="flex flex-col">
                     <span className="text-xs sm:text-sm">
-                      {moment(entry.date).format("MMM D, YYYY")}
+                      {moment.tz(entry.date, userTimezone).format("MMM D, YYYY")}
                     </span>
                     {showTodayBadge && isToday && <TodayBadge />}
                   </div>

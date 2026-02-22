@@ -1,11 +1,16 @@
 import { withDashboardGuard } from "@/lib/guards/dashboard-guard";
-import { getStats, getFullSchedule } from "@/actions/time-entries";
+import { getStats, getFullSchedule, getLocations } from "@/actions/time-entries";
+import { getRamadanSettings } from "@/actions/ramadan-settings.actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Calendar, Clock, MapPin, Upload, LayoutDashboard } from "lucide-react";
 import { CalendarView } from "@/components/admin/calendar-view";
 import { ScheduleCard } from "@/components/shared/schedule-card";
+import { CacheClearButton } from "@/components/admin/cache-clear-button";
+import { NoScheduleCard } from "@/components/admin/no-schedule-card";
+import { RamadanConfig } from "@/components/admin/ramadan-config";
+import { PageHero } from "@/components/shared/page-hero";
 import { getAdminMetadata } from "@/lib/seo/metadata";
 
 export const metadata = getAdminMetadata('Dashboard');
@@ -19,6 +24,13 @@ export default async function AdminDashboard() {
 
   const stats = await getStats();
   const schedule = await getFullSchedule(null);
+  const locations = await getLocations();
+  const ramadanSettings = await getRamadanSettings();
+
+  const ramadanDates = ramadanSettings.success ? {
+    startDate: ramadanSettings.startDate,
+    endDate: ramadanSettings.endDate,
+  } : undefined;
 
   const statCards = [
     {
@@ -53,34 +65,34 @@ export default async function AdminDashboard() {
   return (
     <div className="w-full max-w-5xl mx-auto py-6 sm:py-10 px-4 space-y-6 sm:space-y-8">
       {/* ── Hero ─────────────────────────────── */}
-      <div className="hero-section px-5 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center justify-between gap-6 overflow-hidden relative">
-        <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
-          style={{ background: "var(--grad-primary)" }}
-        />
-        <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 relative z-10 text-center sm:text-left">
-          <div
-            className="p-3 rounded-xl shadow-lg hidden sm:block"
-            style={{ background: "var(--grad-primary)" }}
-          >
-            <LayoutDashboard className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-1 sm:mb-0.5">Admin Panel</p>
-            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Dashboard</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm">Manage Sehri &amp; Iftar schedules</p>
-          </div>
-        </div>
-        <Link href="/admin/upload" className="relative z-10 w-full sm:w-auto">
-          <Button className="btn-gradient rounded-full gap-2 font-semibold w-full sm:w-auto px-6">
-            <Upload className="h-4 w-4" />
-            Upload Schedule
-          </Button>
-        </Link>
-      </div>
+      <PageHero
+        subtitle="Admin Panel"
+        title={<span className="gradient-text">Dashboard</span>}
+        description="Manage Sehri &amp; Iftar schedules"
+        icon={LayoutDashboard}
+        actions={
+          <>
+            <CacheClearButton />
+
+            <Link href="/admin/import" className="w-full sm:w-auto">
+              <Button className="btn-gradient rounded-full gap-2 font-semibold w-full sm:w-auto px-6">
+                <Upload className="h-4 w-4" />
+                Upload Schedule
+              </Button>
+            </Link>
+
+            <Link href="/admin/fetch" className="w-full sm:w-auto">
+              <Button className="btn-gradient rounded-full gap-2 font-semibold w-full sm:w-auto px-6">
+                <Upload className="h-4 w-4" />
+                Fetch Schedule
+              </Button>
+            </Link>
+          </>
+        }
+      />
 
       {/* ── Stat Cards ──────────────────────── */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
         {statCards.map(({ title, value, description, icon: Icon, gradient, iconColor, iconBg }) => (
           <Card key={title} className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
@@ -97,6 +109,9 @@ export default async function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
+        
+        {/* Ramadan Configuration Card */}
+        <RamadanConfig />
       </div>
 
       {/* ── Calendar Card ───────────────────── */}
@@ -105,17 +120,9 @@ export default async function AdminDashboard() {
         description={`Manage all Sehri & Iftar entries (${schedule.length} total)`}
       >
         {schedule.length > 0 ? (
-          <CalendarView entries={schedule} />
+          <CalendarView entries={schedule} locations={locations} ramadanDates={ramadanDates} />
         ) : (
-          <div className="text-center py-14 text-muted-foreground">
-            <p className="mb-4">No schedule entries yet.</p>
-            <Link href="/admin/upload">
-              <Button className="btn-gradient rounded-full gap-2 font-semibold">
-                <Upload className="h-4 w-4" />
-                Upload Schedule
-              </Button>
-            </Link>
-          </div>
+          <NoScheduleCard />
         )}
       </ScheduleCard>
     </div>

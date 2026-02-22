@@ -121,17 +121,37 @@ export class ExternalApiClient {
           attempt < mergedRetryOptions.maxRetries &&
           mergedRetryOptions.retryableStatuses.includes(response.status)
         ) {
-          logger.warn(
-            `External API request failed with status ${response.status}, retrying...`,
-            { url, attempt, status: response.status }
-          );
+          // Special handling for 429 (Rate Limit) errors
+          if (response.status === 429) {
+            const retryAfter = this.parseRetryAfter(response);
+            const rateLimitDelay = Math.max(retryAfter, delay);
+            
+            // Use longer backoff for rate limit errors
+            delay = Math.min(
+              rateLimitDelay * 3, // 3x multiplier for 429 errors
+              30000 // Max 30 seconds for rate limit errors
+            );
 
-          // Wait before retrying with exponential backoff
-          await this.sleep(delay);
-          delay = Math.min(
-            delay * mergedRetryOptions.backoffMultiplier,
-            mergedRetryOptions.maxDelay
-          );
+            logger.warn(
+              `External API request rate limited (429), retrying...`,
+              { url, attempt, retryAfter, delay, status: response.status }
+            );
+          } else {
+            logger.warn(
+              `External API request failed with status ${response.status}, retrying...`,
+              { url, attempt, status: response.status }
+            );
+
+            // Wait before retrying with exponential backoff
+            delay = Math.min(
+              delay * mergedRetryOptions.backoffMultiplier,
+              mergedRetryOptions.maxDelay
+            );
+          }
+
+          // Add jitter to prevent thundering herd
+          const jitter = Math.random() * 0.2 * delay; // 20% jitter
+          await this.sleep(delay + jitter);
 
           continue;
         }
@@ -157,6 +177,33 @@ export class ExternalApiClient {
     }
 
     throw lastError || new Error('Max retries exceeded');
+  }
+
+  /**
+   * Parse Retry-After header from response
+   * Returns delay in milliseconds
+   */
+  private parseRetryAfter(response: Response): number {
+    const retryAfterHeader = response.headers.get('Retry-After');
+    
+    if (!retryAfterHeader) {
+      return 5000; // Default 5 seconds if no header
+    }
+
+    // Try parsing as number (seconds)
+    const seconds = parseInt(retryAfterHeader, 10);
+    if (!isNaN(seconds)) {
+      return seconds * 1000;
+    }
+
+    // Try parsing as HTTP date
+    const date = new Date(retryAfterHeader);
+    if (!isNaN(date.getTime())) {
+      const delay = date.getTime() - Date.now();
+      return Math.max(delay, 1000); // Minimum 1 second
+    }
+
+    return 5000; // Default 5 seconds if parsing fails
   }
 
   /**

@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Github, Linkedin, Mail, ExternalLink, User, Code2 } from "lucide-react";
+import { PageHero } from "@/components/shared/page-hero";
 import { getContactMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createOrganizationSchema } from "@/lib/seo/schemas";
@@ -34,21 +35,20 @@ export default function ContactPage() {
       ])} />
       <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-7">
       {/* Hero */}
-      <div className="hero-section px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 overflow-hidden">
-        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: "var(--grad-primary)" }} />
-        <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-2">
+      <PageHero
+        subtitle={
+          <>
             <Mail className="inline h-3.5 w-3.5 mr-1" />
             Contact & About
-          </p>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+          </>
+        }
+        title={
+          <>
             Get in <span className="gradient-text">Touch</span>
-          </h1>
-          <p className="text-muted-foreground text-sm mt-2">
-            Learn about the project and connect with the developer
-          </p>
-        </div>
-      </div>
+          </>
+        }
+        description="Learn about the project and connect with the developer"
+      />
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Project Info Card */}

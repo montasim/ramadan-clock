@@ -1,5 +1,25 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { TimeEntry } from "@prisma/client";
+import { config } from "@/lib/config";
+
+// Configured timezone for the application (from config)
+const APP_TIMEZONE = config.timezone;
+
+// Cache the user timezone to ensure consistency across multiple calls
+let cachedUserTimezone: string | null = null;
+
+// Get user's local timezone from browser, fallback to app timezone
+const getUserTimezone = () => {
+  if (cachedUserTimezone) {
+    return cachedUserTimezone;
+  }
+  try {
+    cachedUserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || APP_TIMEZONE;
+  } catch {
+    cachedUserTimezone = APP_TIMEZONE;
+  }
+  return cachedUserTimezone;
+};
 
 export type ScheduleStatus = "passed" | "today" | "tomorrow" | "upcoming";
 
@@ -7,6 +27,11 @@ export interface ScheduleStatusResult {
   status: ScheduleStatus;
   statusText: string;
   rowClass: string;
+}
+
+export interface RamadanDates {
+  startDate?: string; // YYYY-MM-DD format
+  endDate?: string;   // YYYY-MM-DD format
 }
 
 /**
@@ -25,17 +50,20 @@ export function parseTime(timeStr: string): { hours: number; minutes: number } {
  * Check if current time is past a given time
  */
 export function isTimePast(hours: number, minutes: number): boolean {
-  const now = moment();
-  const targetTime = moment().set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+  const userTimezone = getUserTimezone();
+  const now = moment().tz(userTimezone);
+  const targetTime = moment().tz(userTimezone).set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
   return now.isSameOrAfter(targetTime);
 }
 
 /**
  * Determine the status of a schedule entry based on date and time
  */
-export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = []): ScheduleStatusResult {
-  const today = moment();
-  const entryDate = moment(entry.date);
+export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = [], ramadanDates?: RamadanDates): ScheduleStatusResult {
+  const userTimezone = getUserTimezone();
+  const today = moment().tz(userTimezone);
+  // Create entryDate with explicit timezone to ensure consistent comparisons
+  const entryDate = moment.tz(entry.date, userTimezone);
   
   const sehriTime = parseTime(entry.sehri);
   const iftarTime = parseTime(entry.iftar);
@@ -44,8 +72,18 @@ export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = []
   let statusText: string;
   let rowClass: string;
   
-  if (entryDate.isBefore(today, 'day')) {
-    // Past dates are always passed
+  // Check if Ramadan dates are configured
+  const ramadanStartDate = ramadanDates?.startDate 
+    ? moment.tz(ramadanDates.startDate, userTimezone) 
+    : null;
+  
+  if (ramadanStartDate && entryDate.isBefore(ramadanStartDate, 'day')) {
+    // Date is before Ramadan - mark as passed
+    status = "passed";
+    statusText = "Passed";
+    rowClass = "bg-red-500/15 border-l-4 border-l-red-500/60 border-b border-red-500/40";
+  } else if (entryDate.isBefore(today, 'day')) {
+    // Past dates (but during or after Ramadan) - mark as passed
     status = "passed";
     statusText = "Passed";
     rowClass = "bg-red-500/15 border-l-4 border-l-red-500/60 border-b border-red-500/40";
@@ -64,33 +102,14 @@ export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = []
     }
   } else {
     // Future dates: check if it's tomorrow
-    const tomorrow = moment().add(1, 'day');
+    const tomorrow = moment().tz(userTimezone).add(1, 'day');
     const isTomorrow = entryDate.isSame(tomorrow, 'day');
     
     if (isTomorrow) {
-      // Tomorrow: check if today's sehri and iftar times have both passed
-      // Get today's entry to check its times
-      const todayEntry = allEntries.find(e => moment(e.date).isSame(today, 'day'));
-      if (todayEntry) {
-        const todaySehriTime = parseTime(todayEntry.sehri);
-        const todayIftarTime = parseTime(todayEntry.iftar);
-        const todaySehriPassed = isTimePast(todaySehriTime.hours, todaySehriTime.minutes);
-        const todayIftarPassed = isTimePast(todayIftarTime.hours, todayIftarTime.minutes);
-        if (todaySehriPassed && todayIftarPassed) {
-          status = "passed";
-          statusText = "Passed";
-          rowClass = "bg-red-500/15 border-l-4 border-l-red-500/60 border-b border-red-500/40";
-        } else {
-          status = "tomorrow";
-          statusText = "Tomorrow";
-          rowClass = "hover:bg-primary/4 border-border/40";
-        }
-      } else {
-        // No today entry found, default to tomorrow
-        status = "tomorrow";
-        statusText = "Tomorrow";
-        rowClass = "hover:bg-primary/4 border-border/40";
-      }
+      // Tomorrow is always marked as tomorrow, regardless of today's times
+      status = "tomorrow";
+      statusText = "Tomorrow";
+      rowClass = "hover:bg-primary/4 border-border/40";
     } else {
       status = "upcoming";
       statusText = "Upcoming";
@@ -104,8 +123,8 @@ export function getScheduleStatus(entry: TimeEntry, allEntries: TimeEntry[] = []
 /**
  * Get the row class for a schedule entry (simplified version for location page)
  */
-export function getScheduleRowClass(entry: TimeEntry, allEntries: TimeEntry[] = []): string {
-  const { rowClass } = getScheduleStatus(entry, allEntries);
+export function getScheduleRowClass(entry: TimeEntry, allEntries: TimeEntry[] = [], ramadanDates?: RamadanDates): string {
+  const { rowClass } = getScheduleStatus(entry, allEntries, ramadanDates);
   // For location page, use simplified styling without border-l
   return rowClass.replace('border-l-4 border-l-red-500/60 ', '');
 }

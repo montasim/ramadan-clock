@@ -1,7 +1,11 @@
+import { time } from "console";
 import { z } from "zod";
 
 // Configuration schema for validation
 const configSchema = z.object({
+  // Application Configuration
+  timezone: z.string(),
+
   // Database
   databaseUrl: z.string().url(),
 
@@ -16,7 +20,7 @@ const configSchema = z.object({
   // Project Info
   projectRepoUrl: z.string().url(),
 
-  // Developer Info
+  // Developer Info (server-side)
   developerName: z.string(),
   developerBio: z.string(),
   developerGithub: z.string().url(),
@@ -29,6 +33,7 @@ const configSchema = z.object({
 
 // Export validated configuration
 export const config = configSchema.parse({
+  timezone: process.env.TIMEZONE || "Asia/Dhaka",
   databaseUrl: process.env.DATABASE_URL || "postgresql://localhost:5432/ramadan-clock",
   nextAuthSecret: process.env.NEXTAUTH_SECRET || "default-secret-change-in-production",
   nextAuthUrl: process.env.NEXTAUTH_URL || "http://localhost:3000",

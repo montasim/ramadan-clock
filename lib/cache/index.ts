@@ -14,3 +14,6 @@ export * from './cache-monitor';
 
 // Export cache cleanup
 export * from './cache-cleanup';
+
+// Export cache manager
+export * from './cache-manager';

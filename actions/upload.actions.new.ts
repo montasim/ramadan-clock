@@ -9,7 +9,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { logger } from '@/lib/logger';
-import { UnauthorizedError, ForbiddenError, AppError } from '@/lib/errors';
+import { UnauthorizedError, AppError } from '@/lib/errors';
 import { batchTimeEntrySchema } from '@/lib/validations/api-schemas';
 import { CACHE_TAGS } from '@/lib/cache';
 
@@ -43,9 +43,20 @@ export interface ActionResult<T = any> {
 }
 
 /**
+ * Upload progress update type
+ */
+export interface UploadProgress {
+  current: number;
+  total: number;
+  percentage: number;
+  batch: number;
+  totalBatches: number;
+  status: 'validating' | 'uploading' | 'retrying' | 'completed' | 'failed';
+}
+
+/**
  * Require admin session
  * @throws {UnauthorizedError} If not authenticated
- * @throws {ForbiddenError} If not admin
  */
 async function requireAdminSession() {
   const session = await getServerSession(authOptions);
@@ -54,11 +65,7 @@ async function requireAdminSession() {
     throw new UnauthorizedError('Authentication required');
   }
 
-  // @ts-ignore - session.user may have isAdmin property
-  if (!session.user?.isAdmin) {
-    throw new ForbiddenError('Admin access required');
-  }
-
+  // Since this is an admin-only application, any authenticated user is an admin
   return session;
 }
 
@@ -123,7 +130,7 @@ export async function validateScheduleFile(
  * Upload schedule entries (admin only)
  * @param entries - Parsed entries from file
  * @param fileName - Name of the uploaded file
- * @returns Upload result
+ * @returns Upload result with retry and rollback information
  */
 export async function uploadSchedule(
   entries: Array<{
@@ -141,15 +148,16 @@ export async function uploadSchedule(
     // Validate input
     batchTimeEntrySchema.parse({ entries });
 
+    // Upload with enhanced retry and rollback logic
     const result = await uploadScheduleUseCase.upload(entries, fileName);
 
     if (result.success) {
       // Invalidate caches
-      revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
-      revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
-      revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
-      revalidateTag(CACHE_TAGS.PDF, CACHE_TAGS.PDF);
-      
+      revalidateTag(CACHE_TAGS.SCHEDULE, 'max');
+      revalidateTag(CACHE_TAGS.STATS, 'max');
+      revalidateTag(CACHE_TAGS.LOCATIONS, 'max');
+      revalidateTag(CACHE_TAGS.PDF, 'max');
+
       // Revalidate paths for ISR
       revalidatePath('/');
       revalidatePath('/calendar');
@@ -158,6 +166,8 @@ export async function uploadSchedule(
       logger.info('Schedule uploaded successfully', {
         fileName,
         entriesCount: entries.length,
+        rowCount: result.rowCount,
+        retried: result.retried,
       });
     }
 

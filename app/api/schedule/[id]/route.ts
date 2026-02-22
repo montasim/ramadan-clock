@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod/v4';
 import {
   withErrorHandler,
   withRateLimit,
@@ -41,7 +42,7 @@ async function getScheduleEntryHandler(
     if (!params?.id) {
       return error(400, 'BadRequest', 'Missing ID parameter');
     }
-    
+
     const { id } = scheduleIdSchema.parse({ id: params.id });
 
     const entry = await prisma.timeEntry.findUnique({
@@ -58,6 +59,25 @@ async function getScheduleEntryHandler(
   } catch (err) {
     const params = await context?.params;
     const id = params?.id || 'unknown';
+
+    // Handle Zod validation errors
+    if (err instanceof z.ZodError) {
+      const errors = err.issues.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+      }));
+
+      logger.error('Validation failed for schedule entry fetch', { id, errors }, err as Error);
+
+      return error(
+        400,
+        'ValidationError',
+        'Invalid ID parameter',
+        { errors }
+      );
+    }
+
+    // Handle other errors
     logger.error('Failed to fetch time entry', { id }, err as Error);
 
     if (err instanceof Error) {
@@ -98,7 +118,7 @@ async function updateScheduleEntryHandler(
     if (!params?.id) {
       return error(400, 'BadRequest', 'Missing ID parameter');
     }
-    
+
     const { id } = scheduleIdSchema.parse({ id: params.id });
     const body = await request.json();
     const data = timeEntryUpdateSchema.parse(body);
@@ -124,6 +144,25 @@ async function updateScheduleEntryHandler(
   } catch (err) {
     const params = await context?.params;
     const id = params?.id || 'unknown';
+
+    // Handle Zod validation errors
+    if (err instanceof z.ZodError) {
+      const errors = err.issues.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+      }));
+
+      logger.error('Validation failed for schedule entry update', { id, errors }, err as Error);
+
+      return error(
+        400,
+        'ValidationError',
+        'Invalid input parameters',
+        { errors }
+      );
+    }
+
+    // Handle other errors
     logger.error('Failed to update time entry', { id }, err as Error);
 
     if (err instanceof Error) {
@@ -163,7 +202,7 @@ async function deleteScheduleEntryHandler(
     if (!params?.id) {
       return error(400, 'BadRequest', 'Missing ID parameter');
     }
-    
+
     const { id } = scheduleIdSchema.parse({ id: params.id });
 
     // Check if entry exists
@@ -186,6 +225,25 @@ async function deleteScheduleEntryHandler(
   } catch (err) {
     const params = await context?.params;
     const id = params?.id || 'unknown';
+
+    // Handle Zod validation errors
+    if (err instanceof z.ZodError) {
+      const errors = err.issues.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+      }));
+
+      logger.error('Validation failed for schedule entry delete', { id, errors }, err as Error);
+
+      return error(
+        400,
+        'ValidationError',
+        'Invalid ID parameter',
+        { errors }
+      );
+    }
+
+    // Handle other errors
     logger.error('Failed to delete time entry', { id }, err as Error);
 
     if (err instanceof Error) {

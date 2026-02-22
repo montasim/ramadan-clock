@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import moment from 'moment-timezone';
-import { APP_CONFIG } from '@/lib/config/index';
+import { config } from "@/lib/config";
+
+// Configured timezone for the application (from config)
+const APP_TIMEZONE = config.timezone;
 
 interface CountdownTimerProps {
   targetTime: string; // Format: "HH:MM"
@@ -16,8 +19,8 @@ export function CountdownTimer({ targetTime, className = "" }: CountdownTimerPro
 
   useEffect(() => {
     const calculateTimeRemaining = () => {
-      const now = moment().tz(APP_CONFIG.timezone);
-      const targetDate = moment.tz(targetTime, 'HH:mm', APP_CONFIG.timezone);
+      const now = moment().tz(APP_TIMEZONE);
+      const targetDate = moment.tz(targetTime, 'HH:mm', APP_TIMEZONE);
 
       // Set target date to today
       targetDate.set({

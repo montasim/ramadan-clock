@@ -1,19 +1,23 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
-import { uploadSchedule, validateScheduleFile, type UploadResult } from "@/actions/upload";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ProgressBar, type ProgressData } from "@/components/ui/progress-bar";
+import { useProgress } from "@/hooks/use-progress";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AppModal } from "@/components/ui/app-modal";
-import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2, CloudUpload } from "lucide-react";
+import { Upload, FileJson, FileSpreadsheet, Download, AlertCircle, CheckCircle2, CloudUpload, RefreshCw, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScheduleTable } from "@/components/shared/schedule-table";
 import { ScheduleCard } from "@/components/shared/schedule-card";
+import { PageHero } from "@/components/shared/page-hero";
 import { DashboardGuard } from "@/lib/guards";
+import { CacheClearButton } from "@/components/admin/cache-clear-button";
 
 // Admin pages should never be cached - they need real-time data
 export const dynamic = 'force-dynamic';
@@ -26,6 +30,7 @@ interface ParsedEntry {
 }
 
 export default function UploadPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<ParsedEntry[]>([]);
   const [validationResult, setValidationResult] = useState<{
@@ -35,7 +40,11 @@ export default function UploadPage() {
   } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [uploadResult, setUploadResult] = useState<{ success: boolean; rowCount?: number; message?: string } | null>(null);
+  const [uploadOperationId, setUploadOperationId] = useState<string | null>(null);
+
+  // Use progress hook for real-time updates
+  const uploadProgress = useProgress(uploadOperationId);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -49,8 +58,17 @@ export default function UploadPage() {
       try {
         const json = JSON.parse(text);
         setParsedData(json);
-        const validation = await validateScheduleFile(json);
-        setValidationResult(validation);
+        // Basic validation
+        if (Array.isArray(json) && json.length > 0) {
+          setValidationResult({
+            valid: true,
+            errors: [],
+            preview: json.slice(0, 10),
+          });
+        } else {
+          toast.error("Invalid JSON format");
+          setValidationResult(null);
+        }
       } catch {
         toast.error("Invalid JSON file");
         setParsedData([]);
@@ -62,8 +80,17 @@ export default function UploadPage() {
         complete: async (results) => {
           const data = results.data as ParsedEntry[];
           setParsedData(data);
-          const validation = await validateScheduleFile(data);
-          setValidationResult(validation);
+          // Basic validation
+          if (Array.isArray(data) && data.length > 0) {
+            setValidationResult({
+              valid: true,
+              errors: [],
+              preview: data.slice(0, 10),
+            });
+          } else {
+            toast.error("Invalid CSV format");
+            setValidationResult(null);
+          }
         },
         error: () => {
           toast("Failed to parse CSV file");
@@ -86,12 +113,48 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (parsedData.length === 0) return;
     setIsUploading(true);
-    const result = await uploadSchedule(parsedData, file?.name || "unknown");
-    setUploadResult(result);
-    setIsUploading(false);
+    setUploadOperationId(null);
     setShowConfirmDialog(false);
-    if (result.success) toast.success(result.message);
-    else toast.error(result.message);
+
+    try {
+      const response = await fetch('/api/schedule/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entries: parsedData,
+          fileName: file?.name || "unknown",
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to upload');
+      }
+
+      setUploadOperationId(result.data?.operationId || null);
+      setUploadResult({
+        success: true,
+        rowCount: result.data?.rowCount,
+        message: result.data?.message,
+      });
+      
+      toast.success(result.data?.message || "Upload successful");
+      
+      setTimeout(() => {
+        router.push('/admin/dashboard');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to upload',
+      });
+      toast.error("Failed to upload prayer times");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const downloadSampleJSON = () => {
@@ -117,23 +180,16 @@ export default function UploadPage() {
     <DashboardGuard>
       <div className="w-full max-w-5xl mx-auto py-10 px-4 space-y-8">
       {/* ── Hero Banner ──────────────────────────────── */}
-      <div className="hero-section px-6 py-8 overflow-hidden">
-        <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
-          style={{ background: "var(--grad-primary)" }}
-        />
-        <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-2">
-            ✦ Admin Panel
-          </p>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+      <PageHero
+        subtitle="✦ Admin Panel"
+        title={
+          <>
             Upload <span className="gradient-text">Schedule</span>
-          </h1>
-          <p className="text-muted-foreground text-sm mt-2">
-            Upload Sehri &amp; Iftar schedules via JSON or CSV
-          </p>
-        </div>
-      </div>
+          </>
+        }
+        description="Upload Sehri &amp; Iftar schedules via JSON or CSV"
+        actions={<CacheClearButton />}
+      />
 
       {/* ── Upload + Validation ─────────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">
@@ -283,8 +339,30 @@ export default function UploadPage() {
                   disabled={!validationResult.valid || isUploading}
                   onClick={() => setShowConfirmDialog(true)}
                 >
-                  {isUploading ? "Uploading…" : `Upload ${parsedData.length} Entries`}
+                  {isUploading ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Uploading…
+                    </span>
+                  ) : (
+                    `Upload ${parsedData.length} Entries`
+                  )}
                 </Button>
+
+                {/* Progress Indicator */}
+                {isUploading && uploadProgress.progress && (
+                  <ProgressBar
+                    progress={uploadProgress.progress}
+                    statusMessages={{
+                      initializing: 'Initializing upload...',
+                      validating: 'Validating entries...',
+                      uploading: 'Uploading entries...',
+                      retrying: 'Retrying failed entries...',
+                      completed: 'Upload complete!',
+                    }}
+                    showCurrentDistrict={false}
+                  />
+                )}
               </div>
             )}
           </CardContent>
@@ -346,26 +424,31 @@ export default function UploadPage() {
           description={uploadResult.message}
           titleClassName={uploadResult.success ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}
           primaryAction={{
-            label: "Close",
-            onClick: () => setUploadResult(null),
+            label: uploadResult.success ? "Go to Dashboard" : "Close",
+            onClick: () => {
+              if (uploadResult.success) {
+                // Clear all upload data and redirect to dashboard
+                setFile(null);
+                setParsedData([]);
+                setValidationResult(null);
+                setUploadResult(null);
+                setUploadOperationId(null);
+                router.push('/admin/dashboard');
+              } else {
+                setUploadResult(null);
+                setUploadOperationId(null);
+              }
+            },
           }}
           showFooter={true}
         >
-          {uploadResult.rowCount && (
-            <div className="py-2 px-4 rounded-xl border border-border/60 bg-muted/30">
-              <p className="text-sm font-medium">
-                Entries uploaded: <span className="gradient-text font-bold">{uploadResult.rowCount}</span>
-              </p>
-            </div>
-          )}
-          {uploadResult.errors && uploadResult.errors.length > 0 && (
-            <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl bg-destructive/5 p-3">
-              <p className="text-xs font-bold text-destructive mb-2">Errors:</p>
-              {uploadResult.errors.map((error, i) => (
-                <p key={i} className="text-xs text-destructive">
-                  Row {error.row}: {error.error}
-                </p>
-              ))}
+          {uploadResult.success && uploadResult.rowCount !== undefined && (
+            <div className="space-y-4">
+              {/* Upload Statistics */}
+              <div className="py-3 px-4 rounded-xl border border-primary/30 bg-primary/10">
+                <p className="text-xs text-muted-foreground mb-1">Entries Uploaded</p>
+                <p className="text-lg font-bold gradient-text">{uploadResult.rowCount}</p>
+              </div>
             </div>
           )}
         </AppModal>

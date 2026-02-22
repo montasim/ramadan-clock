@@ -5,31 +5,31 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import moment from 'moment-timezone';
 import { unstable_cache } from 'next/cache';
 import { CACHE_CONFIG, CACHE_TAGS } from '@/lib/cache';
-import { APP_CONFIG } from '@/lib/config/index';
+import { config } from "@/lib/config";
+import { TimeFormatterService } from '@/features/schedule/services';
+import { getCurrentDate, hasTimePassed } from '@/lib/utils/time.utils';
+import { logger } from '@/lib/logger';
 
-// Extended type for formatted entries with both 12-hour and 24-hour formats
-type FormattedTimeEntry = TimeEntry & {
-  sehri24: string;
-  iftar24: string;
-};
+const timezone = config.timezone;
 
 // Helper function to format time entries for display
 // Returns entry with 12-hour format for display, but preserves original 24-hour format
-function formatTimeEntry(entry: TimeEntry): FormattedTimeEntry {
+function formatTimeEntry(entry: TimeEntry): TimeEntry & { sehri24: string; iftar24: string } {
+  const formatter = new TimeFormatterService();
+  const formatted = formatter.formatEntry(entry);
   return {
     ...entry,
-    sehri: moment(entry.sehri, 'HH:mm').format('h:mm A'),
-    iftar: moment(entry.iftar, 'HH:mm').format('h:mm A'),
-    // Preserve original 24-hour format for editing
-    sehri24: entry.sehri,
-    iftar24: entry.iftar,
+    sehri: formatted.sehri,
+    iftar: formatted.iftar,
+    sehri24: formatted.sehri24,
+    iftar24: formatted.iftar24,
   };
 }
 
 // Uncached version of getTodaySchedule for internal use
 async function getTodayScheduleUncached(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
+    const today = getCurrentDate();
 
     const where: Record<string, unknown> = {
       date: today,
@@ -45,7 +45,7 @@ async function getTodayScheduleUncached(location?: string | null): Promise<TimeE
 
     return entry ? formatTimeEntry(entry) : null;
   } catch (error) {
-    console.error("Error fetching today's schedule:", error);
+    logger.error("Error fetching today's schedule", { location }, error as Error);
     return null;
   }
 }
@@ -60,41 +60,14 @@ export const getTodaySchedule = unstable_cache(
   }
 );
 
-/**
- * Check if iftar time has passed for today
- */
-function hasIftarPassed(todaySchedule: TimeEntry): boolean {
-  const now = moment().tz(APP_CONFIG.timezone);
-  const iftarTime = moment.tz(todaySchedule.iftar, 'HH:mm', APP_CONFIG.timezone);
-  iftarTime.set({
-    year: now.year(),
-    month: now.month(),
-    date: now.date(),
-  });
-  return now.isSameOrAfter(iftarTime);
-}
-
-/**
- * Check if sehri time has passed for today
- */
-function hasSehriPassed(todaySchedule: TimeEntry): boolean {
-  const now = moment().tz(APP_CONFIG.timezone);
-  const sehriTime = moment.tz(todaySchedule.sehri, 'HH:mm', APP_CONFIG.timezone);
-  sehriTime.set({
-    year: now.year(),
-    month: now.month(),
-    date: now.date(),
-  });
-  return now.isSameOrAfter(sehriTime);
-}
 
 /**
  * Get today's schedule or next day's schedule if iftar has passed
  */
 async function getTodayOrNextDayScheduleUncached(location?: string | null): Promise<TimeEntry | null> {
   try {
-    const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
-    const tomorrow = moment().tz(APP_CONFIG.timezone).add(1, 'day').format('YYYY-MM-DD');
+    const today = getCurrentDate();
+    const tomorrow = moment().tz(timezone).add(1, 'day').format('YYYY-MM-DD');
 
     const where: Record<string, unknown> = { date: today };
     if (location) {
@@ -103,7 +76,7 @@ async function getTodayOrNextDayScheduleUncached(location?: string | null): Prom
 
     const todayEntry = await prisma.timeEntry.findFirst({ where });
 
-    if (todayEntry && hasIftarPassed(todayEntry)) {
+    if (todayEntry && hasTimePassed(todayEntry.iftar)) {
       // Get next day's schedule
       const tomorrowWhere: Record<string, unknown> = { date: tomorrow };
       if (location) {
@@ -115,7 +88,7 @@ async function getTodayOrNextDayScheduleUncached(location?: string | null): Prom
 
     return todayEntry ? formatTimeEntry(todayEntry) : null;
   } catch (error) {
-    console.error("Error fetching today/next day schedule:", error);
+    logger.error("Error fetching today/next day schedule", { location }, error as Error);
     return null;
   }
 }
@@ -136,8 +109,8 @@ export const getTodayOrNextDaySchedule = unstable_cache(
  */
 async function getScheduleDisplayDataUncached(location?: string | null) {
   try {
-    const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
-    const tomorrow = moment().tz(APP_CONFIG.timezone).add(1, 'day').format('YYYY-MM-DD');
+    const today = getCurrentDate();
+    const tomorrow = moment().tz(timezone).add(1, 'day').format('YYYY-MM-DD');
 
     // Get today's schedule
     const todayWhere: Record<string, unknown> = { date: today };
@@ -158,8 +131,8 @@ async function getScheduleDisplayDataUncached(location?: string | null) {
     let iftarPassed = false;
 
     if (todayEntry) {
-      sehriPassed = hasSehriPassed(todayEntry);
-      iftarPassed = hasIftarPassed(todayEntry);
+      sehriPassed = hasTimePassed(todayEntry.sehri);
+      iftarPassed = hasTimePassed(todayEntry.iftar);
     }
 
     return {
@@ -169,7 +142,7 @@ async function getScheduleDisplayDataUncached(location?: string | null) {
       iftarPassed,
     };
   } catch (error) {
-    console.error("Error fetching schedule display data:", error);
+    logger.error("Error fetching schedule display data", { location }, error as Error);
     return {
       today: null,
       tomorrow: null,
@@ -189,7 +162,7 @@ export const getScheduleDisplayData = unstable_cache(
   }
 );
 
-async function getFullScheduleUncached(location?: string | null): Promise<FormattedTimeEntry[]> {
+async function getFullScheduleUncached(location?: string | null): Promise<(TimeEntry & { sehri24: string; iftar24: string })[]> {
   try {
     const where = location ? { location } : {};
 
@@ -200,7 +173,7 @@ async function getFullScheduleUncached(location?: string | null): Promise<Format
 
     return entries.map(formatTimeEntry);
   } catch (error) {
-    console.error("Error fetching full schedule:", error);
+    logger.error("Error fetching full schedule", { location }, error as Error);
     return [];
   }
 }
@@ -239,7 +212,7 @@ export async function getScheduleByDateRange(
 
     return entries;
   } catch (error) {
-    console.error("Error fetching schedule by date range:", error);
+    logger.error("Error fetching schedule by date range", { startDate, endDate, location }, error as Error);
     return [];
   }
 }
@@ -253,9 +226,12 @@ async function getLocationsUncached(): Promise<string[]> {
       },
     });
 
-    return result.map((r) => r.location!).filter(Boolean);
+    return result
+      .map((r) => r.location!)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
   } catch (error) {
-    console.error("Error fetching locations:", error);
+    logger.error("Error fetching locations", {}, error as Error);
     return [];
   }
 }
@@ -278,7 +254,7 @@ export async function getTimeEntryById(id: string): Promise<TimeEntry | null> {
 
     return entry;
   } catch (error) {
-    console.error("Error fetching time entry:", error);
+    logger.error("Error fetching time entry", { id }, error as Error);
     return null;
   }
 }
@@ -299,8 +275,44 @@ export async function deleteTimeEntry(id: string): Promise<{ success: boolean; e
 
     return { success: true };
   } catch (error) {
-    console.error("Error deleting time entry:", error);
+    logger.error("Error deleting time entry", { id }, error as Error);
     return { success: false, error: "Failed to delete entry" };
+  }
+}
+
+/**
+ * Bulk delete time entries (admin only)
+ * Deletes multiple entries in a single database operation for better performance
+ * @param ids - Array of time entry IDs to delete
+ * @returns Success status and optional error message
+ */
+export async function bulkDeleteTimeEntries(ids: string[]): Promise<{ success: boolean; error?: string; deletedCount?: number }> {
+  try {
+    if (ids.length === 0) {
+      return { success: true, deletedCount: 0 };
+    }
+
+    // Delete all entries in a single operation
+    const result = await prisma.timeEntry.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+
+    // Invalidate caches
+    revalidateTag(CACHE_TAGS.SCHEDULE, CACHE_TAGS.SCHEDULE);
+    revalidateTag(CACHE_TAGS.STATS, CACHE_TAGS.STATS);
+    revalidateTag(CACHE_TAGS.LOCATIONS, CACHE_TAGS.LOCATIONS);
+    revalidatePath("/");
+    revalidatePath("/calendar");
+    revalidatePath("/admin/dashboard");
+
+    return { success: true, deletedCount: result.count };
+  } catch (error) {
+    logger.error("Error bulk deleting time entries", { count: ids.length }, error as Error);
+    return { success: false, error: "Failed to delete entries" };
   }
 }
 
@@ -324,7 +336,7 @@ export async function updateTimeEntry(
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating time entry:", error);
+    logger.error("Error updating time entry", { id, data }, error as Error);
     return { success: false, error: "Failed to update entry" };
   }
 }
@@ -351,7 +363,7 @@ async function getStatsUncached() {
       recentUploads,
     };
   } catch (error) {
-    console.error("Error fetching stats:", error);
+    logger.error("Error fetching stats", {}, error as Error);
     return {
       totalEntries: 0,
       totalLocations: 0,

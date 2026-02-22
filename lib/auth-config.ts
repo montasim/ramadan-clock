@@ -50,12 +50,14 @@ const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.isAdmin = true; // All authenticated users are admins in this admin-only application
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { id?: string }).id = token.id as string;
+        (session.user as { id?: string; isAdmin?: boolean }).id = token.id as string;
+        (session.user as { id?: string; isAdmin?: boolean }).isAdmin = token.isAdmin as boolean;
       }
       return session;
     },

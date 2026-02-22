@@ -1,10 +1,9 @@
-"use client";
-
 import { config } from "@/lib/config";
 import { Github, Linkedin, Mail } from "lucide-react";
 import moment from 'moment';
 
 export function Footer() {
+  const currentYear = moment().year();
 
   return (
     <footer className="relative border-t border-border/50 py-6 md:py-6">
@@ -12,7 +11,7 @@ export function Footer() {
       <div className="flex flex-col items-center justify-center gap-3 px-4">
         <div className="flex w-full max-w-5xl flex-col items-center justify-between gap-2 md:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {moment().year()}{" "}
+            © {currentYear}{" "}
             <span className="gradient-text font-semibold">Ramadan Clock</span>.
             All rights reserved.
           </p>

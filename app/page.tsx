@@ -1,14 +1,9 @@
 import { getScheduleDisplayData, getLocations } from "@/actions/time-entries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Clock, Moon, Sun, MapPin, CalendarDays, Quote } from "lucide-react";
+import { LocationSelector } from "@/components/shared/location-selector";
+import { PageHero } from "@/components/shared/page-hero";
 import Link from "next/link";
 import { Suspense } from "react";
 import TodayScheduleSkeleton from "@/components/public/today-schedule-skeleton";
@@ -20,63 +15,48 @@ import { getHomeMetadata } from "@/lib/seo/metadata";
 import { JsonLd } from "@/components/seo/json-ld";
 import { createWebPageSchema, createBreadcrumbSchema, createSoftwareApplicationSchema } from "@/lib/seo/schemas";
 import { APP_CONFIG } from "@/lib/config/index";
+import { config } from "@/lib/config";
 
 export const metadata = getHomeMetadata();
 
 // Page-level caching with ISR
 // Revalidate every 5 minutes to ensure fresh data while improving performance
 export const revalidate = 300;
-export const dynamic = 'force-static';
-export const fetchCache = 'force-cache';
 
 async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ location?: string }> }) {
   const { location } = await searchParams;
-  const scheduleData = await getScheduleDisplayData(location || null);
+  const selectedLocation = location || "Rangpur"; // Default to Rangpur
+  const scheduleData = await getScheduleDisplayData(selectedLocation);
   const locations = await getLocations();
   const hadith = await getRandomHadith();
-  const today = moment().tz(APP_CONFIG.timezone).format('YYYY-MM-DD');
-  const todayDisplay = moment().tz(APP_CONFIG.timezone).format("dddd, MMMM D, YYYY");
+  const timezone = config.timezone;
+  const today = moment().tz(timezone).format('YYYY-MM-DD');
+  const todayDisplay = moment().tz(timezone).format("dddd, MMMM D, YYYY");
 
   return (
     <div className="space-y-7">
       {/* ── Hero Banner ─────────────────────── */}
-      <div className="hero-section px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-        {/* Decorative mini orbs inside hero */}
-        <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-20 blur-3xl pointer-events-none"
-          style={{ background: "var(--grad-primary)" }}
-          aria-hidden="true"
-        />
-        <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] gradient-text mb-2">
-            ✦ Ramadan 1446 AH
-          </p>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+      <PageHero
+        subtitle="✦ Ramadan 1446 AH"
+        title={
+          <>
             {scheduleData.iftarPassed ? "Tomorrow's" : "Today's"}{" "}
             <span className="gradient-text">Schedule</span>
-          </h1>
-          <p className="text-muted-foreground text-sm mt-2">{todayDisplay}</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0 relative z-10">
-          <Select defaultValue={location || "all"}>
-            <SelectTrigger className="w-[200px] bg-card/80 backdrop-blur border-border/60 shadow-sm">
-              <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="Select location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <DownloadButton
-            location={location}
-            type="today"
-            className="border-border/60 shadow-sm bg-card/80"
-          />
-        </div>
-      </div>
+          </>
+        }
+        description={todayDisplay}
+        actions={
+          <>
+            <LocationSelector locations={locations} currentLocation={location} />
+            <DownloadButton
+              location={selectedLocation}
+              type="today"
+              className="border-border/60 shadow-sm bg-card/80"
+            />
+          </>
+        }
+        orbOpacity={20}
+      />
       
       {/* ── Sehri / Iftar Cards ─────────────── */}
       {(() => {
@@ -236,12 +216,6 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
           <CardDescription>Navigate to other sections</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          <Button asChild className="btn-gradient rounded-full font-semibold">
-            <Link href="/calendar">
-              <CalendarDays className="h-4 w-4 mr-1.5" />
-              Full Calendar
-            </Link>
-          </Button>
           {locations.map((loc) => (
             <Button
               key={loc}
@@ -249,7 +223,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
               asChild
               className="rounded-full border-border/60 text-sm hover:border-primary/50 hover:text-primary transition-colors"
             >
-              <Link href={`/location/${encodeURIComponent(loc)}`}>
+              <Link href={`/calendar?location=${encodeURIComponent(loc)}`}>
                 <MapPin className="h-3.5 w-3.5 mr-1.5" />
                 {loc}
               </Link>

@@ -59,7 +59,7 @@ export const timeEntryUpdateSchema = timeEntryCreateSchema.partial();
  * Batch time entry schema
  */
 export const batchTimeEntrySchema = z.object({
-  entries: z.array(timeEntryCreateSchema).min(1).max(1000),
+  entries: z.array(timeEntryCreateSchema).min(1).max(5000),
 });
 
 /**
