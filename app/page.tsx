@@ -229,6 +229,29 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
           ))}
         </CardContent>
       </Card>
+
+      {/* ── API Attribution ─────────────────────── */}
+      <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
+            Prayer Times Data Source
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            This application uses the <strong>Aladhan API</strong> for prayer times.
+            The Aladhan API is responsible for providing all prayer time data displayed on this platform.
+          </p>
+          <Link
+            href="https://aladhan.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+          >
+            Learn more about Aladhan API →
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -146,6 +146,22 @@ export default function TodayScheduleSkeleton() {
           <Skeleton variant="default" className="h-8 sm:h-9 w-24 sm:w-28 rounded-full" />
         </CardContent>
       </Card>
+
+      {/* ── API Attribution ─────────────────────── */}
+      <Card className="border-primary/30 overflow-hidden shadow-sm bg-primary/5 backdrop-blur-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold uppercase tracking-wide text-primary">
+            <Skeleton variant="primary" className="h-4 sm:h-5 w-48 sm:w-56" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {/* Attribution text lines */}
+          <Skeleton variant="default" className="h-4 w-full" />
+          <Skeleton variant="default" className="h-4 w-11/12" />
+          {/* Link skeleton */}
+          <Skeleton variant="primary" className="h-4 w-40 sm:w-48" />
+        </CardContent>
+      </Card>
     </div>
   );
 }
