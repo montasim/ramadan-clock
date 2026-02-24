@@ -86,7 +86,7 @@ export function PageHero({
 
       {/* Right Side: Actions */}
       {actions && (
-        <div className="relative z-10 flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="relative z-10 flex sm:justify-between gap-2 w-full sm:w-auto">
           {actions}
         </div>
       )}

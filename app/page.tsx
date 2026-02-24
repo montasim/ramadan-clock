@@ -29,7 +29,9 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
   const locations = await getLocations();
   const hadith = await getRandomHadith();
   const timezone = config.timezone;
-  const todayDisplay = moment().tz(timezone).format("dddd, MMMM D, YYYY");
+  const displayDate = scheduleData.iftarPassed 
+    ? moment().add(1, 'day').tz(timezone).format("dddd, MMMM D, YYYY")
+    : moment().tz(timezone).format("dddd, MMMM D, YYYY");
 
   return (
     <div className="space-y-7">
@@ -42,7 +44,7 @@ async function TodayScheduleContent({ searchParams }: { searchParams: Promise<{ 
             <span className="gradient-text">Schedule</span>
           </>
         }
-        description={todayDisplay}
+        description={displayDate}
         actions={
           <>
             <LocationSelector locations={locations} currentLocation={location} />
