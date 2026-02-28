@@ -26,7 +26,7 @@ export function LocationSelector({ locations, currentLocation, className }: Loca
   const handleLocationChange = (value: string) => {
     // Create new URLSearchParams
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (value === "all") {
       params.delete("location");
     } else {
@@ -34,7 +34,10 @@ export function LocationSelector({ locations, currentLocation, className }: Loca
     }
 
     // Navigate to the same path with updated search params
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    // Use relative URL to avoid leading slash in address bar
+    const queryString = params.toString();
+    const url = queryString ? `?${queryString}` : pathname;
+    router.push(url, { scroll: false });
   };
 
   return (
@@ -43,7 +46,7 @@ export function LocationSelector({ locations, currentLocation, className }: Loca
         <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
         <SelectValue placeholder="Select location" />
       </SelectTrigger>
-      <SelectContent className="h-40 overflow-y-auto">
+      <SelectContent className="h-40 overflow-y-auto" position="popper" side="bottom">
         <SelectItem value="all">All Locations</SelectItem>
         {locations.map((loc) => (
           <SelectItem key={loc} value={loc}>{loc}</SelectItem>

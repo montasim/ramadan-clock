@@ -104,8 +104,9 @@ export const getTodayOrNextDaySchedule = unstable_cache(
 );
 
 /**
- * Get schedule display data with time status information
- * Returns both today's and tomorrow's schedules along with time status flags
+ * Get schedule display data without time status information
+ * Returns both today's and tomorrow's schedules
+ * Note: Time status (sehriPassed, iftarPassed) is calculated client-side to avoid caching issues
  */
 async function getScheduleDisplayDataUncached(location?: string | null) {
   try {
@@ -126,28 +127,15 @@ async function getScheduleDisplayDataUncached(location?: string | null) {
     }
     const tomorrowEntry = await prisma.timeEntry.findFirst({ where: tomorrowWhere });
 
-    // Determine time status
-    let sehriPassed = false;
-    let iftarPassed = false;
-
-    if (todayEntry) {
-      sehriPassed = hasTimePassed(todayEntry.sehri);
-      iftarPassed = hasTimePassed(todayEntry.iftar);
-    }
-
     return {
       today: todayEntry ? formatTimeEntry(todayEntry) : null,
       tomorrow: tomorrowEntry ? formatTimeEntry(tomorrowEntry) : null,
-      sehriPassed,
-      iftarPassed,
     };
   } catch (error) {
     logger.error("Error fetching schedule display data", { location }, error as Error);
     return {
       today: null,
       tomorrow: null,
-      sehriPassed: false,
-      iftarPassed: false,
     };
   }
 }
