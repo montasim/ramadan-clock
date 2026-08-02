@@ -1,4 +1,8 @@
+[![Support me on SupportKori](https://img.shields.io/badge/Support%20me-SupportKori-FFDD00?style=flat-square)](https://www.supportkori.com/montasim)
+
 # 🌙 Ramadan Clock - Sehri & Iftar Time Viewer
+
+
 
 A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, PostgreSQL, and shadcn/ui. Features Aladhan API integration for fetching prayer times and support for all 64 districts of Bangladesh.
 
@@ -65,7 +69,7 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
     ```bash
     cp .env.example .env.local
     ```
-    
+
     Edit `.env.local` with your configuration. See [Environment Variables](#-environment-variables) section for all available options.
 
 4. **Generate Prisma client**
@@ -82,7 +86,7 @@ A modern web application for viewing and managing Sehri & Iftar schedules during
    ```bash
    pnpm db:seed
    ```
-   
+
    This creates:
    - Admin user (email: `admin@example.com`, password: `admin123`)
    - Sample time entries for testing
@@ -427,14 +431,14 @@ The calendar page displays the full schedule in a table format:
    // Parse times
    const sehriTime = parseTime(entry.sehri);  // { hours, minutes }
    const iftarTime = parseTime(entry.iftar); // { hours, minutes }
-   
+
    // Get current time
    const now = new Date();
    const currentHours = now.getHours();
    const currentMinutes = now.getMinutes();
-   
+
    // Check if time has passed
-   const isTimePast = (hours, minutes) => 
+   const isTimePast = (hours, minutes) =>
      currentHours > hours || (currentHours === hours && currentMinutes >= minutes);
    ```
 
@@ -1199,3 +1203,9 @@ This project is open source and available under the MIT License.
 ---
 
 **Ramadan Mubarak! 🌙**
+
+## Support
+
+If this project has been useful, you can support its continued maintenance:
+
+[![Support me on SupportKori](https://img.shields.io/badge/Support%20me-SupportKori-FFDD00?style=flat-square)](https://www.supportkori.com/montasim)
