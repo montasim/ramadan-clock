@@ -1,6 +1,7 @@
 # 🌙 Ramadan Clock - Sehri & Iftar Time Viewer
 
 [![Support me on SupportKori](https://img.shields.io/badge/Support%20me-SupportKori-FFDD00?style=flat-square)](https://www.supportkori.com/montasim)
+
 A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, PostgreSQL, and shadcn/ui. Features Aladhan API integration for fetching prayer times and support for all 64 districts of Bangladesh.
 
 ## ✨ Features
