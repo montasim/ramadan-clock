@@ -43,8 +43,8 @@ export function DistrictSelector({
   disabled = false,
   maxDisplayHeight = "300px",
 }: DistrictSelectorProps) {
-  const [isAllSelected, setIsAllSelected] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const isAllSelected = selectedDistricts.length === districts.length;
 
   // Filter districts based on search query
   const filteredDistricts = useMemo(() => {
@@ -56,12 +56,6 @@ export function DistrictSelector({
         district.division?.toLowerCase().includes(query)
     );
   }, [districts, searchQuery]);
-
-  // Check if all districts are selected
-  useMemo(() => {
-    const allSelected = selectedDistricts.length === districts.length;
-    setIsAllSelected(allSelected);
-  }, [selectedDistricts, districts.length]);
 
   const handleSelectAll = () => {
     districts.forEach(district => {

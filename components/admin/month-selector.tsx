@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -58,13 +57,7 @@ export function MonthSelector({
   yearLabel = "Year",
   yearPlaceholder = "Select year",
 }: MonthSelectorProps) {
-  const [isAllSelected, setIsAllSelected] = useState(false);
-
-  // Check if all months are selected
-  useMemo(() => {
-    const allSelected = selectedMonths.length === months.length;
-    setIsAllSelected(allSelected);
-  }, [selectedMonths, months.length]);
+  const isAllSelected = selectedMonths.length === months.length;
 
   const handleSelectAll = () => {
     months.forEach(month => {
