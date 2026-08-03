@@ -1,133 +1,96 @@
 # 🌙 Ramadan Clock
 
-### A location-aware Sehri and Iftar companion for all 64 districts of Bangladesh
+> District-aware Sehri and Iftar schedules for Bangladesh, with a public daily view and protected tools for maintaining Ramadan timetable data.
 
 [![Support on SupportKori](https://img.shields.io/badge/Support_on-SupportKori-00B8B5)](https://www.supportkori.com/montasim)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/1e645b86-edc8-45d2-96aa-a0927ba59c0d/deploy-status)](https://app.netlify.com/projects/fasttimes/deploys)
 [![CI](https://github.com/montasim/ramadan-clock/actions/workflows/ci.yml/badge.svg)](https://github.com/montasim/ramadan-clock/actions/workflows/ci.yml)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/1e645b86-edc8-45d2-96aa-a0927ba59c0d/deploy-status)](https://app.netlify.com/projects/fasttimes/deploys)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-Ramadan Clock helps people quickly find today's Sehri and Iftar times, check the complete Ramadan calendar, and download a district-specific schedule. It also provides administrators with a reliable workflow for fetching, validating, importing, and maintaining prayer-time data.
+Ramadan Clock helps people in Bangladesh find the relevant Sehri and Iftar times for their district without searching through static posters or social posts. Visitors can check today's schedule, move between all 64 districts, browse the full Ramadan calendar, and download a district-specific PDF. A protected administration workflow supports fetching, reviewing, importing, and maintaining the underlying timetable data.
 
-| | |
-| --- | --- |
-| **Status** | Active development / public preview |
-| **Audience** | People in Bangladesh and schedule administrators |
-| **Coverage** | 64 districts, `Asia/Dhaka` timezone |
-| **Live demo** | [fasttimes.netlify.app](https://fasttimes.netlify.app) |
-| **Repository** | [github.com/montasim/ramadan-clock](https://github.com/montasim/ramadan-clock) |
-| **Funding** | [Support the project on SupportKori](https://www.supportkori.com/montasim) |
-
-## Live demo
-
-**[Open Ramadan Clock →](https://fasttimes.netlify.app)**
+**[Open the live app](https://fasttimes.netlify.app) · [Browse the calendar](https://fasttimes.netlify.app/calendar) · [Report an issue](https://github.com/montasim/ramadan-clock/issues)**
 
 [![Ramadan Clock production preview](https://d33wubrfki0l68.cloudfront.net/6a6f0b6bcbe5ac0007640be5/screenshot_2026-08-02-09-24-05-0000.webp)](https://fasttimes.netlify.app)
 
-## Contents
+## Why Ramadan Clock?
 
-- [The problem](#the-problem)
-- [The solution](#the-solution)
-- [Key features](#key-features)
-- [Using the application](#using-the-application)
-- [How it works](#how-it-works)
-- [Prayer-time data and accuracy](#prayer-time-data-and-accuracy)
-- [Technology](#technology)
-- [Getting started](#getting-started)
-- [Schedule import format](#schedule-import-format)
-- [Main routes](#main-routes)
-- [Project structure](#project-structure)
-- [Useful commands](#useful-commands)
-- [Deployment](#deployment)
-- [Documentation](#documentation)
-- [Support](#support)
-- [Funding and sponsorship](#funding-and-sponsorship)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [Data attribution](#data-attribution)
-- [Author](#author)
-- [License](#license)
+Ramadan timetables are often distributed as images or manually prepared files. Those formats are difficult to search, filter, keep current, or use comfortably on a small screen. Maintainers also need a dependable way to validate and update many district schedules without introducing duplicates.
 
-## The problem
+Ramadan Clock turns that information into a focused daily utility:
 
-Ramadan schedules are often spread across posters, social posts, and manually prepared files. That creates a few recurring problems:
+- See the relevant Sehri and Iftar times at a glance.
+- Automatically show tomorrow's schedule after today's Iftar.
+- Switch between the 64 districts of Bangladesh.
+- Browse and download a complete district timetable.
+- Maintain schedule data through a protected review-and-import workflow.
 
-- People have to search repeatedly for the correct time for their district.
-- Static images are difficult to filter, update, or use on small screens.
-- Schedule maintainers need a safe way to import and validate many entries.
-- Generating separate, printable calendars for multiple locations takes time.
+## Features
 
-## The solution
+### For visitors
 
-Ramadan Clock turns the schedule into a focused daily utility:
-
-- See today's relevant fasting times at a glance.
-- Automatically move to tomorrow's schedule after Iftar.
-- Switch between available Bangladesh districts.
-- Browse or download the complete district calendar.
-- Import schedules from the Aladhan API, CSV, or JSON through a protected admin workflow.
-
-## Key features
-
-### For everyone
-
-- Today's Sehri and Iftar times with real-time status
+- Today's Sehri and Iftar times with live status updates
 - Countdown during the final hour before a target time
-- Complete Ramadan calendar with today and upcoming-day indicators
-- Location filtering for all 64 districts of Bangladesh
-- District-specific PDF export for printing or offline reference
-- Responsive mobile layout, dark mode, loading states, and error boundaries
-- Hadith display with source reference
+- Full Ramadan calendar with current and upcoming-day indicators
+- District selection across all 64 Bangladesh districts
+- PDF export for a single day or the full district schedule
+- Responsive layout, dark mode, loading states, and error handling
+- Daily Hadith display with its source when data is available
 
-### For schedule administrators
+### For administrators
 
-- Protected dashboard powered by NextAuth
-- Aladhan API import by date range, Gregorian month, or Hijri month
-- Multi-district fetching with progress reporting
-- CSV and JSON upload with validation and preview
-- Duplicate-safe database writes
+- Authentication-protected dashboard and data-management routes
+- Aladhan imports by date range, Gregorian month, or Hijri month
+- Multi-district fetching with progress and configurable rate limiting
+- CSV and JSON validation with a preview before import
+- Transactional, duplicate-safe schedule writes
 - Configurable Ramadan date range
-- Cache controls, upload history, and schedule management
-
-### Engineering highlights
-
-- Next.js App Router with server components and server actions
-- PostgreSQL persistence through Prisma
-- Feature-oriented schedule domain with repositories, services, and use cases
-- Zod validation at application boundaries
-- Token-bucket rate limiting and retry handling for external APIs
-- Tagged caching and incremental revalidation
-- Structured API responses, security headers, and request logging
-- OpenAPI documentation for the public schedule API
+- Upload history, schedule management, and cache controls
 
 ## Using the application
 
-### Check today's schedule
+### Check today's times
 
-1. Open the home page.
-2. Choose a district from the location selector.
-3. Check the Sehri and Iftar cards for the relevant date.
-4. Use the download action when a printable or offline copy is needed.
+1. Open the [home page](https://fasttimes.netlify.app).
+2. Select a district; Rangpur is used when no district is provided.
+3. Check the Sehri and Iftar cards for the displayed date.
+4. Use the download button when you need an offline PDF.
 
-After Iftar, the application automatically presents the following day's schedule so the next Sehri time remains easy to find.
+After Iftar, the home page presents the following day's schedule while keeping the passed schedule available for reference.
 
-### Browse the Ramadan calendar
+### Browse the full calendar
 
-Open `/calendar`, select a district, and review the complete schedule. Rows identify the current and upcoming days, and the selected calendar can be exported as a PDF.
+Open the [calendar](https://fasttimes.netlify.app/calendar), choose a district, and review the available Ramadan schedule. The calendar identifies relevant dates and can export the selected district timetable as a PDF.
 
-### Maintain schedule data
+### Maintain timetable data
 
-Administrators can sign in at `/auth/login` and then:
+Administrators sign in at `/auth/login` and then:
 
 1. Configure the active Ramadan date range.
-2. Fetch schedules from Aladhan or upload a CSV/JSON file.
+2. Fetch calculated times from Aladhan or upload a CSV/JSON schedule.
 3. Review validation results and preview the entries.
-4. Confirm the import and manage the saved schedule from the dashboard.
+4. Confirm the import and manage the saved schedule.
 
-Never deploy with example credentials, and keep administrator access protected by a strong secret and password.
+> [!WARNING]
+> Never deploy with example credentials. Use a strong administrator password and a unique authentication secret.
+
+## Prayer-time source and accuracy
+
+Ramadan Clock currently fetches calculated prayer times from the [Aladhan API](https://aladhan.com/prayer-times-api) with this configuration:
+
+| Setting | Current value |
+| --- | --- |
+| Country | Bangladesh |
+| Timezone | `Asia/Dhaka` |
+| Calculation method | Method `2` — Islamic Society of North America (ISNA) |
+| Sehri value | Fajr returned by Aladhan |
+| Iftar value | Maghrib returned by Aladhan |
+| Automatic adjustment | None (`0` minutes) |
+
+> [!IMPORTANT]
+> Calculated times can differ from local mosque or religious-authority timetables because methods and local conventions vary. Follow your trusted local authority when schedules differ.
+
+When reporting a discrepancy, include the district, Gregorian date, displayed time, expected time, comparison timetable, and calculation source when known.
 
 ## How it works
 
@@ -142,29 +105,14 @@ flowchart LR
     E --> H[PDF and API]
 ```
 
-Prayer times are stored in 24-hour `HH:mm` format. The public UI formats them for display and evaluates schedule status in the configured timezone. After today's Iftar has passed, the home experience selects tomorrow's schedule so the next Sehri is immediately available.
-
-## Prayer-time data and accuracy
-
-Ramadan Clock currently fetches calculated times from the [Aladhan API](https://aladhan.com/prayer-times-api) with the following configuration:
-
-| Setting | Current value |
-| --- | --- |
-| Country | Bangladesh |
-| Timezone | `Asia/Dhaka` |
-| Calculation method | Method `2` — Islamic Society of North America (ISNA) |
-| Sehri value | Fajr time returned by Aladhan |
-| Iftar value | Maghrib time returned by Aladhan |
-| Automatic adjustment | None (`0` minutes) |
-
-Calculated times may differ from local mosque or religious-authority timetables because methods and local conventions vary. Users should follow their trusted local authority when schedules differ. A discrepancy report should include the district, date, expected time, comparison timetable, and calculation source.
+Prayer times are stored as `YYYY-MM-DD` dates and 24-hour `HH:mm` values. PostgreSQL enforces a unique `(date, location)` pair, while the service layer handles queries, updates, imports, formatting, and status calculation. Public schedule reads use tagged caching and revalidation; external Aladhan requests include retry and token-bucket rate-limit handling.
 
 ## Technology
 
 | Area | Technology |
 | --- | --- |
-| Web application | Next.js 16, React 19, TypeScript |
-| Styling | Tailwind CSS 4, shadcn/ui, Radix UI |
+| Application | Next.js 16, React 19, TypeScript 5 |
+| Interface | Tailwind CSS 4, shadcn/ui, Radix UI |
 | Data | PostgreSQL, Prisma ORM |
 | Authentication | NextAuth, bcryptjs |
 | Validation | Zod |
@@ -173,70 +121,70 @@ Calculated times may differ from local mosque or religious-authority timetables 
 | Time handling | Moment.js, Moment Timezone |
 | Deployment | Netlify |
 
-## Getting started
+## Local development
 
 ### Prerequisites
 
 - Node.js 20.9 or newer
-- [pnpm](https://pnpm.io/)
-- A PostgreSQL database
+- pnpm 11.7.0
+- PostgreSQL
 
-### 1. Clone the repository
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/montasim/ramadan-clock.git
 cd ramadan-clock
-```
-
-### 2. Install dependencies
-
-```bash
 pnpm install
 ```
 
-### 3. Configure the environment
+### 2. Configure the environment
 
-Copy the safe environment template:
+Copy the safe template:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Then replace the placeholders in `.env.local`. The template documents the complete configuration contract:
+At minimum, replace the database, authentication, and administrator placeholders:
 
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/ramadan_clock"
-NEXTAUTH_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
-NEXTAUTH_URL="http://localhost:3000"
-ADMIN_EMAIL="admin@example.com"
-ADMIN_PASSWORD="replace-with-a-strong-password"
-TIMEZONE="Asia/Dhaka"
-# RAMADAN_START_DATE="YYYY-MM-DD"
-# RAMADAN_END_DATE="YYYY-MM-DD"
-```
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection URL |
+| `NEXTAUTH_SECRET` | Authentication signing secret; use at least 32 characters |
+| `NEXTAUTH_URL` | Canonical application URL |
+| `ADMIN_EMAIL` | Seeded administrator email |
+| `ADMIN_PASSWORD` | Seeded administrator password |
+| `TIMEZONE` | Schedule timezone; defaults to `Asia/Dhaka` |
+| `RAMADAN_START_DATE`, `RAMADAN_END_DATE` | Optional active schedule boundaries in `YYYY-MM-DD` format |
+| `ALLOWED_ORIGINS` | Allowed web origin for production requests |
+| `PROJECT_REPO_URL` | Repository link shown by the application |
+| `DEVELOPER_*` | Maintainer name, biography, and contact links |
+| `HADITH_API_KEY` | Optional Hadith integration key |
 
-Generate a secure authentication secret with:
+Generate a strong authentication secret with:
 
 ```bash
 openssl rand -base64 32
 ```
 
-Never commit `.env.local` or deploy with example credentials.
+Do not commit `.env.local` or use the example values in production.
 
-### 4. Prepare the database
+### 3. Prepare the database
 
 ```bash
 pnpm db:generate
 pnpm db:push
 ```
 
-Optionally seed development data:
+Optionally seed the development administrator and sample data:
 
 ```bash
 pnpm db:seed
 ```
 
-### 5. Start the application
+`db:push` synchronizes the schema directly. Review schema changes and use an appropriate migration and backup process before applying changes to production data.
+
+### 4. Start the application
 
 ```bash
 pnpm dev
@@ -246,14 +194,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Schedule import format
 
-Schedules can be imported as JSON or CSV. Dates use `YYYY-MM-DD`; times use 24-hour `HH:mm`.
+Imports accept JSON or CSV. Dates use `YYYY-MM-DD`; times use 24-hour `HH:mm`.
 
 ### JSON
 
 ```json
 [
   {
-    "date": "YYYY-MM-DD",
+    "date": "2026-02-18",
     "sehri": "05:12",
     "iftar": "17:56",
     "location": "Dhaka"
@@ -265,43 +213,28 @@ Schedules can be imported as JSON or CSV. Dates use `YYYY-MM-DD`; times use 24-h
 
 ```csv
 date,sehri,iftar,location
-YYYY-MM-DD,05:12,17:56,Dhaka
+2026-02-18,05:12,17:56,Dhaka
 ```
 
-The importer checks file type, file size, field formats, row limits, and duplicate `(date, location)` combinations before writing to the database.
+The importer validates file type, file size, field formats, row limits, and duplicate `(date, location)` combinations before writing to the database.
 
-## Main routes
+## Routes and API documentation
 
 | Route | Purpose | Access |
 | --- | --- | --- |
-| `/` | Today's relevant Sehri and Iftar schedule | Public |
-| `/calendar` | Complete Ramadan schedule | Public |
-| `/contact` | Project and developer information | Public |
+| `/` | Relevant daily Sehri and Iftar schedule | Public |
+| `/calendar` | Full available Ramadan schedule | Public |
+| `/contact` | Project and maintainer information | Public |
 | `/auth/login` | Administrator sign-in | Public |
 | `/admin/dashboard` | Schedule overview and management | Protected |
-| `/admin/fetch` | Fetch prayer times from Aladhan | Protected |
-| `/admin/import` | Import and preview schedule files | Protected |
-| `/api/schedule` | Query schedule data | API |
-| `/api/health` | Service health check | API |
+| `/admin/fetch` | Fetch and preview Aladhan data | Protected |
+| `/admin/import` | Import schedule data | Protected |
+| `/api/schedule` | Query schedule records | API |
+| `/api/health` | Application and database health | API |
 
 See the [API usage guide](docs/api/usage-guide.md) and [OpenAPI specification](docs/api/openapi.yaml) for request and response details.
 
-## Project structure
-
-```text
-ramadan-clock/
-├── app/                    # Pages, API routes, and layouts
-├── actions/                # Server actions
-├── components/             # Public, admin, shared, and UI components
-├── features/schedule/      # Domain, repositories, services, and use cases
-├── hooks/                  # Client-side time and progress hooks
-├── lib/                    # API, auth, cache, config, SEO, and utilities
-├── prisma/                 # Database schema and seed script
-├── docs/                   # API and implementation guides
-└── public/                 # Web manifest and static assets
-```
-
-## Useful commands
+## Development commands
 
 | Command | Purpose |
 | --- | --- |
@@ -309,24 +242,34 @@ ramadan-clock/
 | `pnpm build` | Generate Prisma Client and create a production build |
 | `pnpm start` | Start the production server |
 | `pnpm lint` | Run ESLint |
-| `pnpm type-check` | Run TypeScript without emitting files |
-| `pnpm test` | Run the automated test suite |
+| `pnpm type-check` | Check TypeScript without emitting files |
+| `pnpm test` | Run the Vitest suite |
 | `pnpm test:watch` | Run tests in watch mode |
 | `pnpm db:generate` | Generate Prisma Client |
-| `pnpm db:push` | Synchronize the Prisma schema with the database |
+| `pnpm db:push` | Synchronize the Prisma schema |
 | `pnpm db:seed` | Seed development data |
 | `pnpm clean:all` | Clear generated application caches |
 
-The GitHub Actions [CI workflow](.github/workflows/ci.yml) installs dependencies, generates Prisma Client, lints the repository, type-checks TypeScript, runs the automated tests, and creates a production build on pushes and pull requests.
+The GitHub Actions [CI workflow](.github/workflows/ci.yml) installs dependencies, generates Prisma Client, lints, type-checks, tests, and creates a production build for pull requests and pushes to `main`.
 
 ## Deployment
 
 The public preview is deployed on Netlify:
 
 - Application: [fasttimes.netlify.app](https://fasttimes.netlify.app)
-- Deployment status: [Netlify deploys](https://app.netlify.com/projects/fasttimes/deploys)
+- Deployment history: [Netlify deploys](https://app.netlify.com/projects/fasttimes/deploys)
 
-Configure the same variables listed in `.env.example` in the Netlify project environment. Set `NEXTAUTH_URL` and `ALLOWED_ORIGINS` to the production URL, then deploy from the `main` branch.
+For another deployment, configure the variables from `.env.example` in the hosting environment. Use the production URL for `NEXTAUTH_URL` and `ALLOWED_ORIGINS`, provide production database and administrator credentials, and run the normal `pnpm build` command.
+
+## Project status and limitations
+
+Ramadan Clock is a pre-release public project. Keep these constraints in mind:
+
+- Displayed schedules depend on the records currently stored in the database.
+- Aladhan imports depend on a third-party service and use calculated prayer times.
+- The calculation method and local convention may differ from an authority's timetable.
+- Administrator access controls schedule-changing operations and must be protected with production-grade credentials.
+- Automated tests currently cover core time-entry behavior; broader API, timezone, import, and PDF coverage remains planned.
 
 ## Documentation
 
@@ -340,40 +283,23 @@ Configure the same variables listed in `.env.example` in the Netlify project env
 - [Security policy](SECURITY.md)
 - [Code of conduct](CODE_OF_CONDUCT.md)
 
-## Support
+## Support and security
 
-- Use [GitHub Issues](https://github.com/montasim/ramadan-clock/issues) for reproducible bugs and feature requests.
-- Include the affected route, district, date, expected result, and actual result in bug reports.
-- Do not post credentials, database URLs, or other secrets in an issue.
+Use [GitHub Issues](https://github.com/montasim/ramadan-clock/issues) for reproducible bugs and feature requests. Include the affected route, district, date, expected result, and actual result where relevant. Never post credentials, database URLs, private information, or other secrets in an issue.
 
-Prayer-time discrepancies should include the trusted local timetable being compared and its calculation source when available.
-
-Report vulnerabilities according to the [security policy](SECURITY.md), not through a public issue.
-
-## Funding and sponsorship
-
-Ramadan Clock is developed as a community-focused project. Financial support helps cover hosting and database costs, schedule verification, and continued improvements to the public experience.
-
-[![Support Ramadan Clock on SupportKori](https://img.shields.io/badge/Support_Ramadan_Clock-SupportKori-00B8B5?style=for-the-badge)](https://www.supportkori.com/montasim)
-
-Sponsorship is completely optional. Bug reports, code contributions, documentation improvements, and sharing the project are equally valuable ways to help.
-
-## Roadmap
-
-- [ ] Verify and clearly display calculation method, source, and schedule update time
-- [ ] Persist the visitor's preferred district
-- [ ] Add Bangla language support
-- [ ] Add shareable district timetable images
-- [ ] Complete offline/PWA support and reminders
-- [ ] Expand automated coverage for API, timezone, and PDF behavior
+Report vulnerabilities privately according to the [security policy](SECURITY.md), not through a public issue.
 
 ## Contributing
 
-Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the local workflow, required checks, and guidance for reporting schedule discrepancies. Participation in the project is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the local workflow, required checks, and schedule-discrepancy guidance. Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Data attribution
+## Funding
 
-Prayer-time data is fetched from the [Aladhan API](https://aladhan.com/prayer-times-api). See [Prayer-time data and accuracy](#prayer-time-data-and-accuracy) for the active calculation configuration and limitations.
+Ramadan Clock is developed as a community-focused project. Optional financial support helps cover hosting, database costs, schedule verification, and continued improvements.
+
+[![Support Ramadan Clock on SupportKori](https://img.shields.io/badge/Support_Ramadan_Clock-SupportKori-00B8B5?style=for-the-badge)](https://www.supportkori.com/montasim)
+
+Bug reports, code contributions, documentation improvements, feedback, and sharing the project are equally valuable ways to help.
 
 ## Author
 
@@ -382,7 +308,3 @@ Built and maintained by [Montasim](https://github.com/montasim).
 ## License
 
 Ramadan Clock is open-source software licensed under the [MIT License](LICENSE).
-
----
-
-If this project is useful to you, consider starring the repository or sharing feedback through a GitHub issue.
