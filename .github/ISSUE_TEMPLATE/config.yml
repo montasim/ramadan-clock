@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Support guide
+    url: https://github.com/montasim/ramadan-clock/blob/main/SUPPORT.md
+    about: Find the right place for usage questions, bugs, feature requests, and schedule discrepancies.
+  - name: Security vulnerability
+    url: https://github.com/montasim/ramadan-clock/security/policy
+    about: Read the private reporting instructions; do not disclose vulnerabilities in a public issue.
