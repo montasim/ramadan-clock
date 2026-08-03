@@ -285,7 +285,7 @@ Ramadan Clock is a pre-release public project. Keep these constraints in mind:
 
 ## Support and security
 
-Use [GitHub Issues](https://github.com/montasim/ramadan-clock/issues) for reproducible bugs and feature requests. Include the affected route, district, date, expected result, and actual result where relevant. Never post credentials, database URLs, private information, or other secrets in an issue.
+Read the [support guide](SUPPORT.md) to choose the right channel. Use [GitHub Issues](https://github.com/montasim/ramadan-clock/issues) for reproducible bugs and feature requests. Include the affected route, district, date, expected result, and actual result where relevant. Never post credentials, database URLs, private information, or other secrets in an issue.
 
 Report vulnerabilities privately according to the [security policy](SECURITY.md), not through a public issue.
 
