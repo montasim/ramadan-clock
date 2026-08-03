@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible problem in Ramadan Clock.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Ramadan Clock. Do not include credentials or other secrets.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the actual and expected behavior.
+    validations:
+      required: true
+  - type: input
+    id: route
+    attributes:
+      label: Affected route
+      placeholder: /calendar
+  - type: input
+    id: district-date
+    attributes:
+      label: District and date
+      description: Required for schedule or prayer-time discrepancies.
+      placeholder: Dhaka, YYYY-MM-DD
+  - type: textarea
+    id: source
+    attributes:
+      label: Comparison source
+      description: For time discrepancies, provide the trusted local timetable and calculation source.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Go to ...
+        2. Select ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: Chrome 130, Android 15

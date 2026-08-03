@@ -1,1211 +1,388 @@
-[![Support me on SupportKori](https://img.shields.io/badge/Support%20me-SupportKori-FFDD00?style=flat-square)](https://www.supportkori.com/montasim)
+# 🌙 Ramadan Clock
 
-# 🌙 Ramadan Clock - Sehri & Iftar Time Viewer
+### A location-aware Sehri and Iftar companion for all 64 districts of Bangladesh
 
+[![Support on SupportKori](https://img.shields.io/badge/Support_on-SupportKori-00B8B5)](https://www.supportkori.com/montasim)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/1e645b86-edc8-45d2-96aa-a0927ba59c0d/deploy-status)](https://app.netlify.com/projects/fasttimes/deploys)
+[![CI](https://github.com/montasim/ramadan-clock/actions/workflows/ci.yml/badge.svg)](https://github.com/montasim/ramadan-clock/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
+Ramadan Clock helps people quickly find today's Sehri and Iftar times, check the complete Ramadan calendar, and download a district-specific schedule. It also provides administrators with a reliable workflow for fetching, validating, importing, and maintaining prayer-time data.
 
-A modern web application for viewing and managing Sehri & Iftar schedules during Ramadan. Built with Next.js 16, PostgreSQL, and shadcn/ui. Features Aladhan API integration for fetching prayer times and support for all 64 districts of Bangladesh.
+| | |
+| --- | --- |
+| **Status** | Active development / public preview |
+| **Audience** | People in Bangladesh and schedule administrators |
+| **Coverage** | 64 districts, `Asia/Dhaka` timezone |
+| **Live demo** | [fasttimes.netlify.app](https://fasttimes.netlify.app) |
+| **Repository** | [github.com/montasim/ramadan-clock](https://github.com/montasim/ramadan-clock) |
+| **Funding** | [Support the project on SupportKori](https://www.supportkori.com/montasim) |
 
-## ✨ Features
+## Live demo
 
-### Public Features
-- **Today's Schedule**: View today's Sehri and Iftar times at a glance
-- **Full Calendar**: Browse complete schedule in a table format
-- **Location Filter**: Filter schedules by city/location
-- **PDF Download**: Download schedules as PDF for offline use
-- **Dark Mode**: Toggle between light and dark themes
-- **Mobile Responsive**: Works seamlessly on all devices
-- **SSR**: Server-side rendered pages for optimal SEO and performance
+**[Open Ramadan Clock →](https://fasttimes.netlify.app)**
 
-### Admin Features
-- **Secure Login**: Password-protected admin dashboard
-- **File Upload**: Upload schedules via JSON or CSV files
-- **Drag & Drop**: Easy file upload with drag and drop support
-- **Validation**: Real-time validation with error reporting
-- **Preview**: Preview data before confirming upload
-- **Sample Templates**: Download sample JSON/CSV templates
-- **Dashboard**: View statistics and recent uploads
+[![Ramadan Clock production preview](https://d33wubrfki0l68.cloudfront.net/6a6f0b6bcbe5ac0007640be5/screenshot_2026-08-02-09-24-05-0000.webp)](https://fasttimes.netlify.app)
 
+## Contents
 
-## 🛠️ Technology Stack
+- [The problem](#the-problem)
+- [The solution](#the-solution)
+- [Key features](#key-features)
+- [Using the application](#using-the-application)
+- [How it works](#how-it-works)
+- [Prayer-time data and accuracy](#prayer-time-data-and-accuracy)
+- [Technology](#technology)
+- [Getting started](#getting-started)
+- [Schedule import format](#schedule-import-format)
+- [Main routes](#main-routes)
+- [Project structure](#project-structure)
+- [Useful commands](#useful-commands)
+- [Deployment](#deployment)
+- [Documentation](#documentation)
+- [Support](#support)
+- [Funding and sponsorship](#funding-and-sponsorship)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Data attribution](#data-attribution)
+- [Author](#author)
+- [License](#license)
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Database**: PostgreSQL (via Prisma ORM)
-- **UI Components**: shadcn/ui + Tailwind CSS v4
-- **Authentication**: NextAuth.js
-- **API Integration**: Aladhan API for prayer times
-- **Hadith Integration**: hadithapi.pages.dev for random hadiths
-- **File Parsing**: PapaParse (CSV), native JSON parser
-- **PDF Generation**: jsPDF + jspdf-autotable
-- **Validation**: Zod
-- **Rate Limiting**: Token bucket algorithm
-- **Caching**: Multi-layered caching strategy
-- **Time Handling**: moment.js + moment-timezone
-- **Deployment**: Vercel-ready
+## The problem
 
-## 🚀 Getting Started
+Ramadan schedules are often spread across posters, social posts, and manually prepared files. That creates a few recurring problems:
+
+- People have to search repeatedly for the correct time for their district.
+- Static images are difficult to filter, update, or use on small screens.
+- Schedule maintainers need a safe way to import and validate many entries.
+- Generating separate, printable calendars for multiple locations takes time.
+
+## The solution
+
+Ramadan Clock turns the schedule into a focused daily utility:
+
+- See today's relevant fasting times at a glance.
+- Automatically move to tomorrow's schedule after Iftar.
+- Switch between available Bangladesh districts.
+- Browse or download the complete district calendar.
+- Import schedules from the Aladhan API, CSV, or JSON through a protected admin workflow.
+
+## Key features
+
+### For everyone
+
+- Today's Sehri and Iftar times with real-time status
+- Countdown during the final hour before a target time
+- Complete Ramadan calendar with today and upcoming-day indicators
+- Location filtering for all 64 districts of Bangladesh
+- District-specific PDF export for printing or offline reference
+- Responsive mobile layout, dark mode, loading states, and error boundaries
+- Hadith display with source reference
+
+### For schedule administrators
+
+- Protected dashboard powered by NextAuth
+- Aladhan API import by date range, Gregorian month, or Hijri month
+- Multi-district fetching with progress reporting
+- CSV and JSON upload with validation and preview
+- Duplicate-safe database writes
+- Configurable Ramadan date range
+- Cache controls, upload history, and schedule management
+
+### Engineering highlights
+
+- Next.js App Router with server components and server actions
+- PostgreSQL persistence through Prisma
+- Feature-oriented schedule domain with repositories, services, and use cases
+- Zod validation at application boundaries
+- Token-bucket rate limiting and retry handling for external APIs
+- Tagged caching and incremental revalidation
+- Structured API responses, security headers, and request logging
+- OpenAPI documentation for the public schedule API
+
+## Using the application
+
+### Check today's schedule
+
+1. Open the home page.
+2. Choose a district from the location selector.
+3. Check the Sehri and Iftar cards for the relevant date.
+4. Use the download action when a printable or offline copy is needed.
+
+After Iftar, the application automatically presents the following day's schedule so the next Sehri time remains easy to find.
+
+### Browse the Ramadan calendar
+
+Open `/calendar`, select a district, and review the complete schedule. Rows identify the current and upcoming days, and the selected calendar can be exported as a PDF.
+
+### Maintain schedule data
+
+Administrators can sign in at `/auth/login` and then:
+
+1. Configure the active Ramadan date range.
+2. Fetch schedules from Aladhan or upload a CSV/JSON file.
+3. Review validation results and preview the entries.
+4. Confirm the import and manage the saved schedule from the dashboard.
+
+Never deploy with example credentials, and keep administrator access protected by a strong secret and password.
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Aladhan API / CSV / JSON] --> B[Validation and preview]
+    B --> C[Admin approval]
+    C --> D[(PostgreSQL)]
+    D --> E[Cached schedule services]
+    E --> F[Today view]
+    E --> G[Full calendar]
+    E --> H[PDF and API]
+```
+
+Prayer times are stored in 24-hour `HH:mm` format. The public UI formats them for display and evaluates schedule status in the configured timezone. After today's Iftar has passed, the home experience selects tomorrow's schedule so the next Sehri is immediately available.
+
+## Prayer-time data and accuracy
+
+Ramadan Clock currently fetches calculated times from the [Aladhan API](https://aladhan.com/prayer-times-api) with the following configuration:
+
+| Setting | Current value |
+| --- | --- |
+| Country | Bangladesh |
+| Timezone | `Asia/Dhaka` |
+| Calculation method | Method `2` — Islamic Society of North America (ISNA) |
+| Sehri value | Fajr time returned by Aladhan |
+| Iftar value | Maghrib time returned by Aladhan |
+| Automatic adjustment | None (`0` minutes) |
+
+Calculated times may differ from local mosque or religious-authority timetables because methods and local conventions vary. Users should follow their trusted local authority when schedules differ. A discrepancy report should include the district, date, expected time, comparison timetable, and calculation source.
+
+## Technology
+
+| Area | Technology |
+| --- | --- |
+| Web application | Next.js 16, React 19, TypeScript |
+| Styling | Tailwind CSS 4, shadcn/ui, Radix UI |
+| Data | PostgreSQL, Prisma ORM |
+| Authentication | NextAuth, bcryptjs |
+| Validation | Zod |
+| Prayer-time source | Aladhan API |
+| PDF generation | jsPDF, jspdf-autotable |
+| Time handling | Moment.js, Moment Timezone |
+| Deployment | Netlify |
+
+## Getting started
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL database (local or cloud)
-- pnpm (recommended) or npm
+- Node.js 20.9 or newer
+- [pnpm](https://pnpm.io/)
+- A PostgreSQL database
 
-### Installation
-
-1. **Clone the repository**
-    ```bash
-    git clone <repository-url>
-    cd ramadan-clock
-    ```
-
-2. **Install dependencies**
-    ```bash
-    pnpm install
-    ```
-
-3. **Set up environment variables**
-    ```bash
-    cp .env.example .env.local
-    ```
-
-    Edit `.env.local` with your configuration. See [Environment Variables](#-environment-variables) section for all available options.
-
-4. **Generate Prisma client**
-   ```bash
-   pnpm db:generate
-   ```
-
-5. **Push schema to database**
-   ```bash
-   pnpm db:push
-   ```
-
-6. **Seed initial data (optional)**
-   ```bash
-   pnpm db:seed
-   ```
-
-   This creates:
-   - Admin user (email: `admin@example.com`, password: `admin123`)
-   - Sample time entries for testing
-
-7. **Run the development server**
-    ```bash
-    pnpm dev
-    ```
-
-    Open [http://localhost:3000](http://localhost:3000) to see the app.
-
-### Development Tips
-
-#### Caching Issues?
-
-If you don't see UI changes appearing immediately, use the clean development command:
+### 1. Clone the repository
 
 ```bash
-pnpm dev:clean
+git clone https://github.com/montasim/ramadan-clock.git
+cd ramadan-clock
 ```
 
-For comprehensive cache clearing:
+### 2. Install dependencies
 
 ```bash
-pnpm clean:all
+pnpm install
 ```
 
-📖 **See the [Cache Troubleshooting Guide](docs/cache-troubleshooting-guide.md) for detailed instructions.**
+### 3. Configure the environment
 
-## 📁 Project Structure
+Copy the safe environment template:
 
-```
-ramadan-clock/
-├── app/
-│   ├── (home)/              # Public pages
-│   │   ├── calendar/        # Full schedule calendar
-│   │   └── contact/         # Contact page
-│   ├── admin/               # Admin dashboard
-│   │   ├── dashboard/       # Dashboard overview
-│   │   ├── fetch/           # Fetch from Aladhan API
-│   │   ├── import/          # Import from files
-│   │   └── upload/          # Upload schedules
-│   ├── api/                 # API routes
-│   │   ├── auth/            # NextAuth authentication
-│   │   ├── cache/           # Cache debugging
-│   │   ├── hadith/          # Hadith API
-│   │   ├── health/          # Health check
-│   │   ├── pdf/             # PDF generation
-│   │   ├── prayer-times/    # Prayer times API
-│   │   ├── progress/        # Progress tracking
-│   │   └── schedule/        # Schedule CRUD
-│   ├── auth/                # Login page
-│   └── layout.tsx           # Root layout
-├── actions/                 # Server actions
-├── components/
-│   ├── admin/               # Admin-specific components
-│   ├── public/              # Public page components
-│   ├── seo/                 # SEO components
-│   ├── shared/              # Shared components
-│   └── ui/                  # shadcn/ui components
-├── features/                # Feature-based architecture (DDD)
-│   └── schedule/            # Schedule domain logic
-│       ├── domain/          # Domain entities & value objects
-│       ├── repositories/    # Data access layer
-│       ├── services/        # Business logic
-│       └── use-cases/      # Application use cases
-├── hooks/                   # Custom React hooks
-├── lib/
-│   ├── api/                 # API utilities & middleware
-│   ├── cache/               # Caching system
-│   ├── config/              # Configuration modules
-│   ├── errors/              # Error handling
-│   ├── guards/              # Authorization guards
-│   ├── logger/              # Logging system
-│   ├── parsers/             # File parsers
-│   ├── progress/            # Progress tracking
-│   └── utils.ts             # Utility functions
-├── prisma/
-│   ├── schema.prisma        # Database schema
-│   └── seed.ts              # Seed script
-└── docs/                    # Documentation
-    ├── api/                 # API documentation
-    └── *.md                 # Feature guides
+```bash
+cp .env.example .env.local
 ```
 
-## 📊 Database Schema
+Then replace the placeholders in `.env.local`. The template documents the complete configuration contract:
 
-### TimeEntry
-- `id`: UUID
-- `date`: String (YYYY-MM-DD)
-- `sehri`: String (HH:mm)
-- `iftar`: String (HH:mm)
-- `location`: String (nullable)
-- `createdAt`: DateTime
-- Unique index on `(date, location)`
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/ramadan_clock"
+NEXTAUTH_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
+NEXTAUTH_URL="http://localhost:3000"
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="replace-with-a-strong-password"
+TIMEZONE="Asia/Dhaka"
+# RAMADAN_START_DATE="YYYY-MM-DD"
+# RAMADAN_END_DATE="YYYY-MM-DD"
+```
 
-### AdminUser
-- `id`: UUID
-- `email`: String (unique)
-- `password`: String (hashed)
-- `createdAt`: DateTime
+Generate a secure authentication secret with:
 
-### UploadLog
-- `id`: UUID
-- `fileName`: String
-- `rowCount`: Int
-- `status`: String (success/partial/failed)
-- `errors`: String (JSON)
-- `uploadedAt`: DateTime
+```bash
+openssl rand -base64 32
+```
 
-### RamadanSettings
-- `id`: UUID
-- `startDate`: String (YYYY-MM-DD format)
-- `endDate`: String (YYYY-MM-DD format)
-- `createdAt`: DateTime
-- `updatedAt`: DateTime
+Never commit `.env.local` or deploy with example credentials.
 
-## 📤 File Upload Format
+### 4. Prepare the database
 
-### JSON Format
+```bash
+pnpm db:generate
+pnpm db:push
+```
+
+Optionally seed development data:
+
+```bash
+pnpm db:seed
+```
+
+### 5. Start the application
+
+```bash
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Schedule import format
+
+Schedules can be imported as JSON or CSV. Dates use `YYYY-MM-DD`; times use 24-hour `HH:mm`.
+
+### JSON
+
 ```json
 [
   {
-    "date": "2026-03-01",
-    "sehri": "04:45",
-    "iftar": "18:12",
+    "date": "YYYY-MM-DD",
+    "sehri": "05:12",
+    "iftar": "17:56",
     "location": "Dhaka"
   }
 ]
 ```
 
-### CSV Format
+### CSV
+
 ```csv
 date,sehri,iftar,location
-2026-03-01,04:45,18:12,Dhaka
+YYYY-MM-DD,05:12,17:56,Dhaka
 ```
 
-### Validation Rules
-- **Required fields**: date, sehri, iftar
-- **Optional**: location
-- **Date format**: YYYY-MM-DD
-- **Time format**: HH:mm
-- **Max rows**: 1000 per upload
-- **File size**: Max 1MB
-- **No duplicates**: (date + location) must be unique
+The importer checks file type, file size, field formats, row limits, and duplicate `(date, location)` combinations before writing to the database.
 
-## 🔐 Admin Access
+## Main routes
 
-Default admin credentials (change in production!):
-- **Email**: `admin@example.com`
-- **Password**: `admin123`
+| Route | Purpose | Access |
+| --- | --- | --- |
+| `/` | Today's relevant Sehri and Iftar schedule | Public |
+| `/calendar` | Complete Ramadan schedule | Public |
+| `/contact` | Project and developer information | Public |
+| `/auth/login` | Administrator sign-in | Public |
+| `/admin/dashboard` | Schedule overview and management | Protected |
+| `/admin/fetch` | Fetch prayer times from Aladhan | Protected |
+| `/admin/import` | Import and preview schedule files | Protected |
+| `/api/schedule` | Query schedule data | API |
+| `/api/health` | Service health check | API |
 
-Access admin dashboard at: `/admin/dashboard`
+See the [API usage guide](docs/api/usage-guide.md) and [OpenAPI specification](docs/api/openapi.yaml) for request and response details.
 
-## 🌐 Routes
+## Project structure
 
-### Public Routes
-- `/` - Today's Sehri & Iftar
-- `/calendar` - Full schedule calendar
-- `/location/[city]` - Location-specific schedule
-
-### Admin Routes (Protected)
-- `/auth/login` - Admin login
-- `/admin/dashboard` - Dashboard overview
-- `/admin/import` - Import schedules from files
-- `/admin/fetch` - Fetch schedules from Aladhan API
-- `/admin/upload` - Upload schedules with preview
-
-### API Routes
-- `/api/auth/[...nextauth]` - Authentication
-- `/api/hadith` - Get random hadith
-- `/api/health` - Health check endpoint
-- `/api/pdf` - PDF generation
-- `/api/prayer-times/fetch` - Fetch prayer times from Aladhan API
-- `/api/prayer-times/preview` - Preview prayer times before import
-- `/api/schedule` - Schedule CRUD operations
-- `/api/schedule/[id]` - Single schedule operations
-- `/api/schedule/batch` - Batch operations
-- `/api/progress/[id]` - Progress tracking for long operations
-- `/api/progress/create` - Create new progress operation
-- `/api/cache/debug` - Cache debugging and statistics
-
-## 📱 Features Breakdown
-
-### Home Page
-- Real-time today's schedule display
-- Location selector dropdown
-- Quick links to location pages
-- PDF download button
-- Responsive card layout
-
-### Calendar Page
-- Full schedule table
-- Today highlight badge
-- Past/Upcoming status indicators
-- Location filter
-- Sortable columns
-
-### Location Pages
-- City-specific schedules
-- Dynamic metadata for SEO
-- Static generation for performance
-- Back navigation
-
-### Admin Dashboard
-- Total entries count
-- Number of locations
-- Recent uploads table
-- Status badges (Success/Partial/Failed)
-- Quick upload button
-- Ramadan settings management
-
-### Upload System
-- Drag & drop interface
-- JSON and CSV support
-- Real-time validation
-- Error reporting by row
-- Preview table (first 10 entries)
-- Confirm dialog before upload
-- Sample file downloads
-
-### PDF Export
-- Clean A4 layout
-- Header with app title
-- Date/location info
-- Formatted table with all entries
-- Page numbers
-- Generation timestamp footer
-- Custom filename
-- Location-specific exports
-
-### Aladhan API Integration
-- Fetch prayer times for all 64 Bangladesh districts
-- Multiple fetch modes:
-  - **Date Range**: Fetch for specific date range
-  - **Multi-Month**: Fetch for multiple months
-  - **Hijri Month**: Fetch for specific Hijri month
-- Configurable rate limiting with presets:
-  - Conservative: 6 req/min
-  - Balanced: 12 req/min
-  - Aggressive: 20 req/min
-  - Fast: 300 req/min
-  - Turbo: 600 req/min
-- Progress tracking for large operations
-- Automatic retry with exponential backoff
-- Token bucket rate limiting
-- Parallel district processing with controlled concurrency
-
-### Hadith Integration
-- Random hadith from multiple collections:
-  - Sahih Bukhari
-  - Sahih Muslim
-  - Abu Dawud
-  - Tirmidhi
-  - Nasai
-  - Ibn Majah
-- Cached responses (1 hour TTL)
-- Rate limited (10 req/min)
-- English translations with source references
-
-## ⏰ Schedule Display Logic
-
-The application uses intelligent logic to display sehri and iftar times based on the current time and user's location. Here's how it works across different pages:
-
-### Core Server Actions
-
-#### `getScheduleDisplayData(location?)`
-Returns both today's and tomorrow's schedules along with time status flags:
-```typescript
-{
-  today: TimeEntry | null,      // Today's schedule entry
-  tomorrow: TimeEntry | null,   // Tomorrow's schedule entry
-  sehriPassed: boolean,         // Whether today's sehri time has passed
-  iftarPassed: boolean          // Whether today's iftar time has passed
-}
+```text
+ramadan-clock/
+├── app/                    # Pages, API routes, and layouts
+├── actions/                # Server actions
+├── components/             # Public, admin, shared, and UI components
+├── features/schedule/      # Domain, repositories, services, and use cases
+├── hooks/                  # Client-side time and progress hooks
+├── lib/                    # API, auth, cache, config, SEO, and utilities
+├── prisma/                 # Database schema and seed script
+├── docs/                   # API and implementation guides
+└── public/                 # Web manifest and static assets
 ```
 
-**Logic:**
-1. Fetches today's schedule based on current date (YYYY-MM-DD format)
-2. Fetches tomorrow's schedule (date + 1 day)
-3. Compares current time with sehri/iftar times to determine status
-4. Returns formatted times in 12-hour format (e.g., "04:45 AM")
-
-#### `getTodayOrNextDaySchedule(location?)`
-Returns the appropriate schedule for display:
-- Returns today's schedule if iftar time hasn't passed yet
-- Returns tomorrow's schedule if today's iftar time has passed
-- Returns `null` if no schedule is found
-
-#### `getFullSchedule(location?)`
-Returns all schedule entries, optionally filtered by location:
-- Ordered by date ascending
-- Returns formatted times in 12-hour format
-- Used for calendar tables and location-specific pages
-
-### Time Comparison Logic
-
-#### `hasSehriPassed(schedule)` and `hasIftarPassed(schedule)`
-These helper functions determine if a specific time has passed:
-
-```typescript
-// Parse time string (HH:mm format)
-const [hours, minutes] = time.split(':').map(Number);
-
-// Create date object with target time
-const targetTime = new Date();
-targetTime.setHours(hours, minutes, 0, 0);
-
-// Compare with current time
-return now >= targetTime;
-```
-
-**Note:** Time comparisons use the server's system time (Asia/Dhaka timezone).
-
-### Page-Specific Display Logic
-
-#### Home Page (`/`)
-The home page displays the most relevant schedule based on current time:
-
-1. **Fetches** both today's and tomorrow's schedules via [`getScheduleDisplayData()`](actions/time-entries.ts:99)
-2. **Determines display schedule:**
-   - If `iftarPassed` is `false`: Shows today's sehri and iftar
-   - If `iftarPassed` is `true`: Shows tomorrow's sehri and iftar
-3. **Visual indicators:**
-   - Sehri card shows "Passed — fast has begun" if sehri time has passed
-   - Sehri card shows "End time — fast begins" if sehri time is upcoming
-   - Iftar card shows "Start time — fast breaks"
-4. **Countdown timers:** Displayed only when within 1 hour of target time
-5. **Passed schedule card:** Shows today's times in a separate card if iftar has passed
-
-#### Calendar Page (`/calendar`)
-The calendar page displays the full schedule in a table format:
-
-1. **Main cards:** Uses [`getTodayOrNextDaySchedule()`](actions/time-entries.ts:64) to show today's or tomorrow's schedule
-2. **Table rows:** Each row shows status based on time comparison:
-   - **Passed** (red): Past dates or today after iftar time
-   - **Today** (blue): Today before iftar time, or tomorrow after sehri time
-   - **Tomorrow** (amber): Tomorrow before sehri time
-   - **Upcoming** (default): Future dates beyond tomorrow
-3. **Inline status logic** (lines 171-238 in [`app/(home)/calendar/page.tsx`](app/(home)/calendar/page.tsx:171)):
-   ```typescript
-   // Parse times
-   const sehriTime = parseTime(entry.sehri);  // { hours, minutes }
-   const iftarTime = parseTime(entry.iftar); // { hours, minutes }
-
-   // Get current time
-   const now = new Date();
-   const currentHours = now.getHours();
-   const currentMinutes = now.getMinutes();
-
-   // Check if time has passed
-   const isTimePast = (hours, minutes) =>
-     currentHours > hours || (currentHours === hours && currentMinutes >= minutes);
-   ```
-
-#### Location Pages (`/location/[city]`)
-Location-specific pages use the same logic as the calendar page but filtered by city:
-
-1. **Validation:** Checks if the city exists in the database via [`getLocations()`](actions/time-entries.ts:191)
-2. **Filtered data:** All queries include the location parameter
-3. **Static generation:** Uses [`generateStaticParams()`](app/(home)/location/[city]/page.tsx:24) to pre-render all location pages
-4. **Status logic:** Identical to calendar page (passed/today/tomorrow/upcoming)
-
-### Countdown Timer Component
-
-The [`CountdownTimer`](components/shared/countdown-timer.tsx:1) component provides real-time countdown:
-
-**Features:**
-- Only visible when within 1 hour of target time
-- Updates every second
-- Automatically handles next day if target time has passed
-- Format: `HH:MM:SS` with pulsing clock icon
-
-**Logic:**
-```typescript
-// Calculate time difference
-const diff = targetDate.getTime() - now.getTime();
-const oneHourMs = 60 * 60 * 1000;
-
-// Show only if within 1 hour
-if (diff <= oneHourMs && diff > 0) {
-  // Display countdown
-}
-```
-
-### Time Formatting
-
-All times are stored in 24-hour format (HH:mm) in the database and converted to 12-hour format for display:
-
-```typescript
-// lib/utils.ts
-export function formatTime12Hour(time: string): string {
-  const [hours, minutes] = time.split(":").map(Number);
-  const period = hours >= 12 ? "PM" : "AM";
-  const displayHours = hours % 12 || 12;
-  return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
-}
-```
-
-Example: `"04:45"` → `"4:45 AM"`, `"18:12"` → `"6:12 PM"`
-
-### Location Filtering
-
-Location filtering works consistently across all pages:
-
-1. **Location parameter:** Passed via URL query param (`?location=Dhaka`) or route param (`/location/Dhaka`)
-2. **Server action filtering:** All data fetching functions accept optional `location` parameter
-3. **"All Locations":** When no location is specified, shows entries from all locations
-4. **Location list:** Dynamically fetched from database via [`getLocations()`](actions/time-entries.ts:191)
-
-### Data Flow Summary
-
-```
-User Request
-    ↓
-Server Component (page.tsx)
-    ↓
-Server Action (time-entries.ts)
-    ↓
-Prisma Query (PostgreSQL)
-    ↓
-Time Formatting & Status Calculation
-    ↓
-Client Component (countdown timer, UI)
-    ↓
-Display to User
-```
-
-## 🌍 Bangladesh Districts Support
-
-The application supports all 64 districts of Bangladesh across 8 divisions:
-
-### Divisions
-- **Barisal**: Barguna, Barisal, Bhola, Jhalokati, Patuakhali, Pirojpur
-- **Chittagong**: Bandarban, Brahmanbaria, Chandpur, Chittagong, Comilla, Cox's Bazar, Feni, Khagrachari, Lakshmipur, Noakhali, Rangamati
-- **Dhaka**: Dhaka, Faridpur, Gazipur, Gopalganj, Kishoreganj, Madaripur, Manikganj, Munshiganj, Narayanganj, Narsingdi, Rajbari, Shariatpur, Tangail
-- **Khulna**: Bagerhat, Chuadanga, Jessore, Jhenaidah, Khulna, Kushtia, Magura, Meherpur, Narail, Satkhira
-- **Mymensingh**: Jamalpur, Mymensingh, Netrokona, Sherpur
-- **Rajshahi**: Bogra, Chapainawabganj, Joypurhat, Naogaon, Natore, Pabna, Rajshahi, Sirajganj
-- **Rangpur**: Dinajpur, Gaibandha, Kurigram, Lalmonirhat, Nilphamari, Panchagarh, Rangpur, Thakurgaon
-- **Sylhet**: Habiganj, Moulvibazar, Sunamganj, Sylhet
-
-### Location Features
-- Geographic coordinates for accurate prayer times
-- Division-based organization
-- Location-specific schedules
-- Dynamic location pages with SEO metadata
-- Location filtering across all pages
-
-## 🏗️ Advanced Architecture & Complex Logic Features
-
-This application implements several sophisticated architectural patterns and complex logic systems to ensure scalability, maintainability, and performance. Below are detailed explanations of these advanced features.
-
-### API Architecture & Middleware System
-
-The application implements a robust API architecture with a composable middleware pipeline in [`lib/api/middleware.ts`](lib/api/middleware.ts:1).
-
-#### Middleware Pipeline
-
-The middleware system follows a functional composition pattern where each middleware wraps the handler:
-
-```typescript
-// Compose multiple middleware functions
-export function compose(...middlewares: Array<(handler: NextHandler) => NextHandler>) {
-  return (handler: NextHandler): NextHandler => {
-    return middlewares.reduceRight(
-      (acc, middleware) => middleware(acc),
-      handler
-    );
-  };
-}
-```
-
-#### Available Middleware
-
-1. **Request ID Middleware** ([`withRequestId`](lib/api/middleware.ts:53))
-   - Generates unique request IDs for tracing
-   - Adds `x-request-id` header to both request and response
-   - Supports external request ID propagation
-
-2. **Rate Limiting Middleware** ([`withRateLimit`](lib/api/middleware.ts:85))
-   - In-memory rate limiting using sliding window algorithm
-   - Configurable limits and time windows
-   - Returns rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
-   - Automatic retry-after calculation for 429 responses
-
-3. **Authentication Middleware** ([`withAuth`](lib/api/middleware.ts:123))
-   - Integrates with NextAuth.js session management
-   - Supports optional admin role checking
-   - Injects session data into request headers for downstream use
-
-4. **Validation Middleware** ([`withValidation`](lib/api/middleware.ts:182))
-   - Zod schema validation for query/body parameters
-   - Detailed error reporting with field-level validation errors
-   - Supports validation of both query and body data
-
-5. **Error Handling Middleware** ([`withErrorHandler`](lib/api/middleware.ts:232))
-   - Catches and transforms all errors to standardized API responses
-   - Adds response time tracking via `X-Response-Time` header
-   - Distinguishes between operational and programming errors
-
-6. **Logging Middleware** ([`withLogging`](lib/api/middleware.ts:282))
-   - Logs all incoming requests with method, URL, and user agent
-   - Logs successful responses with status and duration
-   - Logs errors with full context
-
-#### Standardized API Responses
-
-All API responses follow a consistent structure defined in [`lib/api/api-response.ts`](lib/api/api-response.ts:1):
-
-```typescript
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: any;
-  };
-  meta?: {
-    requestId: string;
-    timestamp: string;
-  };
-}
-```
-
-Response helpers include:
-- [`success()`](lib/api/api-response.ts:55) - Successful responses
-- [`paginated()`](lib/api/api-response.ts:75) - Paginated data responses
-- [`error()`](lib/api/api-response.ts:97) - Error responses
-- [`validationError()`](lib/api/api-response.ts:139) - Validation errors
-- [`rateLimitExceeded()`](lib/api/api-response.ts:205) - Rate limit errors
-
-#### External API Client
-
-The [`ExternalApiClient`](lib/api/external-api-client.ts:51) provides robust external API integration:
-
-**Features:**
-- **Timeout Handling**: Configurable request timeouts with AbortController
-- **Retry Logic**: Exponential backoff retry for transient failures
-- **Caching**: Built-in in-memory caching with TTL support
-- **Configurable Retry Options**: Custom retryable status codes, delays, and multipliers
-
-**Retry Strategy:**
-```typescript
-const defaultRetryOptions = {
-  maxRetries: 3,
-  initialDelay: 1000,      // 1 second
-  maxDelay: 10000,         // 10 seconds
-  backoffMultiplier: 2,    // Exponential
-  retryableStatuses: [408, 429, 500, 502, 503, 504]
-};
-```
-
-#### Security Headers
-
-Comprehensive security headers are implemented in [`lib/api/security-headers.ts`](lib/api/security-headers.ts:1):
-
-- **X-Content-Type-Options**: Prevents MIME type sniffing
-- **X-Frame-Options**: Prevents clickjacking (DENY)
-- **X-XSS-Protection**: Enables XSS filtering
-- **Referrer-Policy**: Controls referrer information
-- **Permissions-Policy**: Restricts browser features
-- **Content-Security-Policy**: Comprehensive CSP policy
-- **CORS Support**: Configurable CORS headers with preflight handling
-
-### Cache Implementation Strategy
-
-The application implements a multi-layered caching strategy for optimal performance.
-
-#### Cache Configuration
-
-Centralized cache configuration in [`lib/cache/cache-config.ts`](lib/cache/cache-config.ts:1):
-
-```typescript
-const CACHE_DURATIONS = {
-  SHORT: 60,      // 1 minute - frequently changing data
-  MEDIUM: 300,    // 5 minutes - moderately changing data
-  LONG: 900,      // 15 minutes - rarely changing data
-  VERY_LONG: 1800,// 30 minutes - very rarely changing data
-  HOUR: 3600,     // 1 hour - static data
-};
-
-const CACHE_TAGS = {
-  SCHEDULE: 'schedule',
-  LOCATIONS: 'locations',
-  STATS: 'stats',
-  HADITH: 'hadith',
-  PDF: 'pdf',
-};
-```
-
-#### Cache Helpers
-
-Utility functions in [`lib/cache/cache-helpers.ts`](lib/cache/cache-helpers.ts:1):
-
-- [`createCachedFn()`](lib/cache/cache-helpers.ts:27) - Wraps async functions with Next.js unstable_cache
-- [`invalidateScheduleCache()`](lib/cache/cache-helpers.ts:42) - Invalidates all schedule-related caches
-- [`invalidateLocationCache()`](lib/cache/cache-helpers.ts:54) - Invalidates location caches
-- [`invalidatePdfCache()`](lib/cache/cache-helpers.ts:62) - Invalidates PDF caches
-- [`getCacheKey()`](lib/cache/cache-helpers.ts:90) - Creates hierarchical cache keys
-- [`getLocationCacheKey()`](lib/cache/cache-helpers.ts:101) - Creates location-specific cache keys
-- [`getDateCacheKey()`](lib/cache/cache-helpers.ts:113) - Creates date-specific cache keys
-
-#### Cache Monitoring
-
-The [`CacheMonitor`](lib/cache/cache-monitor.ts:30) class provides comprehensive cache performance tracking:
-
-**Features:**
-- Hit/miss tracking per cache key
-- Hit rate calculation
-- Overall cache statistics
-- Per-key statistics
-- Metrics export as JSON
-- Decorator support for class methods
-
-**Usage Example:**
-```typescript
-// Record hits/misses manually
-CacheMonitor.recordHit('schedule:dhaka');
-CacheMonitor.recordMiss('schedule:dhaka');
-
-// Get statistics
-const stats = CacheMonitor.getOverallStats();
-// { hits: 100, misses: 20, hitRate: '83.33%', total: 120 }
-
-// Wrap a function with monitoring
-const monitoredFn = withCacheMonitoring(
-  async () => await fetchData(),
-  'data-fetch'
-);
-```
-
-#### Cache Cleanup
-
-The [`CacheCleanup`](lib/cache/cache-cleanup.ts:12) class manages periodic cache maintenance:
-
-**Features:**
-- Automatic cleanup of expired cache entries
-- Periodic cleanup scheduling (default: 1 hour)
-- Manual cleanup triggering
-- Cleanup status monitoring
-- External API cache cleanup
-
-**Initialization:**
-```typescript
-import { initializeCacheCleanup } from '@/lib/cache';
-
-// Auto-initializes on server start
-initializeCacheCleanup();
-
-// Or manually schedule
-CacheCleanup.schedulePeriodicCleanup(3600000); // 1 hour
-```
-
-### SEO & Metadata System
-
-The application implements a comprehensive SEO strategy for maximum search engine visibility.
-
-#### Metadata Generation
-
-The [`lib/seo/metadata.ts`](lib/seo/metadata.ts:1) module provides metadata generators:
-
-- [`getBaseMetadata()`](lib/seo/metadata.ts:96) - Base metadata for all pages
-- [`getPageMetadata()`](lib/seo/metadata.ts:166) - Page-specific metadata
-- [`getHomeMetadata()`](lib/seo/metadata.ts:230) - Home page metadata
-- [`getCalendarMetadata()`](lib/seo/metadata.ts:250) - Calendar page metadata
-- [`getLocationMetadata()`](lib/seo/metadata.ts:269) - Dynamic location page metadata
-- [`getContactMetadata()`](lib/seo/metadata.ts:291) - Contact page metadata
-- [`getAdminMetadata()`](lib/seo/metadata.ts:308) - Admin pages (noindex)
-- [`getAuthMetadata()`](lib/seo/metadata.ts:320) - Auth pages (noindex)
-
-**Features:**
-- Open Graph tags for social media sharing
-- Twitter Card support
-- Canonical URL generation
-- Dynamic keyword generation
-- Robots meta configuration
-- Favicon and manifest configuration
-
-#### JSON-LD Structured Data
-
-The [`lib/seo/schemas.ts`](lib/seo/schemas.ts:1) module generates JSON-LD schemas:
-
-**Available Schemas:**
-- [`createWebSiteSchema()`](lib/seo/schemas.ts:20) - Website schema with search action
-- [`createOrganizationSchema()`](lib/seo/schemas.ts:38) - Organization information
-- [`createBreadcrumbSchema()`](lib/seo/schemas.ts:59) - Breadcrumb navigation
-- [`createFAQSchema()`](lib/seo/schemas.ts:78) - FAQ page schema
-- [`createArticleSchema()`](lib/seo/schemas.ts:99) - Article/blog post schema
-- [`createSoftwareApplicationSchema()`](lib/seo/schemas.ts:140) - App store schema
-- [`createLocalBusinessSchema()`](lib/seo/schemas.ts:174) - Location-specific business schema
-- [`createCollectionPageSchema()`](lib/seo/schemas.ts:197) - Listing page schema
-- [`createWebPageSchema()`](lib/seo/schemas.ts:221) - Generic web page schema
-- [`createEventSchema()`](lib/seo/schemas.ts:249) - Event schema for Ramadan
-- [`createHowToSchema()`](lib/seo/schemas.ts:281) - How-to guide schema
-
-### Feature-Based Architecture (DDD)
-
-The application follows Domain-Driven Design (DDD) principles with a feature-based architecture in [`features/schedule/`](features/schedule/).
-
-#### Architecture Layers
-
-```
-features/schedule/
-├── domain/
-│   ├── entities/           # Domain entities with business logic
-│   ├── value-objects/      # Value objects with validation
-│   └── types/              # Domain types and interfaces
-├── repositories/           # Data access layer
-├── services/               # Business logic services
-└── use-cases/             # Application use cases
-```
-
-#### Domain Entities
-
-The [`TimeEntry`](features/schedule/domain/entities/time-entry.entity.ts:25) entity encapsulates schedule data with domain logic:
-
-**Features:**
-- Immutable properties (readonly)
-- Time comparison methods: [`isSehriPassed()`](features/schedule/domain/entities/time-entry.entity.ts:77), [`isIftarPassed()`](features/schedule/domain/entities/time-entry.entity.ts:93)
-- Date comparison methods: [`isPast()`](features/schedule/domain/entities/time-entry.entity.ts:108), [`isToday()`](features/schedule/domain/entities/time-entry.entity.ts:116), [`isTomorrow()`](features/schedule/domain/entities/time-entry.entity.ts:124)
-- DTO conversion: [`toDTO()`](features/schedule/domain/entities/time-entry.entity.ts:48), [`toFormattedDTO()`](features/schedule/domain/entities/time-entry.entity.ts:62)
-- Static factory methods: [`fromDTO()`](features/schedule/domain/entities/time-entry.entity.ts:142), [`fromDTOArray()`](features/schedule/domain/entities/time-entry.entity.ts:151)
-
-#### Value Objects
-
-The [`LocationVO`](features/schedule/domain/value-objects/location.vo.ts:10) value object encapsulates location logic:
-
-**Features:**
-- Null-safe location handling
-- Display name generation
-- Validation and normalization
-- Equality comparison
-- Static factory methods: [`create()`](features/schedule/domain/value-objects/location.vo.ts:67), [`all()`](features/schedule/domain/value-objects/location.vo.ts:74)
-
-#### Services
-
-The [`ScheduleService`](features/schedule/services/schedule.service.ts:17) contains business logic:
-
-**Methods:**
-- [`getTodaySchedule()`](features/schedule/services/schedule.service.ts:29) - Get today's entry
-- [`getTomorrowSchedule()`](features/schedule/services/schedule.service.ts:40) - Get tomorrow's entry
-- [`getTodayOrNextDaySchedule()`](features/schedule/services/schedule.service.ts:52) - Smart schedule selection
-- [`getScheduleDisplayData()`](features/schedule/services/schedule.service.ts:68) - Complete display data
-- [`getFullSchedule()`](features/schedule/services/schedule.service.ts:80) - All entries
-- [`getScheduleByDateRange()`](features/schedule/services/schedule.service.ts:92) - Date range query
-- [`getLocations()`](features/schedule/services/schedule.service.ts:105) - Unique locations
-- [`getStats()`](features/schedule/services/schedule.service.ts:113) - Dashboard statistics
-- [`getTimeEntryById()`](features/schedule/services/schedule.service.ts:132) - Single entry lookup
-- [`updateTimeEntry()`](features/schedule/services/schedule.service.ts:143) - Update entry
-- [`deleteTimeEntry()`](features/schedule/services/schedule.service.ts:155) - Delete entry
-
-#### Use Cases
-
-Use cases encapsulate application-level logic:
-
-- [`GetTodayScheduleUseCase`](features/schedule/use-cases/get-today-schedule.use-case.ts:1)
-- [`GetFullScheduleUseCase`](features/schedule/use-cases/get-full-schedule.use-case.ts:1)
-- [`GetScheduleDisplayDataUseCase`](features/schedule/use-cases/get-schedule-display-data.use-case.ts:13)
-- [`GetLocationsUseCase`](features/schedule/use-cases/get-locations.use-case.ts:1)
-- [`UploadScheduleUseCase`](features/schedule/use-cases/upload-schedule.use-case.ts:1)
-- [`UpdateEntryUseCase`](features/schedule/use-cases/update-entry.use-case.ts:1)
-- [`DeleteEntryUseCase`](features/schedule/use-cases/delete-entry.use-case.ts:1)
-
-### Error Handling System
-
-The application implements a comprehensive error handling system in [`lib/errors/app-error.ts`](lib/errors/app-error.ts:1).
-
-#### Custom Error Classes
-
-All errors extend the base [`AppError`](lib/errors/app-error.ts:10) class:
-
-- [`DatabaseError`](lib/errors/app-error.ts:51) - Database operation failures
-- [`ValidationError`](lib/errors/app-error.ts:64) - Input validation failures
-- [`NotFoundError`](lib/errors/app-error.ts:83) - Resource not found
-- [`UnauthorizedError`](lib/errors/app-error.ts:99) - Authentication failures
-- [`ForbiddenError`](lib/errors/app-error.ts:112) - Authorization failures
-- [`ConflictError`](lib/errors/app-error.ts:125) - Resource conflicts
-- [`FileUploadError`](lib/errors/app-error.ts:138) - File upload failures
-
-**Features:**
-- HTTP status code mapping
-- Operational vs programming error distinction
-- Error cause chaining
-- JSON serialization
-- Type guard: [`isAppError()`](lib/errors/app-error.ts:150)
-- Error converter: [`toAppError()`](lib/errors/app-error.ts:159)
-
-### Parser System
-
-The application uses a factory pattern for file parsing in [`lib/parsers/index.ts`](lib/parsers/index.ts:1).
-
-#### Parser Factory
-
-The [`ParserFactory`](lib/parsers/index.ts:14) manages parser registration and selection:
-
-**Features:**
-- Automatic parser selection based on file extension
-- Extensible parser registration
-- Support for multiple file formats (JSON, CSV)
-- Type-safe parsing with [`ParsedScheduleEntry`](lib/parsers/parser.interface.ts:1) interface
-
-**Available Parsers:**
-- [`JsonParser`](lib/parsers/json-parser.ts:1) - JSON file parsing
-- [`CsvParser`](lib/parsers/csv-parser.ts:1) - CSV file parsing with PapaParse
-
-**Usage:**
-```typescript
-const parser = ParserFactory.getParser('schedule.json');
-const entries = await parser.parse(fileContent);
-```
-
-### Logging System
-
-A comprehensive logging system is implemented in [`lib/logger/logger.ts`](lib/logger/logger.ts:1).
-
-#### Logger Features
-
-- **Multiple Log Levels**: error, warn, info, debug
-- **Environment-Aware**: Different behavior for dev/test/production
-- **Console Logging**: Color-coded output for development
-- **Context Support**: Structured logging with context objects
-- **Child Loggers**: Create loggers with default context
-- **Production-Ready**: Placeholder for external service integration (Sentry, Datadog)
-
-**Usage:**
-```typescript
-import { logger, createLogger } from '@/lib/logger';
-
-// Global logger
-logger.error('Error message', { context: 'value' }, error);
-
-// Child logger with context
-const apiLogger = createLogger('api');
-apiLogger.info('API request', { endpoint: '/schedule' });
-```
-
-### Configuration Management
-
-Centralized configuration management in [`lib/config/index.ts`](lib/config/index.ts:1).
-
-#### Configuration Modules
-
-- [`APP_CONFIG`](lib/config/index.ts:6) - Application metadata
-- [`UPLOAD_CONFIG`](lib/config/index.ts:12) - File upload limits and allowed types
-- [`TIME_CONFIG`](lib/config/index.ts:19) - Time-related constants
-- [`PDF_CONFIG`](lib/config/index.ts:25) - PDF generation settings
-- [`UI_CONFIG`](lib/config/index.ts:33) - UI display limits
-- [`locations.config.ts`](lib/config/locations.config.ts:1) - Location data
-- [`env.config.ts`](lib/config/env.config.ts:1) - Environment variables
-
-### Guards & Authorization
-
-The application implements a dual-layer guard system in [`lib/guards/`](lib/guards/index.ts:1).
-
-#### Client-Side Guards
-
-The [`DashboardGuard`](lib/guards/client-dashboard-guard.tsx:1) component protects client-side routes:
-
-**Features:**
-- Session checking
-- Redirect to login if unauthenticated
-- Loading state during authentication check
-- Configurable options (requireAdmin)
-
-#### Server-Side Guards
-
-The [`dashboardGuard`](lib/guards/dashboard-guard.ts:1) function protects server components:
-
-**Features:**
-- Server-side session validation
-- Early return for unauthenticated requests
-- Type-safe options
-
-### Advanced Schedule Logic
-
-The schedule display system implements sophisticated time-based logic.
-
-#### Time Comparison Logic
-
-Using moment.js for accurate time comparisons:
-
-```typescript
-// Check if sehri/iftar time has passed
-isSehriPassed(referenceDate?: Date): boolean {
-  const now = referenceDate ? moment(referenceDate) : moment();
-  const sehriTime = moment(this.sehri, 'HH:mm');
-  sehriTime.set({
-    year: now.year(),
-    month: now.month(),
-    date: now.date(),
-  });
-  return now.isSameOrAfter(sehriTime);
-}
-```
-
-#### Smart Schedule Selection
-
-The [`getTodayOrNextDaySchedule()`](features/schedule/services/schedule.service.ts:52) method intelligently selects the appropriate schedule:
-
-**Logic:**
-1. Fetch today's schedule
-2. Check if today's iftar has passed
-3. If iftar passed, return tomorrow's schedule
-4. Otherwise, return today's schedule
-
-#### Display Data Structure
-
-The [`ScheduleDisplayData`](features/schedule/domain/types/schedule-status.types.ts:1) interface provides complete display information:
-
-```typescript
-interface ScheduleDisplayData {
-  today: TimeEntry | null;
-  tomorrow: TimeEntry | null;
-  sehriPassed: boolean;
-  iftarPassed: boolean;
-}
-```
-
-#### Countdown Timer
-
-The [`CountdownTimer`](components/shared/countdown-timer.tsx:1) component provides real-time countdown:
-
-**Features:**
-- Only visible within 1 hour of target time
-- Updates every second
-- Automatically handles next day transitions
-- Format: `HH:MM:SS` with pulsing clock icon
-
-### Rate Limiter Implementation
-
-The [`RateLimiter`](lib/api/rate-limiter.ts:29) class provides in-memory rate limiting:
-
-**Features:**
-- Sliding window algorithm
-- Per-identifier tracking (IP or user ID)
-- Configurable limits and time windows
-- Automatic cleanup of expired entries
-- Store size monitoring
-- Singleton pattern for global instance
-
-**Usage:**
-```typescript
-const rateLimiter = new RateLimiter();
-const result = await rateLimiter.checkLimit('user:123', 100, 60000);
-// { allowed: true, remaining: 99, resetAt: Date }
-```
-
-### API Validation System
-
-Comprehensive validation using Zod schemas in [`lib/validations/api-schemas.ts`](lib/validations/api-schemas.ts:1).
-
-**Features:**
-- Request validation schemas
-- Response validation schemas
-- Type-safe validation
-- Detailed error reporting
-
-### Security Features
-
-1. **Input Sanitization**: [`sanitizeInput()`](lib/api/security-headers.ts:166) prevents XSS attacks
-2. **URL Validation**: [`sanitizeUrl()`](lib/api/security-headers.ts:176) prevents open redirects
-3. **IP Detection**: [`getClientIp()`](lib/api/security-headers.ts:136) handles various proxy headers
-4. **User Agent**: [`getUserAgent()`](lib/api/security-headers.ts:159) extracts user agent information
-
-### Performance Optimizations
-
-1. **Next.js Caching**: Uses `unstable_cache` for data caching
-2. **Static Generation**: Location pages pre-rendered with [`generateStaticParams()`](app/(home)/location/[city]/page.tsx:24)
-3. **Cache Tags**: Selective cache invalidation
-4. **Stale-While-Revalidate**: Background revalidation for improved UX
-5. **External API Caching**: Built-in caching with TTL
-
-### Monitoring & Observability
-
-1. **Request Tracking**: Unique request IDs for tracing
-2. **Response Time**: `X-Response-Time` header
-3. **Cache Metrics**: Hit/miss tracking and hit rate calculation
-4. **Structured Logging**: Context-aware logging throughout the application
-5. **Error Tracking**: Comprehensive error logging with context
-
-
-## 🎨 UI Components
-
-Built with shadcn/ui:
-- Card, Button, Table, Dialog
-- Alert, Toast (Sonner), Tabs
-- Select, Badge, Skeleton
-- Dropdown Menu, Input, Label
-
-## 🔒 Security
-
-- Admin routes protected by NextAuth middleware
-- Password hashing with bcryptjs
-- Server-side validation
-- File type restrictions
-- File size limits
-- Rate limiting with token bucket algorithm
-- Request ID tracking
-- Security headers (CSP, CORS, XSS protection)
-- Input sanitization
-- IP-based rate limiting
-
-## 🚀 Deployment
-
-### Vercel
-
-1. Push code to GitHub
-2. Import project in Vercel
-3. Set environment variables (see [Environment Variables](#-environment-variables) section)
-4. Deploy
-
-### Environment Variables for Production
-```env
-DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<database>"
-NEXTAUTH_SECRET="<generate-with-openssl-rand-base64-32>"
-NEXTAUTH_URL="https://your-domain.com"
-ADMIN_EMAIL="admin@example.com"
-ADMIN_PASSWORD="secure-password"
-TIMEZONE="Asia/Dhaka"
-RAMADAN_START_DATE="2026-02-19"
-RAMADAN_END_DATE="2026-03-20"
-ALLOWED_ORIGINS="https://your-domain.com"
-```
-
-### Recommended Database Providers
-- **Supabase**: https://supabase.com (Free tier available)
-- **Neon**: https://neon.tech (Free tier available)
-- **Railway**: https://railway.app (PostgreSQL included)
-- **Prisma Cloud**: https://www.prisma.io/data-platform
-
-## 📝 Scripts
-
-```bash
-pnpm dev          # Start development server
-pnpm build        # Build for production
-pnpm start        # Start production server
-pnpm lint         # Run ESLint
-pnpm db:generate  # Generate Prisma client
-pnpm db:push      # Push schema to database
-pnpm db:seed      # Seed initial data
-```
-
-## 🔧 Environment Variables
-
-### Required Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/ramadan-clock` |
-| `NEXTAUTH_SECRET` | Secret for session encryption | Generate with `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | Application URL | `http://localhost:3000` |
-| `ADMIN_EMAIL` | Admin login email | `admin@example.com` |
-| `ADMIN_PASSWORD` | Admin login password | `secure-password` |
-
-### Optional Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment mode | `development` |
-| `TIMEZONE` | Application timezone | `Asia/Dhaka` |
-| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:3000` |
-| `RAMADAN_START_DATE` | Ramadan start date (YYYY-MM-DD) | - |
-| `RAMADAN_END_DATE` | Ramadan end date (YYYY-MM-DD) | - |
-| `PROJECT_REPO_URL` | Project repository URL | - |
-| `DEVELOPER_NAME` | Developer name | - |
-| `DEVELOPER_BIO` | Developer bio | - |
-| `DEVELOPER_GITHUB` | GitHub profile URL | - |
-| `DEVELOPER_LINKEDIN` | LinkedIn profile URL | - |
-| `DEVELOPER_EMAIL` | Contact email | - |
-
-**Note:** Aladhan API configuration is hardcoded in [`lib/config/app.config.ts`](lib/config/app.config.ts:43) and includes:
-- Base URL: `https://api.aladhan.com/v1`
-- Method: ISNA (Islamic Society of North America)
-- Country: Bangladesh
-- Timezone: Asia/Dhaka
-- Rate limiting: Token bucket with 50 capacity, 5 tokens/second
-
-To modify these settings, edit the `ALADHAN_CONFIG` object in the configuration file directly.
-
-### See Also
-- Copy [`.env.example`](.env.example) for all available variables
-- See [lib/config/env.config.ts](lib/config/env.config.ts) for validation rules
-
-## 📚 Documentation
-
-### Feature Guides
-- [Aladhan API Implementation](docs/aladhan-api-implementation-summary.md) - Prayer times integration
-- [API Keys Setup Guide](docs/api-keys-setup-guide.md) - External API configuration
-- [Cache Troubleshooting Guide](docs/cache-troubleshooting-guide.md) - Caching issues
-- [Caching Implementation Guide](docs/caching-implementation-guide.md) - Cache system overview
-- [Rate Limiting Guide](docs/rate-limiting-guide.md) - Rate limiting configuration
-- [SEO Implementation Summary](docs/seo-implementation-summary.md) - SEO features
-
-### API Documentation
-- [OpenAPI Specification](docs/api/openapi.yaml) - Full API documentation
-- [API Usage Guide](docs/api/usage-guide.md) - API usage examples
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is open source and available under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Built for the Muslim community during Ramadan
-- Inspired by the need for accurate prayer time information
-- Made with ❤️ using modern web technologies
-
----
-
-**Ramadan Mubarak! 🌙**
+## Useful commands
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Start the development server |
+| `pnpm build` | Generate Prisma Client and create a production build |
+| `pnpm start` | Start the production server |
+| `pnpm lint` | Run ESLint |
+| `pnpm type-check` | Run TypeScript without emitting files |
+| `pnpm test` | Run the automated test suite |
+| `pnpm test:watch` | Run tests in watch mode |
+| `pnpm db:generate` | Generate Prisma Client |
+| `pnpm db:push` | Synchronize the Prisma schema with the database |
+| `pnpm db:seed` | Seed development data |
+| `pnpm clean:all` | Clear generated application caches |
+
+The GitHub Actions [CI workflow](.github/workflows/ci.yml) installs dependencies, generates Prisma Client, lints the repository, type-checks TypeScript, runs the automated tests, and creates a production build on pushes and pull requests.
+
+## Deployment
+
+The public preview is deployed on Netlify:
+
+- Application: [fasttimes.netlify.app](https://fasttimes.netlify.app)
+- Deployment status: [Netlify deploys](https://app.netlify.com/projects/fasttimes/deploys)
+
+Configure the same variables listed in `.env.example` in the Netlify project environment. Set `NEXTAUTH_URL` and `ALLOWED_ORIGINS` to the production URL, then deploy from the `main` branch.
+
+## Documentation
+
+- [API usage guide](docs/api/usage-guide.md)
+- [OpenAPI specification](docs/api/openapi.yaml)
+- [Aladhan integration](docs/aladhan-api-implementation-summary.md)
+- [Caching guide](docs/caching-implementation-guide.md)
+- [Cache troubleshooting](docs/cache-troubleshooting-guide.md)
+- [Rate-limiting guide](docs/rate-limiting-guide.md)
+- [Contribution guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
 
 ## Support
 
-If this project has been useful, you can support its continued maintenance:
+- Use [GitHub Issues](https://github.com/montasim/ramadan-clock/issues) for reproducible bugs and feature requests.
+- Include the affected route, district, date, expected result, and actual result in bug reports.
+- Do not post credentials, database URLs, or other secrets in an issue.
 
-[![Support me on SupportKori](https://img.shields.io/badge/Support%20me-SupportKori-FFDD00?style=flat-square)](https://www.supportkori.com/montasim)
+Prayer-time discrepancies should include the trusted local timetable being compared and its calculation source when available.
+
+Report vulnerabilities according to the [security policy](SECURITY.md), not through a public issue.
+
+## Funding and sponsorship
+
+Ramadan Clock is developed as a community-focused project. Financial support helps cover hosting and database costs, schedule verification, and continued improvements to the public experience.
+
+[![Support Ramadan Clock on SupportKori](https://img.shields.io/badge/Support_Ramadan_Clock-SupportKori-00B8B5?style=for-the-badge)](https://www.supportkori.com/montasim)
+
+Sponsorship is completely optional. Bug reports, code contributions, documentation improvements, and sharing the project are equally valuable ways to help.
+
+## Roadmap
+
+- [ ] Verify and clearly display calculation method, source, and schedule update time
+- [ ] Persist the visitor's preferred district
+- [ ] Add Bangla language support
+- [ ] Add shareable district timetable images
+- [ ] Complete offline/PWA support and reminders
+- [ ] Expand automated coverage for API, timezone, and PDF behavior
+
+## Contributing
+
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the local workflow, required checks, and guidance for reporting schedule discrepancies. Participation in the project is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Data attribution
+
+Prayer-time data is fetched from the [Aladhan API](https://aladhan.com/prayer-times-api). See [Prayer-time data and accuracy](#prayer-time-data-and-accuracy) for the active calculation configuration and limitations.
+
+## Author
+
+Built and maintained by [Montasim](https://github.com/montasim).
+
+## License
+
+Ramadan Clock is open-source software licensed under the [MIT License](LICENSE).
+
+---
+
+If this project is useful to you, consider starring the repository or sharing feedback through a GitHub issue.

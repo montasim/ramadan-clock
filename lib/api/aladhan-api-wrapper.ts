@@ -547,7 +547,7 @@ export class AladhanApiWrapper {
    */
   private formatTimeTo24Hour(time: string): string {
     // Remove any AM/PM suffixes and spaces
-    let formatted = time.trim().replace(/\s*(AM|PM)/i, '');
+    const formatted = time.trim().replace(/\s*(AM|PM)/i, '');
     
     // If already in HH:mm format, return as is
     if (/^\d{1,2}:\d{2}$/.test(formatted)) {
