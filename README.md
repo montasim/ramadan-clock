@@ -125,7 +125,7 @@ Prayer times are stored as `YYYY-MM-DD` dates and 24-hour `HH:mm` values. Postgr
 
 ### Prerequisites
 
-- Node.js 20.9 or newer
+- Node.js 24 LTS
 - pnpm 11.7.0
 - PostgreSQL
 
