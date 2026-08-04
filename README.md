@@ -13,6 +13,18 @@ Ramadan Clock helps people in Bangladesh find the relevant Sehri and Iftar times
 
 [![Ramadan Clock production preview](https://d33wubrfki0l68.cloudfront.net/6a6f0b6bcbe5ac0007640be5/screenshot_2026-08-02-09-24-05-0000.webp)](https://fasttimes.netlify.app)
 
+## Find what you need
+
+| Goal | Start here |
+| --- | --- |
+| Check or download a timetable | [Using the application](#using-the-application) |
+| Understand calculation accuracy | [Prayer-time source and accuracy](#prayer-time-source-and-accuracy) |
+| Run the project locally | [Local development](#local-development) |
+| Import schedule data | [Schedule import format](#schedule-import-format) |
+| Integrate with the API | [Routes and API documentation](#routes-and-api-documentation) |
+| Deploy or operate the service | [Deployment](#deployment) and [project limitations](#project-status-and-limitations) |
+| Contribute or report a problem | [Support and security](#support-and-security) and [contributing](#contributing) |
+
 ## Why Ramadan Clock?
 
 Ramadan timetables are often distributed as images or manually prepared files. Those formats are difficult to search, filter, keep current, or use comfortably on a small screen. Maintainers also need a dependable way to validate and update many district schedules without introducing duplicates.
