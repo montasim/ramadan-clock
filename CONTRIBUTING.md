@@ -12,7 +12,7 @@ Thank you for helping make Ramadan Clock more dependable and useful.
 ## Local development
 
 1. Fork and clone the repository.
-2. Install Node.js 20.9 or newer and pnpm.
+2. Install Node.js 24 LTS and pnpm 11.7.0.
 3. Run `pnpm install`.
 4. Copy `.env.example` to `.env.local` and provide development values.
 5. Run `pnpm db:generate` and `pnpm db:push`.
