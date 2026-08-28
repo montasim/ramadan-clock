@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
@@ -78,6 +79,15 @@ export default function RootLayout({
           <Footer />
           <Toaster />
         </Providers>
+        <Script
+          id="support-kori-widget"
+          src="https://www.supportkori.com/widget.js"
+          data-id="montasim"
+          data-message="Support montasim"
+          data-color="#FFDD00"
+          data-position="right"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
