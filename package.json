@@ -1,29 +1,26 @@
 {
   "name": "ramadan-clock",
   "version": "0.1.0",
+  "description": "🌙 District-aware Sehri and Iftar schedules for Bangladesh, with PDF exports and protected timetable management. Next.js, PostgreSQL, Prisma.",
+  "keywords": [
+    "iftar",
+    "islamic-calendar",
+    "prayer-times",
+    "ramadan",
+    "sehar",
+    "nextjs",
+    "react",
+    "typescript",
+    "prisma",
+    "postgresql",
+    "tailwindcss",
+    "zod"
+  ],
   "private": true,
   "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": ">=24 <25"
   },
-  "keywords": [
-    "ramadan",
-    "prayer-times",
-    "islamic-calendar",
-    "sehar",
-    "iftar",
-    "nextjs",
-    "typescript",
-    "prisma",
-    "postgresql",
-    "authentication",
-    "admin-dashboard",
-    "hadith",
-    "pdf-generation",
-    "file-upload",
-    "shadcn-ui",
-    "tailwindcss"
-  ],
   "scripts": {
     "dev": "next dev",
     "dev:clean": "rm -rf .next && next dev",
